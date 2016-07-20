@@ -1,0 +1,21 @@
+{
+    "variants":
+    {
+        "type=stone": { "model": "metalextras:aluminum_ore_stone" },
+        "type=granite": { "model": "metalextras:aluminum_ore_granite" },
+        "type=diorite": { "model": "metalextras:aluminum_ore_diorite" },
+        "type=andesite": { "model": "metalextras:aluminum_ore_andesite" },
+        "type=sandstone": { "model": "metalextras:aluminum_ore_sandstone" },
+        "type=red_sandstone": { "model": "metalextras:aluminum_ore_red_sandstone" },
+        "type=netherrack": { "model": "metalextras:aluminum_ore_netherrack" },
+        "type=end_stone": { "model": "metalextras:aluminum_ore_end_stone" },
+        "type=dirt": { "model": "metalextras:aluminum_ore_dirt" },
+        "type=coarse_dirt": { "model": "metalextras:aluminum_ore_coarse_dirt" },
+        "type=sand": { "model": "metalextras:aluminum_ore_sand" },
+        "type=red_sand": { "model": "metalextras:aluminum_ore_red_sand" },
+        "type=clay": { "model": "metalextras:aluminum_ore_clay" },
+        "type=gravel": { "model": "metalextras:aluminum_ore_gravel" },
+        "type=soul_sand": { "model": "metalextras:aluminum_ore_soul_sand" },
+        "type=bedrock": { "model": "metalextras:aluminum_ore_bedrock" }
+    }
+}

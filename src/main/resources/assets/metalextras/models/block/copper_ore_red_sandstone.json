@@ -1,0 +1,7 @@
+{
+    "parent": "metalextras:block/ore_normal_base",
+    "textures":
+    {
+        "base": "metalextras:blocks/copper_ore_red_sandstone"
+    }
+}

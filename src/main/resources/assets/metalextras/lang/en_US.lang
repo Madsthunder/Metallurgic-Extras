@@ -1,0 +1,53 @@
+tile.copper_ore.name=Copper Ore
+tile.tin_ore.name=Tin Ore
+tile.aluminum_ore.name=Aluminum Ore
+tile.lead_ore.name=Lead Ore
+tile.silver_ore.name=Silver Ore
+tile.mystery_ore.name=Mystery Ore
+tile.sapphire_ore.name=Sapphire Ore
+tile.ruby_ore.name=Ruby Ore
+tile.coal_ore.name=Coal Ore
+tile.iron_ore.name=Iron Ore
+tile.lapis_ore.name=Lapis Lazuli Ore
+tile.gold_ore.name=Gold Ore
+tile.redstone_ore.name=Redstone Ore
+tile.emerald_ore.name=Emerald Ore
+tile.diamond_ore.name=Diamond Ore
+tile.copper_block.name=Copper Block
+tile.tin_block.name=Tin Block
+tile.aluminum_block.name=Aluminum Block
+tile.lead_block.name=Lead Block
+tile.silver_block.name=Silver Block
+tile.ender_block.name=Mystery Block
+tile.sapphire_block.name=Sapphire Block
+tile.ruby_block.name=Ruby Block
+
+item.copper_ingot.name=Copper Ingot
+item.tin_ingot.name=Tin Ingot
+item.aluminum_ingot.name=Aluminum Ingot
+item.lead_ingot.name=Lead Ingot
+item.silver_ingot.name=Silver Ingot
+item.ender_gem.name=Ender Gem
+item.sapphire_gem.name=Sapphire Gem
+item.ruby_gem.name=Ruby Gem
+
+stone.stone.name=Stone
+stone.granite.name=Granite
+stone.diorite.name=Diorite
+stone.andesite.name=Andesite
+stone.sandstone.name=Sandstone
+stone.red_sandstone.name=Red Sandstone
+stone.netherrack.name=Netherrack
+stone.end_stone.name=End Stone
+stone.bedrock.name=Bedrock
+
+ground.dirt.name=Dirt
+ground.coarse_dirt.name=Coarse Dirt
+ground.sand.name=Sand
+ground.red_sand.name=Red Sand
+ground.clay.name=Clay
+ground.gravel.name=Gravel
+ground.soul_sand.name=Soul Sand
+
+itemGroup.ores=MExtras: Ores, Ingots, & Gems
+itemGroup.metools=MExtras: Tools & Weapons

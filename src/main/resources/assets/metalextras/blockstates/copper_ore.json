@@ -1,0 +1,21 @@
+{
+    "variants":
+    {
+        "type=stone": { "model": "metalextras:copper_ore_stone" },
+        "type=granite": { "model": "metalextras:copper_ore_granite" },
+        "type=diorite": { "model": "metalextras:copper_ore_diorite" },
+        "type=andesite": { "model": "metalextras:copper_ore_andesite" },
+        "type=sandstone": { "model": "metalextras:copper_ore_sandstone" },
+        "type=red_sandstone": { "model": "metalextras:copper_ore_red_sandstone" },
+        "type=netherrack": { "model": "metalextras:copper_ore_netherrack" },
+        "type=end_stone": { "model": "metalextras:copper_ore_end_stone" },
+        "type=dirt": { "model": "metalextras:copper_ore_dirt" },
+        "type=coarse_dirt": { "model": "metalextras:copper_ore_coarse_dirt" },
+        "type=sand": { "model": "metalextras:copper_ore_sand" },
+        "type=red_sand": { "model": "metalextras:copper_ore_red_sand" },
+        "type=clay": { "model": "metalextras:copper_ore_clay" },
+        "type=gravel": { "model": "metalextras:copper_ore_gravel" },
+        "type=soul_sand": { "model": "metalextras:copper_ore_soul_sand" },
+        "type=bedrock": { "model": "metalextras:copper_ore_bedrock" }
+    }
+}

@@ -1,8 +1,8 @@
 package continuum.metalextras.loaders;
 
+import continuum.api.metalextras.IOre;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
-import continuum.metalextras.api.IOre;
 import continuum.metalextras.blocks.BlockOreGround;
 import continuum.metalextras.blocks.BlockOreGround.EnumGroundType;
 import continuum.metalextras.blocks.BlockOreRock;

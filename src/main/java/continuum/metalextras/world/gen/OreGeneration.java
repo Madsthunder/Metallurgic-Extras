@@ -3,8 +3,8 @@ package continuum.metalextras.world.gen;
 import java.util.HashMap;
 import java.util.Random;
 
+import continuum.api.metalextras.IOre;
 import continuum.essentials.mod.CTMod;
-import continuum.metalextras.api.IOre;
 import continuum.metalextras.mod.MetalExtras_EH;
 import continuum.metalextras.mod.MetalExtras_OH;
 import net.minecraft.world.DimensionType;

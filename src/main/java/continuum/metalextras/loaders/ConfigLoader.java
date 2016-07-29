@@ -6,9 +6,9 @@ import java.util.HashMap;
 
 import com.google.common.collect.Lists;
 
+import continuum.api.metalextras.OreProperties;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
-import continuum.metalextras.api.OreProperties;
 import continuum.metalextras.blocks.BlockOreGround.EnumGroundType;
 import continuum.metalextras.blocks.BlockOreRock.EnumRockType;
 import continuum.metalextras.mod.MetalExtras_EH;

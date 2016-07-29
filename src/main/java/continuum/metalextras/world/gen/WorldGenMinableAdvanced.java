@@ -2,7 +2,7 @@ package continuum.metalextras.world.gen;
 
 import java.util.Random;
 
-import continuum.metalextras.api.IOre;
+import continuum.api.metalextras.IOre;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;

@@ -6,9 +6,9 @@ import java.util.Random;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import continuum.api.metalextras.IOre;
 import continuum.core.mod.Core_OH;
 import continuum.essentials.mod.CTMod;
-import continuum.metalextras.api.IOre;
 import continuum.metalextras.blocks.BlockOreGround;
 import continuum.metalextras.blocks.BlockOreGround.EnumGroundType;
 import continuum.metalextras.blocks.BlockOreRock;

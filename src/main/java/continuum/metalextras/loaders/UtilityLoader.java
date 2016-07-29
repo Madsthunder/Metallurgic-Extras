@@ -3,12 +3,12 @@ package continuum.metalextras.loaders;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import continuum.api.metalextras.IOre;
+import continuum.api.metalextras.OrePredicate;
+import continuum.api.metalextras.OreProperties;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
 import continuum.essentials.util.CreativeTab;
-import continuum.metalextras.api.IOre;
-import continuum.metalextras.api.OrePredicate;
-import continuum.metalextras.api.OreProperties;
 import continuum.metalextras.blocks.BlockOreGround;
 import continuum.metalextras.blocks.BlockOreGround.EnumGroundType;
 import continuum.metalextras.blocks.BlockOreRock;
@@ -141,8 +141,7 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 		HashMap<IBlockState, IBlockState> validStates = new HashMap<IBlockState, IBlockState>();
 		for(EnumRockType type : EnumRockType.values())
 			if(oreRock.canSpawnWithMaterial(type))
-				for(IBlockState state : type.states)
-					validStates.put(state, oreRock.getDefaultState().withProperty(BlockOreRock.stoneType, type));
+				validStates.put(type.state, oreRock.getDefaultState().withProperty(BlockOreRock.stoneType, type));
 		for(EnumGroundType type : EnumGroundType.values())
 			if(oreGround.canSpawnWithMaterial(type))
 				for(IBlockState state : type.states)

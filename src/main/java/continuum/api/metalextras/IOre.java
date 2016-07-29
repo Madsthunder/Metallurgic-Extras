@@ -1,4 +1,4 @@
-package continuum.metalextras.api;
+package continuum.api.metalextras;
 
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.IBlockAccess;

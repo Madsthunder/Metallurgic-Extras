@@ -3,10 +3,10 @@ package continuum.metalextras.mod;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import continuum.api.metalextras.IOre;
+import continuum.api.metalextras.OrePredicate;
+import continuum.api.metalextras.OreProperties;
 import continuum.essentials.mod.ObjectHolder;
-import continuum.metalextras.api.IOre;
-import continuum.metalextras.api.OrePredicate;
-import continuum.metalextras.api.OreProperties;
 import continuum.metalextras.blocks.BlockCompressed;
 import continuum.metalextras.blocks.BlockOreGround;
 import continuum.metalextras.blocks.BlockOreRock;

@@ -5,7 +5,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import continuum.api.metalextras.IOreData;
-import continuum.essentials.helpers.ObjectHelper;
+import continuum.essentials.hooks.ObjectHooks;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
 import continuum.metalextras.blocks.BlockOre;
@@ -32,7 +32,7 @@ public class RecipeLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 			String name = data.getOreName().getResourcePath().split("_")[0];
 			name = "ore" + name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
 			for(BlockOre ore : data.getOre().getOreBlocks())
-				for(Integer j : ObjectHelper.increment(ore.getOreTypeProperty().getAllowedValues().size()))
+				for(Integer j : ObjectHooks.increment(ore.getOreTypeProperty().getAllowedValues().size()))
 				{
 					ItemStack stack = new ItemStack(ore, 1, j);
 					stacks.add(stack);

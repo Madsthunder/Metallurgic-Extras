@@ -7,7 +7,7 @@ import continuum.api.metalextras.IOreData;
 import continuum.api.metalextras.IOreGroup;
 import continuum.api.metalextras.IOreType;
 import continuum.essentials.block.state.PropertyValues;
-import continuum.essentials.helpers.ObjectHelper;
+import continuum.essentials.hooks.ObjectHooks;
 import continuum.metalextras.mod.MetalExtras_OH;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
@@ -172,7 +172,7 @@ public class BlockOre extends Block
 	@Override
 	public void getSubBlocks(Item item, CreativeTabs tab, List list)
 	{
-		for(Integer i : ObjectHelper.increment(this.oreType.getAllowedValues().size()))
+		for(Integer i : ObjectHooks.increment(this.oreType.getAllowedValues().size()))
 			list.add(new ItemStack(item, 1, i));
 	}
 	

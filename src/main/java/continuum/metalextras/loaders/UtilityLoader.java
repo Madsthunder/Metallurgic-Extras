@@ -13,7 +13,7 @@ import continuum.api.metalextras.IOreData;
 import continuum.api.metalextras.IOreGroup;
 import continuum.api.metalextras.IOreType;
 import continuum.api.metalextras.OrePredicate;
-import continuum.essentials.helpers.ItemHooks;
+import continuum.essentials.hooks.ItemHooks;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
 import continuum.essentials.util.CreativeTab;

@@ -2,7 +2,7 @@ package continuum.metalextras.items;
 
 import java.util.List;
 
-import continuum.essentials.helpers.ObjectHelper;
+import continuum.essentials.hooks.ObjectHooks;
 import continuum.essentials.mod.CTMod;
 import continuum.metalextras.mod.MetalExtras_EH;
 import continuum.metalextras.mod.MetalExtras_OH;
@@ -39,7 +39,7 @@ public class ItemOre extends Item
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(Item item, CreativeTabs tab, List list)
 	{
-		for(Integer i : ObjectHelper.increment(this.objectHolder.ores.size()))
+		for(Integer i : ObjectHooks.increment(this.objectHolder.ores.size()))
 			list.add(new ItemStack(item, 1, i));
 	}
 }

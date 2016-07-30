@@ -3,7 +3,7 @@ package continuum.metalextras.loaders;
 import java.util.List;
 
 import continuum.api.metalextras.IOreData;
-import continuum.essentials.helpers.ObjectHelper;
+import continuum.essentials.hooks.ObjectHooks;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
 import continuum.metalextras.blocks.BlockCompressed;
@@ -77,7 +77,7 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	public void registerModelsForOre(BlockOre block, IStateMapper mapper, List<? extends IStringSerializable> strings)
 	{
 		ModelLoader.setCustomStateMapper(block, mapper);
-		for(Integer i : ObjectHelper.increment(strings.size()))
+		for(Integer i : ObjectHooks.increment(strings.size()))
 			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(block), i, new ModelResourceLocation(new ResourceLocation("metalextras", block.getOreData().getOreName().getResourcePath()), "type=" + strings.get(i).getName()));
 	}
 	

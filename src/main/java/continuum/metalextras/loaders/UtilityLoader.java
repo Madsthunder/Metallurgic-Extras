@@ -1,26 +1,35 @@
 package continuum.metalextras.loaders;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import continuum.api.metalextras.IOre;
+import continuum.api.metalextras.IOreData;
+import continuum.api.metalextras.IOreGroup;
+import continuum.api.metalextras.IOreType;
 import continuum.api.metalextras.OrePredicate;
-import continuum.api.metalextras.OreProperties;
+import continuum.essentials.helpers.ItemHooks;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
 import continuum.essentials.util.CreativeTab;
-import continuum.metalextras.blocks.BlockOreGround;
-import continuum.metalextras.blocks.BlockOreGround.EnumGroundType;
-import continuum.metalextras.blocks.BlockOreRock;
-import continuum.metalextras.blocks.BlockOreRock.EnumRockType;
+import continuum.metalextras.blocks.BlockOre;
 import continuum.metalextras.mod.MetalExtras_EH;
 import continuum.metalextras.mod.MetalExtras_OH;
 import continuum.metalextras.world.gen.OreGeneration;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Items;
+import net.minecraft.entity.Entity;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH>
@@ -30,11 +39,55 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 	public void construction(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
-		holder.oresList = new HashMap<String, IOre[]>();
-		holder.orePredicates = new HashMap<String, OrePredicate>();
-		holder.ingotList = new HashMap<String, ItemStack>();
-		holder.ores = new ArrayList<String>();
-		holder.oresToRegen = new ArrayList<String>();
+		holder.oreTypes.add(new IOreType.Impl("granite", "rock", Blocks.STONE.getStateFromMeta(1), 1.5F, 10F));
+		holder.oreTypes.add(new IOreType.Impl("diorite", "rock", Blocks.STONE.getStateFromMeta(3), 1.5F, 10F));
+		holder.oreTypes.add(new IOreType.Impl("andesite", "rock", Blocks.STONE.getStateFromMeta(5), 1.5F, 10F));
+		holder.oreTypes.add(new IOreType.Impl("sandstone", "rock", Blocks.SANDSTONE.getDefaultState(), .8F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("red_sandstone", "rock", Blocks.RED_SANDSTONE.getDefaultState(), .8F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("netherrack", "rock", Blocks.NETHERRACK.getDefaultState(), .4F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("end_stone", "rock", Blocks.END_STONE.getDefaultState(), 3F, 15F));
+		holder.oreTypes.add(new IOreType.Impl("bedrock", "rock", Blocks.BEDROCK.getDefaultState(), -1F, 6000000F));
+		holder.oreTypes.add(new IOreType.Impl("dirt", "ground", Blocks.DIRT.getStateFromMeta(0), .5F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("coarse_dirt", "ground", Blocks.DIRT.getStateFromMeta(1), .5F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("sand", "ground", Blocks.SAND.getStateFromMeta(0), .5F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("red_sand", "ground", Blocks.SAND.getStateFromMeta(1), .5F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("clay", "ground", Blocks.CLAY.getDefaultState(), .6F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("gravel", "ground", Blocks.GRAVEL.getDefaultState(), .6F, 0F));
+		holder.oreTypes.add(new IOreType.Impl("soul_sand", "ground", Blocks.SOUL_SAND.getDefaultState(), .5F, 0F)
+				{
+			@Override
+			public void handleEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity)
+			{
+				entity.motionX *= .4;
+				entity.motionZ *= .4;
+			}
+			
+			@Override
+			public AxisAlignedBB getSelectionBox(World world, BlockPos pos)
+			{
+				return new AxisAlignedBB(0, 0, 0, 1, 0.875, 1);
+			}
+				});
+		holder.oreGroups.add(new IOreGroup.Impl("rock"));
+		holder.oreGroups.add(new IOreGroup.Impl("ground"));
+		holder.orePredicates = Maps.newHashMap();
+		holder.ingotList = Maps.newHashMap();
+		holder.ores.add(new IOreData.Impl("metalextras:copper_ore", 1, "metalextras:copper_ingot", 0, false, 20, 9, 0, 64));
+		holder.ores.add(new IOreData.Impl("metalextras:tin_ore", 1, "metalextras:tin_ingot", 0, false, 20, 9, 0, 64, Pair.of("minecraft", "end_stone")));
+		holder.ores.add(new IOreData.Impl("metalextras:aluminum_ore", 1, "metalextras:aluminum_ingot", 0, false, 6, 5, 32, 128, Pair.of("minecraft", "dirt"), Pair.of("minecraft", "sand"), Pair.of("minecraft", "red_sand"), Pair.of("minecraft", "clay"), Pair.of("minecraft", "gravel"), Pair.of("minecraft", "soul_sand")));
+		holder.ores.add(new IOreData.Impl("metalextras:lead_ore", 2, "metalextras:lead_ingot", 0, false, 8, 8, 32, 64, Pair.of("minecraft", "end_stone"), Pair.of("minecraft", "dirt"), Pair.of("minecraft", "coarse_dirt"), Pair.of("minecraft", "sand"), Pair.of("minecraft", "red_sand"), Pair.of("minecraft", "clay"), Pair.of("minecraft", "gravel"), Pair.of("minecraft", "soul_sand")));
+		holder.ores.add(new IOreData.Impl("metalextras:silver_ore", 2, "metalextras:silver_ingot", 0, false, 8, 8, 0, 32, Pair.of("minecraft", "sandstone"), Pair.of("minecraft", "red_sandstone"), Pair.of("minecraft", "end_stone"), Pair.of("minecraft", "dirt"), Pair.of("minecraft", "coarse_dirt"), Pair.of("minecraft", "sand"), Pair.of("minecraft", "red_sand"), Pair.of("minecraft", "clay"), Pair.of("minecraft", "gravel"), Pair.of("minecraft", "soul_sand")));
+		holder.ores.add(new IOreData.Impl("metalextras:sapphire_ore", 3, "metalextras:sapphire_gem", 0, false, 20, 3, 0, 64, Pair.of("minecraft", "sandstone"), Pair.of("minecraft", "red_sandstone"), Pair.of("minecraft", "netherrack"), Pair.of("minecraft", "coarse_dirt"), Pair.of("minecraft", "sand"), Pair.of("minecraft", "red_sand"), Pair.of("minecraft", "gravel"), Pair.of("minecraft", "soul_sand"), Pair.of( "temperatureLessThanOrEqualTo", 0.2D), Pair.of("canSpawnInEnd", true)));
+		holder.ores.add(new IOreData.Impl("metalextras:ruby_ore", 3, "metalextras:ruby_gem", 0, false, 20, 3, 0, 64, Pair.of("minecraft", "end_stone"), Pair.of("minecraft", "clay"), Pair.of("minecraft", "gravel"), Pair.of("minecraft", "soul_sand"), Pair.of("temperatureGreaterThanOrEqualTo", 1.0D),  Pair.of("canSpawnInNether", true)));
+		holder.ores.add(new IOreData.Impl("metalextras:mystery_ore", 3, "metalextras:ender_gem", 0, false, 20, 9, 0, 64, Pair.of("minecraft", "stone"), Pair.of("minecraft", "granite"), Pair.of("minecraft", "diorite"), Pair.of("minecraft", "andesite"), Pair.of("minecraft", "sandstone"), Pair.of("minecraft", "red_sandstone"), Pair.of("minecraft", "netherrack"), Pair.of("minecraft", "bedrock")));
+		holder.ores.add(new IOreData.Impl("coal_ore", 0, "coal", 1, 1, 0, 2, 0, 2, true, 20, 17, 0, 128));
+		holder.ores.add(new IOreData.Impl("iron_ore", 1, "iron_ore", true, 20, 9, 0, 64));
+		holder.ores.add(new IOreData.Impl("lapis_ore", 1, "dye", 4, 8, EnumDyeColor.BLUE.getDyeDamage(), 2, 2, 5, true, 1, 7, 0, 32));
+		holder.ores.add(new IOreData.Impl("gold_ore", 2, "gold_ore", true, 2, 9, 0, 32));
+		holder.ores.add(new IOreData.Impl("redstone_ore", 2, "redstone", 4, 5, 0, 1, 1, 5, true, 8, 8, 0, 16));
+		holder.ores.add(new IOreData.Impl("emerald_ore", 2, "emerald", 1, 1, 0, 2, 3, 7, true, 3, 1, 0, 28));
+		holder.ores.add(new IOreData.Impl("diamond_ore", 2, "diamond", 1, 1, 0, 2, 3, 7, true, 1, 8, 0, 16));
+		holder.oresToReplace = Lists.newArrayList();
 	}
 	
 	@Override
@@ -42,36 +95,12 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
 		holder.tabOres = new CreativeTab("ores", holder.ender_gem);
-		holder.copperOreRock.setCreativeTab(holder.tabOres);
-		holder.copperOreGround.setCreativeTab(holder.tabOres);
-		holder.tinOreRock.setCreativeTab(holder.tabOres);
-		holder.tinOreGround.setCreativeTab(holder.tabOres);
-		holder.aluminumOreRock.setCreativeTab(holder.tabOres);
-		holder.aluminumOreGround.setCreativeTab(holder.tabOres);
-		holder.leadOreRock.setCreativeTab(holder.tabOres);
-		holder.leadOreGround.setCreativeTab(holder.tabOres);
-		holder.silverOreRock.setCreativeTab(holder.tabOres);
-		holder.silverOreGround.setCreativeTab(holder.tabOres);
-		holder.sapphireOreRock.setCreativeTab(holder.tabOres);
-		holder.sapphireOreGround.setCreativeTab(holder.tabOres);
-		holder.rubyOreRock.setCreativeTab(holder.tabOres);
-		holder.rubyOreGround.setCreativeTab(holder.tabOres);
-		holder.mysteryOreRock.setCreativeTab(holder.tabOres);
-		holder.mysteryOreGround.setCreativeTab(holder.tabOres);
-		holder.coalOreRock.setCreativeTab(holder.tabOres);
-		holder.coalOreGround.setCreativeTab(holder.tabOres);
-		holder.ironOreRock.setCreativeTab(holder.tabOres);
-		holder.ironOreGround.setCreativeTab(holder.tabOres);
-		holder.lapisOreRock.setCreativeTab(holder.tabOres);
-		holder.lapisOreGround.setCreativeTab(holder.tabOres);
-		holder.goldOreRock.setCreativeTab(holder.tabOres);
-		holder.goldOreGround.setCreativeTab(holder.tabOres);
-		holder.redstoneOreRock.setCreativeTab(holder.tabOres);
-		holder.redstoneOreGround.setCreativeTab(holder.tabOres);
-		holder.emeraldOreRock.setCreativeTab(holder.tabOres);
-		holder.emeraldOreGround.setCreativeTab(holder.tabOres);
-		holder.diamondOreRock.setCreativeTab(holder.tabOres);
-		holder.diamondOreGround.setCreativeTab(holder.tabOres);
+		for(IOreData data : holder.ores)
+		{
+			this.addOreToList(holder, data);
+			for(BlockOre ore : data.getOre().getOreBlocks())
+				ore.setCreativeTab(holder.tabOres);
+		}
 		holder.copper_block.setCreativeTab(holder.tabOres);
 		holder.tin_block.setCreativeTab(holder.tabOres);
 		holder.aluminum_block.setCreativeTab(holder.tabOres);
@@ -91,31 +120,17 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 		holder.sapphire_gem.setCreativeTab(holder.tabOres);
 		holder.ruby_gem.setCreativeTab(holder.tabOres);
 		
-		this.addOreToList(holder, "copper_ore", holder.copperOreRock, holder.copperOreGround, 0, new ItemStack(holder.copper_ingot));
-		this.addOreToList(holder, "tin_ore", holder.tinOreRock, holder.tinOreGround, 1, new ItemStack(holder.tin_ingot));
-		this.addOreToList(holder, "aluminum_ore", holder.aluminumOreRock, holder.aluminumOreGround, 2, new ItemStack(holder.aluminum_ingot));
-		this.addOreToList(holder, "lead_ore", holder.leadOreRock, holder.leadOreGround, 3, new ItemStack(holder.lead_ingot));
-		this.addOreToList(holder, "silver_ore", holder.silverOreRock, holder.silverOreGround, 4, new ItemStack(holder.silver_ingot));
-		this.addOreToList(holder, "mystery_ore", holder.mysteryOreRock, holder.mysteryOreGround, 5, new ItemStack(holder.ender_gem));
-		this.addOreToList(holder, "sapphire_ore", holder.sapphireOreRock, holder.sapphireOreGround, 6, new ItemStack(holder.sapphire_gem));
-		this.addOreToList(holder, "ruby_ore", holder.rubyOreRock, holder.rubyOreGround, 7, new ItemStack(holder.ruby_gem));
-		this.addOreToList(holder, "coal_ore", holder.coalOreRock, holder.coalOreGround, 8, new ItemStack(Items.COAL), false);
-		this.addOreToList(holder, "iron_ore", holder.ironOreRock, holder.ironOreGround, 9, new ItemStack(Items.IRON_INGOT), false);
-		this.addOreToList(holder, "lapis_ore", holder.lapisOreRock, holder.lapisOreGround, 10, new ItemStack(Items.DYE, 1, EnumDyeColor.BLUE.getDyeDamage()), false);
-		this.addOreToList(holder, "gold_ore", holder.goldOreRock, holder.goldOreGround, 11, new ItemStack(Items.GOLD_INGOT), false);
-		this.addOreToList(holder, "redstone_ore", holder.redstoneOreRock, holder.redstoneOreGround, 12, new ItemStack(Items.REDSTONE),false);
-		this.addOreToList(holder, "emerald_ore", holder.emeraldOreRock, holder.emeraldOreGround, 13, new ItemStack(Items.EMERALD), false);
-		this.addOreToList(holder, "diamond_ore", holder.diamondOreRock, holder.diamondOreGround, 14, new ItemStack(Items.DIAMOND), false);
-		
 	}
 
 	@Override
 	public void init(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
-		for(String ore : holder.oresList.keySet())
-			MetalExtras_EH.chunkGenerated.put(ore, new ArrayList<Chunk>());
 		GameRegistry.registerWorldGenerator(holder.oreGenerator = new OreGeneration(holder), 100);
+		for(IOreData data : MetalExtras_OH.ores)
+		{
+			MetalExtras_EH.chunkGenerated.put(data, Lists.newArrayList());
+		}
 	}
 
 	@Override
@@ -124,31 +139,21 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 		
 	}
 	
-	public void addOreToList(MetalExtras_OH objectHolder, String name, BlockOreRock oreRock, BlockOreGround oreGround, Integer propertiesIndex, ItemStack smeltItem)
+	public IOre addOreToList(MetalExtras_OH holder, IOreData data)
 	{
-		this.addOreToList(objectHolder, name, oreRock, oreGround, propertiesIndex, smeltItem, true);
-	}
-	
-	public void addOreToList(MetalExtras_OH objectHolder, String name, BlockOreRock oreRock, BlockOreGround oreGround, Integer propertiesIndex, ItemStack smeltItem, Boolean regen)
-	{
-		objectHolder.ores.add(name);
-		if(regen)
-			objectHolder.oresToRegen.add(name);
-		objectHolder.oresList.put(name, new IOre[]{oreRock,oreGround});
-		OreProperties properties = objectHolder.oreProperties.get(propertiesIndex);
-		oreRock.applyOreProperties(properties);
-		oreGround.applyOreProperties(properties);
-		HashMap<IBlockState, IBlockState> validStates = new HashMap<IBlockState, IBlockState>();
-		for(EnumRockType type : EnumRockType.values())
-			if(oreRock.canSpawnWithMaterial(type))
-				validStates.put(type.state, oreRock.getDefaultState().withProperty(BlockOreRock.stoneType, type));
-		for(EnumGroundType type : EnumGroundType.values())
-			if(oreGround.canSpawnWithMaterial(type))
-				for(IBlockState state : type.states)
-					validStates.put(state, oreGround.getDefaultState().withProperty(BlockOreGround.groundType, type));
-		objectHolder.orePredicates.put(name, new OrePredicate(validStates));
-		objectHolder.ingotList.put(name, smeltItem);
-				
+		List<BlockOre> ores = Lists.newArrayList();
+		for(IOreGroup group : MetalExtras_OH.oreGroups)
+		{
+			BlockOre block = new BlockOre(holder, data, group);
+			ForgeRegistries.BLOCKS.register(block);
+			ItemHooks.registerItemBlockMeta(block, block.getOreTypeProperty().getAllowedValues().size() - 1);
+			ores.add(block);
+		}
+		if(data.shouldReplaceExisting()) holder.oresToReplace.add(data.getOreName());
+		IOre ore = new IOre.Impl(holder, data.getOreName(), ores.toArray(new BlockOre[0]));
+		holder.ingotList.put(data.getOreName(), data.getIngot());
+		data.setOre(ore);
+		return ore;
 	}
 	
 	@Override

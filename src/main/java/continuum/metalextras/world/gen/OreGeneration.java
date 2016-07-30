@@ -3,8 +3,10 @@ package continuum.metalextras.world.gen;
 import java.util.HashMap;
 import java.util.Random;
 
-import continuum.api.metalextras.IOre;
-import continuum.essentials.mod.CTMod;
+import com.google.common.collect.Maps;
+
+import continuum.api.metalextras.IOreData;
+import continuum.api.metalextras.OreProperties;
 import continuum.metalextras.mod.MetalExtras_EH;
 import continuum.metalextras.mod.MetalExtras_OH;
 import net.minecraft.world.DimensionType;
@@ -16,24 +18,24 @@ import net.minecraftforge.fml.common.IWorldGenerator;
 public class OreGeneration implements IWorldGenerator
 {
 	public final MetalExtras_OH objectHolder;
-	private static final HashMap<IOre, WorldGenMinableAdvanced> worldGen = new HashMap<IOre, WorldGenMinableAdvanced>();
+	private static final HashMap<IOreData, WorldGenMinableAdvanced> worldGen = Maps.newHashMap();
 	
 	public OreGeneration(MetalExtras_OH objectHolder)
 	{
 		this.objectHolder = objectHolder;
-		for(IOre[] ores : objectHolder.oresList.values())
-			for(IOre ore : ores)
-				worldGen.put(ore, new WorldGenMinableAdvanced(ore));
+		for(IOreData data : objectHolder.ores)
+			worldGen.put(data, new WorldGenMinableAdvanced(data));
 	}
 	
-	public static void spawnOresInChunk(World world, DimensionType dimension, Integer xPos, Integer zPos, Random random, IOre ore)
+	public static void spawnOresInChunk(World world, DimensionType dimension, Integer xPos, Integer zPos, Random random, IOreData data)
 	{
-		for(Integer i = 0; i < ore.getSpawnTriesPerChunk(world); i++)
+		OreProperties properties = data.getOre().getOreProperties();
+		for(Integer i = 0; i < properties.getSpawnTriesPerChunk(); i++)
 		{
-			Integer y = random.nextInt(ore.getMaxGenHeight(world) - ore.getMinGenHeight(world)) + ore.getMinGenHeight(world);
+			Integer y = random.nextInt(properties.getMaxGenHeight() - properties.getMinGenHeight()) + properties.getMinGenHeight();
 			Integer x = random.nextInt(16) + (xPos * 16);
 			Integer z = random.nextInt(16) + (zPos * 16);
-			worldGen.get(ore).generate(world, dimension, x, y, z, random);
+			worldGen.get(data).generate(world, dimension, x, y, z, random);
 		}
 	}
 	
@@ -41,8 +43,8 @@ public class OreGeneration implements IWorldGenerator
 	public void generate(Random random, int x, int z, World world, IChunkGenerator generator, IChunkProvider provider)
 	{
 		DimensionType type = world.provider.getDimensionType();
-		for(String name : this.objectHolder.oresList.keySet())
-			if(type == DimensionType.NETHER || this.objectHolder.oresToRegen.contains(name))
-				MetalExtras_EH.scheduleOreForGeneration(world, x, z, name);
+		for(IOreData data : this.objectHolder.ores)
+			if(type == DimensionType.NETHER || this.objectHolder.oresToReplace.contains(data.getOreName()))
+				MetalExtras_EH.scheduleOreForGeneration(world, x, z, data);
 	}
 }

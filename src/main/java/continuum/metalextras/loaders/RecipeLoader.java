@@ -1,12 +1,14 @@
 package continuum.metalextras.loaders;
 
-import continuum.api.metalextras.IOre;
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
+import continuum.api.metalextras.IOreData;
+import continuum.essentials.helpers.ObjectHelper;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
-import continuum.metalextras.blocks.BlockOreGround;
-import continuum.metalextras.blocks.BlockOreGround.EnumGroundType;
-import continuum.metalextras.blocks.BlockOreRock;
-import continuum.metalextras.blocks.BlockOreRock.EnumRockType;
+import continuum.metalextras.blocks.BlockOre;
 import continuum.metalextras.mod.MetalExtras_EH;
 import continuum.metalextras.mod.MetalExtras_OH;
 import net.minecraft.block.Block;
@@ -22,22 +24,25 @@ public class RecipeLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	public void init(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
-		for(String name : holder.ores)
+		for(IOreData data : holder.ores)
 		{
-			ItemStack[] stacks = new ItemStack[EnumRockType.values().length + EnumGroundType.values().length];
-			ItemStack stack = null;
-			ItemStack ingot = holder.ingotList.get(name);
+			List<ItemStack> stacks = Lists.newArrayList();
+			ItemStack ingot = data.getIngot();
 			Integer i = 0;
-			String name1 = name.substring(0, name.length() - 4);
-			name1 = name1.substring(0, 1).toUpperCase() + name1.substring(1, name1.length());
-			name1 = "ore" + name1;
-			for(IOre ore : holder.oresList.get(name))
-				for(Integer j = 0; j < (ore instanceof BlockOreRock ? EnumRockType.values().length : ore instanceof BlockOreGround ? EnumGroundType.values().length : 0); j++)
-					OreDictionary.registerOre(name1, stacks[i++] = new ItemStack((Block)ore, 1, j));
-			OreDictionary.registerOre(name1, stack = new ItemStack(holder.ore, 1, holder.ores.indexOf(name)));
+			String name = data.getOreName().getResourcePath().split("_")[0];
+			name = "ore" + name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
+			for(BlockOre ore : data.getOre().getOreBlocks())
+				for(Integer j : ObjectHelper.increment(ore.getOreTypeProperty().getAllowedValues().size()))
+				{
+					ItemStack stack = new ItemStack(ore, 1, j);
+					stacks.add(stack);
+					OreDictionary.registerOre(name, stack);
+				}
+			ItemStack stack;
+			OreDictionary.registerOre(name, stack = new ItemStack(holder.ore, 1, holder.ores.indexOf(data)));
+			FurnaceRecipes.instance().addSmeltingRecipe(stack, ingot, 0);
 			for(ItemStack stack1 : stacks)
 				FurnaceRecipes.instance().addSmeltingRecipe(stack1, ingot, 0);
-			FurnaceRecipes.instance().addSmeltingRecipe(stack, ingot, 0);
 		}
 		OreDictionary.registerOre("blockCopper", holder.copper_block);
 		OreDictionary.registerOre("blockMetal", holder.copper_block);

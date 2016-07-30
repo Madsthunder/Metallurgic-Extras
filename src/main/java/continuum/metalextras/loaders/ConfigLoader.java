@@ -3,16 +3,21 @@ package continuum.metalextras.loaders;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
+import continuum.api.metalextras.IOre;
+import continuum.api.metalextras.IOreData;
+import continuum.api.metalextras.IOreType;
+import continuum.api.metalextras.OrePredicate;
 import continuum.api.metalextras.OreProperties;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
-import continuum.metalextras.blocks.BlockOreGround.EnumGroundType;
-import continuum.metalextras.blocks.BlockOreRock.EnumRockType;
 import continuum.metalextras.mod.MetalExtras_EH;
 import continuum.metalextras.mod.MetalExtras_OH;
+import net.minecraft.block.state.IBlockState;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -28,44 +33,49 @@ public class ConfigLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 		mod.getObjectHolder().oreProperties = Lists.newArrayList();
 		File folderDir = new File((File)(FMLInjectionData.data()[6]), "config\\Continuum\\Metallurgic Extras");
 		folderDir.mkdirs();
-		Boolean T = true;
-		Boolean F = false;
 		ores = new Configuration(new File(folderDir, "Ores.cfg"));
-		ores.load();
-		this.loadOreProperties(mod, "copper ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/T, T, T, T, T, T, T, 20, 9, 0, 64);
-		this.loadOreProperties(mod, "tin ore", T, /**Rocks*/T, T, T, T, T, T, T, F, T, /**Grounds*/T, T, T, T, T, T, T, 20, 9, 0, 64);
-		this.loadOreProperties(mod, "aluminum ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/F, T, F, F, F, F, F, 6, 5, 32, 128);
-		this.loadOreProperties(mod, "lead ore", T, /**Rocks*/T, T, T, T, T, T, T, F, T, /**Grounds*/F, F, F, F, F, F, F, 8, 8, 32, 64);
-		this.loadOreProperties(mod, "silver ore", T, /**Rocks*/T, T, T, T, F, F, T, F, T, /**Grounds*/F, F, F, F, F, F, F, 8, 8, 0, 32);
-		this.loadOreProperties(mod, "mystery ore", T, /**Rocks*/F, F, F, F, F, F, F, T, F, /**Grounds*/F, F, F, F, F, F, F, 20, 9, 0, 64);
-		this.loadOreProperties(mod, "sapphire ore", T, /**Rocks*/T, T, T, T, F, F, F, T, T, /**Grounds*/T, F, F, F, T, F, F, 20, 3, 0, 64, "temperatureLessThanOrEqualTo", 0.2D, "canSpawnInEnd", true);
-		this.loadOreProperties(mod, "ruby ore", T, /**Rocks*/T, T, T, T, T, T, T, F, T, /**Grounds*/T, T, T, T, F, F, F, 20, 3, 0, 64, "temperatureGreaterThanOrEqualTo", 1.0D, "canSpawnInNether", true);
-		this.loadOreProperties(mod, "coal ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/T, T, T, T, T, T, T, 20, 17, 0, 128);
-		this.loadOreProperties(mod, "iron ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/T, T, T, T, T, T, T, 20, 9, 0, 64);
-		this.loadOreProperties(mod, "lapis ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/T, T, T, T, T, T, T, 1, 7, 0, 32);
-		this.loadOreProperties(mod, "gold ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/T, T, T, T, T, T, T, 2, 9, 0, 32);
-		this.loadOreProperties(mod, "redstone ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/T, T, T, T, T, T, T, 8, 8, 0, 16);
-		this.loadOreProperties(mod, "emerald ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/T, T, T, T, T, T, T, 3, 1, 0, 28);
-		this.loadOreProperties(mod, "diamond ore", T, /**Rocks*/T, T, T, T, T, T, T, T, T, /**Grounds*/T, T, T, T, T, T, T, 1, 8, 0, 16);
+	}
+	
+	public void pre(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
+	{
+		this.loadAllOreProperties(mod.getObjectHolder());
+	}
+	
+	public void init(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
+	{
+		this.loadAllOreProperties(mod.getObjectHolder());
+	}
+	
+	@Override
+	public void post(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
+	{
+		this.loadAllOreProperties(mod.getObjectHolder());
 		ores.save();
 	}
 	
-	private void loadOreProperties(CTMod<MetalExtras_OH, MetalExtras_EH> mod, String categoryName, Object... defaults)
+	private void loadAllOreProperties(MetalExtras_OH holder)
 	{
-		ConfigCategory category = ores.getCategory(categoryName);
+		ores.load();
+		holder.oreProperties.clear();
+		for(IOreData data : MetalExtras_OH.ores)
+			this.loadOreProperties(holder, data, data.getBlacklist(), data.getExtraData().toArray());
+	}
+	
+	private void loadOreProperties(MetalExtras_OH holder, IOreData data, List<IOreType> blacklist, Object... defaults)
+	{
+		ConfigCategory category = ores.getCategory(data.getOreName().toString());
 		Integer i = 0;
 		ArrayList<String> order = new ArrayList<String>();
 		Boolean spawn = this.get(category, "shouldSpawn", true).getBoolean();
-		Boolean randomize = this.get(category, "randomizeVeinSize", (Boolean)(defaults[i++])).getBoolean();
-		Boolean[] materials = new Boolean[EnumRockType.values().length + EnumGroundType.values().length];
-		for(EnumRockType type : EnumRockType.values())
-			materials[type.ordinal()] = this.get(category, type.getName(), (Boolean)(defaults[i++])).getBoolean();
-		for(EnumGroundType type : EnumGroundType.values())
-			materials[type.ordinal() + EnumRockType.values().length] = this.get(category, type.getName(), (Boolean)(defaults[i++])).getBoolean();
-		Integer tries = this.get(category, "spawnTriesPerChunk", (Integer)(defaults[i++])).getInt();
-		Integer size = this.get(category, "maxVeinSize", (Integer)(defaults[i++])).getInt();
-		Integer height0 = this.get(category, "minGenHeight", (Integer)(defaults[i++])).getInt();
-		Integer height1 = this.get(category, "maxGenHeight", (Integer)(defaults[i++])).getInt();
+		Boolean randomize = this.get(category, "randomizeVeinSize", data.getDefaultRandomizeVeinSize()).getBoolean();
+		List<IOreType> materials = Lists.newArrayList();
+		for(IOreType type : MetalExtras_OH.oreTypes)
+			if(this.get(category, type.getName(), !blacklist.contains(type)).getBoolean())
+				materials.add(type);
+		Integer tries = this.get(category, "spawnTriesPerChunk", data.getDefaultSpawnTriesPerChunk()).getInt();
+		Integer size = this.get(category, "maxVeinSize", data.getDefaultMaxVeinSize()).getInt();
+		Integer height0 = this.get(category, "minGenHeight", data.getDefaultMinGenHeight()).getInt();
+		Integer height1 = this.get(category, "maxGenHeight", data.getDefaultMaxGenHeight()).getInt();
 		Double temperature = null;
 		Boolean warmerThan = null;
 		Boolean twt = false;
@@ -86,12 +96,18 @@ public class ConfigLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 		order.add("randomizeVeinSize");
 		for(String string : extraProperties.keySet())
 			order.add(string);
-		for(EnumRockType type : EnumRockType.values())
+		for(IOreType type : MetalExtras_OH.oreTypes)
 			order.add(type.getName());
-		for(EnumGroundType type : EnumGroundType.values())
-			order.add(type.getName());
-		ores.setCategoryPropertyOrder(categoryName, order);
-		mod.getObjectHolder().oreProperties.add(new OreProperties(spawn, randomize, materials, tries, size, height0, height1, extraProperties));
+		ores.setCategoryPropertyOrder(data.getOreName().toString(), order);
+		OreProperties properties = new OreProperties(data.getOreName().getResourcePath(), spawn, randomize, materials, tries, size, height0, height1, extraProperties);
+		if(data.getOre() != null)
+		{
+			IOre ore = data.getOre();
+			ore.setOreProperties(properties);
+			HashMap<IBlockState, IBlockState> validStates = Maps.newHashMap();
+			for(IOreType type : properties.getTypes()) validStates.put(type.getState(), ore.applyBlockState(type));
+			holder.orePredicates.put(data.getOreName(), new OrePredicate(validStates));
+		}
 	}
 
 	

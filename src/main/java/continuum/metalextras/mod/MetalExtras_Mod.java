@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = "MetalExtras", name = "Metallurgic Extras", version = "1.2.2")
+@Mod(modid = "metalextras", name = "Metallurgic Extras", version = "1.2.2")
 public class MetalExtras_Mod extends CTMod<MetalExtras_OH, MetalExtras_EH>
 {
 	public MetalExtras_Mod() 

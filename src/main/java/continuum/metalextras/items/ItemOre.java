@@ -2,6 +2,7 @@ package continuum.metalextras.items;
 
 import java.util.List;
 
+import continuum.essentials.helpers.ObjectHelper;
 import continuum.essentials.mod.CTMod;
 import continuum.metalextras.mod.MetalExtras_EH;
 import continuum.metalextras.mod.MetalExtras_OH;
@@ -25,7 +26,7 @@ public class ItemOre extends Item
 	@Override
 	public String getUnlocalizedName(ItemStack stack)
 	{
-		return "tile." + this.objectHolder.ores.get(stack.getMetadata());
+		return "tile." + this.objectHolder.ores.get(stack.getMetadata()).getOreName().getResourcePath();
 	}
 	
 	@Override
@@ -38,7 +39,7 @@ public class ItemOre extends Item
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(Item item, CreativeTabs tab, List list)
 	{
-		for(Integer i = 0; i < this.objectHolder.ores.size(); i++)
+		for(Integer i : ObjectHelper.increment(this.objectHolder.ores.size()))
 			list.add(new ItemStack(item, 1, i));
 	}
 }

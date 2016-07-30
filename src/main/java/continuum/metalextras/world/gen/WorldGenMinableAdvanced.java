@@ -2,7 +2,9 @@ package continuum.metalextras.world.gen;
 
 import java.util.Random;
 
-import continuum.api.metalextras.IOre;
+import continuum.api.metalextras.IOreData;
+import continuum.api.metalextras.OrePredicate;
+import continuum.api.metalextras.OreProperties;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -11,19 +13,21 @@ import net.minecraft.world.World;
 
 public class WorldGenMinableAdvanced
 {
-    private final IOre ore;
+    private final OreProperties properties;
+    private final OrePredicate predicate;
 
-    public WorldGenMinableAdvanced(IOre ore)
+    public WorldGenMinableAdvanced(IOreData data)
     {
-    	this.ore = ore;
+    	this.properties = data.getOre().getOreProperties();
+    	this.predicate = data.getOre().getPredicate();
     }
 
     public boolean generate(World world, DimensionType dimension, Integer x, Integer y, Integer z, Random random)
     {
-    	Integer maxVeinSize = this.ore.getMaxVeinSize(world);
+    	Integer maxVeinSize = this.properties.getMaxVeinSize();
     	if(maxVeinSize > 0)
     	{
-        	Integer blocksToGenerate = this.ore.getRandomizeGeneration() ? random.nextInt(maxVeinSize) + 1 : maxVeinSize;
+        	Integer blocksToGenerate = this.properties.getRandomizeGeneration() ? random.nextInt(maxVeinSize) + 1 : maxVeinSize;
             float f = random.nextFloat() * (float)Math.PI;
             double d0 = (double)((float)(x + 8) + MathHelper.sin(f) * (float)blocksToGenerate / 8.0F);
             double d1 = (double)((float)(x + 8) - MathHelper.sin(f) * (float)blocksToGenerate / 8.0F);
@@ -69,11 +73,8 @@ public class WorldGenMinableAdvanced
                                         BlockPos pos1 = new BlockPos(l1, i2, j2);
 
                                         IBlockState state = world.getBlockState(pos1);
-                                        if (this.ore.getSpawnInBiome(world.getBiomeGenForCoords(pos1), dimension) && state.getBlock().isReplaceableOreGen(state, world, pos1, this.ore.getPredicate()))
-                                        {
-                                        	IBlockState state1 = this.ore.getPredicate().getOre(state, world, pos1);
-                                            world.setBlockState(pos1, state1, 2);
-                                        }
+                                        if(this.properties.getSpawnInBiome(world.getBiomeGenForCoords(pos1), dimension) && state.getBlock().isReplaceableOreGen(state, world, pos1, this.predicate))
+                                            world.setBlockState(pos1, this.predicate.getOre(state, world, pos1), 2);
                                     }
                                 }
                             }

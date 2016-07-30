@@ -1,21 +1,35 @@
 {
+    "_comment": "THIS IS NOT A NORMAL MINECRAFT BLOCKSTATE FILE, THIS IS A FORGE BLOCKSTATE JSON. More Info <<< http://mcforge.readthedocs.io/en/latest/blockstates/forgeBlockstates/ >>> More Info",
+    "forge_marker": 1,
+    "defaults":
+    {
+        "textures":
+        {
+            "ore": "metalextras:items/silver_ore",
+            "material": "minecraft:blocks/stone"
+        },
+        "model": "metalextras:ore_normal_base"
+    },
     "variants":
     {
-        "type=stone": { "model": "metalextras:silver_ore_stone" },
-        "type=granite": { "model": "metalextras:silver_ore_granite" },
-        "type=diorite": { "model": "metalextras:silver_ore_diorite" },
-        "type=andesite": { "model": "metalextras:silver_ore_andesite" },
-        "type=sandstone": { "model": "metalextras:silver_ore_sandstone" },
-        "type=red_sandstone": { "model": "metalextras:silver_ore_red_sandstone" },
-        "type=netherrack": { "model": "metalextras:silver_ore_netherrack" },
-        "type=end_stone": { "model": "metalextras:silver_ore_end_stone" },
-        "type=dirt": { "model": "metalextras:silver_ore_dirt" },
-        "type=coarse_dirt": { "model": "metalextras:silver_ore_coarse_dirt" },
-        "type=sand": { "model": "metalextras:silver_ore_sand" },
-        "type=red_sand": { "model": "metalextras:silver_ore_red_sand" },
-        "type=clay": { "model": "metalextras:silver_ore_clay" },
-        "type=gravel": { "model": "metalextras:silver_ore_gravel" },
-        "type=soul_sand": { "model": "metalextras:silver_ore_soul_sand" },
-        "type=bedrock": { "model": "metalextras:silver_ore_bedrock" }
+        "type":
+        {
+            "stone": { },
+            "granite": { "textures": { "material": "minecraft:blocks/stone_granite" } },
+            "diorite": { "textures": { "material": "minecraft:blocks/stone_diorite" } },
+            "andesite": { "textures": { "material": "minecraft:blocks/stone_andesite" } },
+            "sandstone": { "textures": { "material": "minecraft:blocks/sandstone_normal" } },
+            "red_sandstone": { "textures": { "material": "minecraft:blocks/red_sandstone_normal" } },
+            "netherrack": { "textures": { "material": "minecraft:blocks/netherrack" } },
+            "end_stone": { "textures": { "material": "minecraft:blocks/end_stone" } },
+            "bedrock": { "textures": { "material": "minecraft:blocks/bedrock" } },
+            "dirt": { "textures": { "material": "minecraft:blocks/dirt" } },
+            "coarse_dirt": { "textures": { "material": "minecraft:blocks/coarse_dirt" } },
+            "sand": { "textures": { "material": "minecraft:blocks/sand" } },
+            "red_sand": { "textures": { "material": "minecraft:blocks/red_sand" } },
+            "clay": { "textures": { "material": "minecraft:blocks/clay" } },
+            "gravel": { "textures": { "material": "minecraft:blocks/gravel" } },
+            "soul_sand": { "textures": { "material": "minecraft:blocks/soul_sand" } }
+        }
     }
 }

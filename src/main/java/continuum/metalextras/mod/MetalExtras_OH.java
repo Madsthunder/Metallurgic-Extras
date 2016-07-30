@@ -2,22 +2,26 @@ package continuum.metalextras.mod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-import continuum.api.metalextras.IOre;
+import com.google.common.collect.Lists;
+
+import continuum.api.metalextras.IOreData;
+import continuum.api.metalextras.IOreGroup;
+import continuum.api.metalextras.IOreType;
 import continuum.api.metalextras.OrePredicate;
 import continuum.api.metalextras.OreProperties;
 import continuum.essentials.mod.ObjectHolder;
 import continuum.metalextras.blocks.BlockCompressed;
-import continuum.metalextras.blocks.BlockOreGround;
-import continuum.metalextras.blocks.BlockOreRock;
 import continuum.metalextras.client.state.StateMapperCompressed;
 import continuum.metalextras.client.state.StateMapperOre;
-import continuum.metalextras.items.ItemBlockCompressed;
 import continuum.metalextras.items.ItemOre;
 import continuum.metalextras.world.gen.OreGeneration;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -48,36 +52,6 @@ public class MetalExtras_OH implements ObjectHolder
 	
 	public CreativeTabs tabOres;
 	
-	public BlockOreRock copperOreRock;
-	public BlockOreGround copperOreGround;
-	public BlockOreRock tinOreRock;
-	public BlockOreGround tinOreGround;
-	public BlockOreRock aluminumOreRock;
-	public BlockOreGround aluminumOreGround;
-	public BlockOreRock leadOreRock;
-	public BlockOreGround leadOreGround;
-	public BlockOreRock silverOreRock;
-	public BlockOreGround silverOreGround;
-	public BlockOreRock mysteryOreRock;
-	public BlockOreGround mysteryOreGround;
-	public BlockOreRock sapphireOreRock;
-	public BlockOreGround sapphireOreGround;
-	public BlockOreRock rubyOreRock;
-	public BlockOreGround rubyOreGround;
-	public BlockOreRock coalOreRock;
-	public BlockOreGround coalOreGround;
-	public BlockOreRock ironOreRock;
-	public BlockOreGround ironOreGround;
-	public BlockOreRock lapisOreRock;
-	public BlockOreGround lapisOreGround;
-	public BlockOreRock goldOreRock;
-	public BlockOreGround goldOreGround;
-	public BlockOreRock redstoneOreRock;
-	public BlockOreGround redstoneOreGround;
-	public BlockOreRock emeraldOreRock;
-	public BlockOreGround emeraldOreGround;
-	public BlockOreRock diamondOreRock;
-	public BlockOreGround diamondOreGround;
 	public BlockCompressed copper_block;
 	public BlockCompressed tin_block;
 	public BlockCompressed aluminum_block;
@@ -99,12 +73,13 @@ public class MetalExtras_OH implements ObjectHolder
 	
 	public ArrayList<OreProperties> oreProperties;
 	
-	public ArrayList<String> ores;
-	public ArrayList<String> oresToRegen;
-	public HashMap<String, ItemStack> ingotList;
-	public HashMap<String, ItemStack> compressedList;
-	public HashMap<String, IOre[]> oresList;
-	public HashMap<String, OrePredicate> orePredicates;
+	public static final List<IOreType> oreTypes = Lists.newArrayList(new IOreType.Impl("stone", "rock", Blocks.STONE.getDefaultState(), 1.5F, 10F));
+	public static final List<IOreGroup> oreGroups = Lists.newArrayList();
+	public static final ArrayList<IOreData> ores = Lists.newArrayList();
+	public List<ResourceLocation> oresToReplace;
+	public HashMap<ResourceLocation, ItemStack> ingotList;
+	public HashMap<ResourceLocation, ItemStack> compressedList;
+	public HashMap<ResourceLocation, OrePredicate> orePredicates;
 	
 	public OreGeneration oreGenerator;
 	@SideOnly(value = Side.CLIENT)

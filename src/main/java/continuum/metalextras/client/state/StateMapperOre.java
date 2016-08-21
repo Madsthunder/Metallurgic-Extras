@@ -1,6 +1,6 @@
 package continuum.metalextras.client.state;
 
-import continuum.metalextras.blocks.BlockOre;
+import continuum.api.metalextras.BlockOre;
 import continuum.metalextras.mod.MetalExtras_OH;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.ItemMeshDefinition;
@@ -21,6 +21,6 @@ public class StateMapperOre extends StateMapperBase
 	protected ModelResourceLocation getModelResourceLocation(IBlockState state)
 	{
 		BlockOre block = (BlockOre)state.getBlock();
-		return new ModelResourceLocation("metalextras:" + block.getOreData().getOreName().getResourcePath(), "type=" + block.getOreType(state).getName());
+		return new ModelResourceLocation("metalextras:" + block.getOreData().getName().getResourcePath(), "type=" + block.getOreType(state).getName());
 	}
 }

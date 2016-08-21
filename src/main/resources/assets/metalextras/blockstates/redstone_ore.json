@@ -14,22 +14,22 @@
     {
         "type":
         {
-            "stone": { },
-            "granite": { "textures": { "material": "minecraft:blocks/stone_granite" } },
-            "diorite": { "textures": { "material": "minecraft:blocks/stone_diorite" } },
-            "andesite": { "textures": { "material": "minecraft:blocks/stone_andesite" } },
-            "sandstone": { "textures": { "material": "minecraft:blocks/sandstone_normal" } },
-            "red_sandstone": { "textures": { "material": "minecraft:blocks/red_sandstone_normal" } },
-            "netherrack": { "textures": { "material": "minecraft:blocks/netherrack" } },
-            "end_stone": { "textures": { "material": "minecraft:blocks/end_stone" } },
-            "bedrock": { "textures": { "material": "minecraft:blocks/bedrock" } },
-            "dirt": { "textures": { "material": "minecraft:blocks/dirt" } },
-            "coarse_dirt": { "textures": { "material": "minecraft:blocks/coarse_dirt" } },
-            "sand": { "textures": { "material": "minecraft:blocks/sand" } },
-            "red_sand": { "textures": { "material": "minecraft:blocks/red_sand" } },
-            "clay": { "textures": { "material": "minecraft:blocks/clay" } },
-            "gravel": { "textures": { "material": "minecraft:blocks/gravel" } },
-            "soul_sand": { "textures": { "material": "minecraft:blocks/soul_sand" } }
+            "minecraft_stone": { },
+            "minecraft_granite": { "textures": { "material": "minecraft:blocks/stone_granite" } },
+            "minecraft_diorite": { "textures": { "material": "minecraft:blocks/stone_diorite" } },
+            "minecraft_andesite": { "textures": { "material": "minecraft:blocks/stone_andesite" } },
+            "minecraft_sandstone": { "textures": { "material": "minecraft:blocks/sandstone_normal" } },
+            "minecraft_red_sandstone": { "textures": { "material": "minecraft:blocks/red_sandstone_normal" } },
+            "minecraft_netherrack": { "textures": { "material": "minecraft:blocks/netherrack" } },
+            "minecraft_end_stone": { "textures": { "material": "minecraft:blocks/end_stone" } },
+            "minecraft_bedrock": { "textures": { "material": "minecraft:blocks/bedrock" } },
+            "minecraft_dirt": { "textures": { "material": "minecraft:blocks/dirt" } },
+            "minecraft_coarse_dirt": { "textures": { "material": "minecraft:blocks/coarse_dirt" } },
+            "minecraft_sand": { "textures": { "material": "minecraft:blocks/sand" } },
+            "minecraft_red_sand": { "textures": { "material": "minecraft:blocks/red_sand" } },
+            "minecraft_clay": { "textures": { "material": "minecraft:blocks/clay" } },
+            "minecraft_gravel": { "textures": { "material": "minecraft:blocks/gravel" } },
+            "minecraft_soul_sand": { "textures": { "material": "minecraft:blocks/soul_sand" } }
         }
     }
 }

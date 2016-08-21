@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import continuum.api.metalextras.IOreData;
+import continuum.api.metalextras.BlockOre;
+import continuum.api.metalextras.OreMaterial;
 import continuum.essentials.hooks.ObjectHooks;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
-import continuum.metalextras.blocks.BlockOre;
 import continuum.metalextras.mod.MetalExtras_EH;
 import continuum.metalextras.mod.MetalExtras_OH;
 import net.minecraft.block.Block;
@@ -24,14 +24,14 @@ public class RecipeLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	public void init(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
-		for(IOreData data : holder.ores)
+		for(OreMaterial data : holder.ores)
 		{
 			List<ItemStack> stacks = Lists.newArrayList();
 			ItemStack ingot = data.getIngot();
 			Integer i = 0;
-			String name = data.getOreName().getResourcePath().split("_")[0];
+			String name = data.getName().getResourcePath().split("_")[0];
 			name = "ore" + name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
-			for(BlockOre ore : data.getOre().getOreBlocks())
+			for(BlockOre ore : data.getBlocks())
 				for(Integer j : ObjectHooks.increment(ore.getOreTypeProperty().getAllowedValues().size()))
 				{
 					ItemStack stack = new ItemStack(ore, 1, j);

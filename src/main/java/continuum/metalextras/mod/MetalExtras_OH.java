@@ -6,10 +6,8 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import continuum.api.metalextras.IOreData;
-import continuum.api.metalextras.IOreGroup;
-import continuum.api.metalextras.IOreType;
-import continuum.api.metalextras.OrePredicate;
+import continuum.api.metalextras.OreCategory;
+import continuum.api.metalextras.OreMaterial;
 import continuum.api.metalextras.OreProperties;
 import continuum.essentials.mod.ObjectHolder;
 import continuum.metalextras.blocks.BlockCompressed;
@@ -18,7 +16,6 @@ import continuum.metalextras.client.state.StateMapperOre;
 import continuum.metalextras.items.ItemOre;
 import continuum.metalextras.world.gen.OreGeneration;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -71,15 +68,15 @@ public class MetalExtras_OH implements ObjectHolder
 	public Item sapphire_gem;
 	public Item ruby_gem;
 	
+	public OreCategory rock_category;
+	public OreCategory ground_category;
 	public ArrayList<OreProperties> oreProperties;
 	
-	public static final List<IOreType> oreTypes = Lists.newArrayList(new IOreType.Impl("stone", "rock", Blocks.STONE.getDefaultState(), 1.5F, 10F));
-	public static final List<IOreGroup> oreGroups = Lists.newArrayList();
-	public static final ArrayList<IOreData> ores = Lists.newArrayList();
+	public static final List<OreCategory> oreCategories = Lists.newArrayList();
+	public static final ArrayList<OreMaterial> ores = Lists.newArrayList();
 	public List<ResourceLocation> oresToReplace;
 	public HashMap<ResourceLocation, ItemStack> ingotList;
 	public HashMap<ResourceLocation, ItemStack> compressedList;
-	public HashMap<ResourceLocation, OrePredicate> orePredicates;
 	
 	public OreGeneration oreGenerator;
 	@SideOnly(value = Side.CLIENT)

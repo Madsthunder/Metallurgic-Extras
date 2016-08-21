@@ -1,5 +1,9 @@
 package continuum.metalextras.loaders;
 
+import continuum.api.metalextras.BlockOre;
+import continuum.api.metalextras.OreCategory;
+import continuum.api.metalextras.OreMaterial;
+import continuum.essentials.hooks.ItemHooks;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
 import continuum.metalextras.blocks.BlockCompressed;
@@ -20,6 +24,14 @@ public class BlockLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH>
 	public void pre(CTMod<MetalExtras_OH, MetalExtras_EH> mod) 
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
+		for(OreMaterial material : MetalExtras_OH.ores)
+		for (OreCategory group : MetalExtras_OH.oreCategories)
+		{
+			BlockOre block = new BlockOre(holder, material, group);
+			ForgeRegistries.BLOCKS.register(block);
+			ItemHooks.registerItemBlockMeta(block, block.getOreTypeProperty().getAllowedValues().size() - 1);
+			material.addBlockToList(block);
+		}
 		ForgeRegistries.BLOCKS.register(holder.copper_block = new BlockCompressed("copper"));
 		ForgeRegistries.BLOCKS.register(holder.tin_block = new BlockCompressed("tin"));
 		ForgeRegistries.BLOCKS.register(holder.aluminum_block = new BlockCompressed("aluminum"));

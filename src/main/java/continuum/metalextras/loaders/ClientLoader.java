@@ -2,12 +2,12 @@ package continuum.metalextras.loaders;
 
 import java.util.List;
 
-import continuum.api.metalextras.IOreData;
+import continuum.api.metalextras.BlockOre;
+import continuum.api.metalextras.OreMaterial;
 import continuum.essentials.hooks.ObjectHooks;
 import continuum.essentials.mod.CTMod;
 import continuum.essentials.mod.ObjectLoader;
 import continuum.metalextras.blocks.BlockCompressed;
-import continuum.metalextras.blocks.BlockOre;
 import continuum.metalextras.client.state.StateMapperCompressed;
 import continuum.metalextras.client.state.StateMapperOre;
 import continuum.metalextras.mod.MetalExtras_EH;
@@ -47,7 +47,7 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 		ModelLoader.setCustomModelResourceLocation(holder.ender_gem, 0, new ModelResourceLocation("metalextras:ender_gem", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(holder.sapphire_gem, 0, new ModelResourceLocation("metalextras:sapphire_gem", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(holder.ruby_gem, 0, new ModelResourceLocation("metalextras:ruby_gem", "inventory"));
-		for(IOreData data : MetalExtras_OH.ores)
+		for(OreMaterial data : MetalExtras_OH.ores)
 			this.registerAllModelsForOre(data, holder);
 		registerAllModelsForCompressed(holder.compressedStateMapper, holder.copper_block);
 		registerAllModelsForCompressed(holder.compressedStateMapper, holder.tin_block);
@@ -56,14 +56,15 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 		registerAllModelsForCompressed(holder.compressedStateMapper, holder.silver_block);
 		registerAllModelsForCompressed(holder.compressedStateMapper, holder.ender_block);
 		registerAllModelsForCompressed(holder.compressedStateMapper, holder.sapphire_block);
+		registerAllModelsForCompressed(holder.compressedStateMapper, holder.ruby_block);
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void registerAllModelsForOre(IOreData data, MetalExtras_OH holder)
+	public void registerAllModelsForOre(OreMaterial data, MetalExtras_OH holder)
 	{
-		for(BlockOre ore : data.getOre().getOreBlocks())
+		for(BlockOre ore : data.getBlocks())
 			this.registerModelsForOre(ore, holder.oreStateMapper, ore.getOreTypeProperty().getAllowedValues());
-		ModelLoader.setCustomModelResourceLocation(holder.ore, holder.ores.indexOf(data), new ModelResourceLocation(new ResourceLocation("metalextras", data.getOreName().getResourcePath() + "_item"), "inventory"));
+		ModelLoader.setCustomModelResourceLocation(holder.ore, holder.ores.indexOf(data), new ModelResourceLocation(new ResourceLocation("metalextras", data.getName().getResourcePath() + "_item"), "inventory"));
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -78,7 +79,7 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	{
 		ModelLoader.setCustomStateMapper(block, mapper);
 		for(Integer i : ObjectHooks.increment(strings.size()))
-			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(block), i, new ModelResourceLocation(new ResourceLocation("metalextras", block.getOreData().getOreName().getResourcePath()), "type=" + strings.get(i).getName()));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(block), i, new ModelResourceLocation(new ResourceLocation("metalextras", block.getOreData().getName().getResourcePath()), "type=" + strings.get(i).getName()));
 	}
 	
 	@Override

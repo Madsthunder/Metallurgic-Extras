@@ -1,7 +1,0 @@
-{
-	"parent": "metalextras:block/ore_emerald_base",
-	"textures":
-	{
-		"base": "metalextras:blocks/sapphire_ore_red_sandstone"
-	}
-}

@@ -1,7 +1,0 @@
-{
-    "parent": "metalextras:block/ore_normal_base",
-    "textures":
-    {
-        "base": "metalextras:blocks/tin_ore_netherrack"
-    }
-}

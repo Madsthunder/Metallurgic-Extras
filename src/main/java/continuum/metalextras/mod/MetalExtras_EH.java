@@ -2,6 +2,7 @@ package continuum.metalextras.mod;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -9,9 +10,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import continuum.api.metalextras.IOreType;
-import continuum.api.metalextras.IOreData;
-import continuum.metalextras.blocks.BlockOre;
+import continuum.api.metalextras.BlockOre;
+import continuum.api.metalextras.OreMaterial;
+import continuum.api.metalextras.OreType;
 import continuum.metalextras.world.gen.OreGeneration;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
@@ -34,8 +35,8 @@ public class MetalExtras_EH
 {
 	static MetalExtras_OH objectHolder;
 	/**Used to check if a chunk needs generating, will return true if the chunk is found*/
-	public static final HashMap<IOreData, ArrayList<Chunk>> chunkGenerated = Maps.newHashMap();
-	private static final ArrayList<Pair<Chunk, IOreData>> chunks = Lists.newArrayList();
+	public static final HashMap<OreMaterial, HashSet<Chunk>> chunkGenerated = Maps.newHashMap();
+	private static final ArrayList<Pair<Chunk, OreMaterial>> chunks = Lists.newArrayList();
 	public static Random random = new Random();
 	
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -45,8 +46,8 @@ public class MetalExtras_EH
 		Block block = Block.getBlockFromItem(stack.getItem());
 		if(block instanceof BlockOre)
 		{
-			IOreType ore = ((BlockOre)block).getOreType(block.getStateFromMeta(stack.getMetadata()));
-			event.getToolTip().add(I18n.translateToLocal(ore.getCategory().getResourcePath() + "." + ore.getName() + ".name"));
+			OreType ore = ((BlockOre)block).getOreType(block.getStateFromMeta(stack.getMetadata()));
+			event.getToolTip().add(I18n.translateToLocal(ore.getCategory().getName().getResourcePath() + "." + ore.getName() + ".name"));
 		}
 	}
 	
@@ -70,7 +71,7 @@ public class MetalExtras_EH
 		Chunk chunk = event.getChunk();
 		World world = chunk.getWorld();
 		if(!(world.isRemote))
-			for(IOreData data : objectHolder.ores)
+			for(OreMaterial data : objectHolder.ores)
 				if(getChunkNeedsGenerating(data, chunk))
 					scheduleOreForGeneration(chunk, data);
 	}
@@ -81,20 +82,20 @@ public class MetalExtras_EH
 		Integer min = Math.min(4, chunks.size());
 		for(Integer i = 0;i < min;i++)
 		{
-			Pair<Chunk, IOreData> pair = chunks.remove(0);
+			Pair<Chunk, OreMaterial> pair = chunks.remove(0);
 			Chunk chunk = pair.getLeft();
-			IOreData data = pair.getRight();
-			ArrayList<Chunk> list = chunkGenerated.get(data);
-			OreGeneration.spawnOresInChunk(chunk.getWorld(), chunk.getWorld().provider.getDimensionType(), chunk.xPosition, chunk.zPosition, random, data);
-			if(list != null)
-				list.remove(chunk);
+			OreMaterial data = pair.getRight();
+			HashSet<Chunk> set = chunkGenerated.get(data);
+			OreGeneration.spawnOresInChunk(chunk, random, data);
+			if(set != null)
+				set.remove(chunk);
 		}
 	}
 	
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void onChunkUnload(ChunkEvent.Unload event)
 	{
-		for(IOreData data : chunkGenerated.keySet())
+		for(OreMaterial data : chunkGenerated.keySet())
 			chunkGenerated.get(data).remove(event.getChunk());
 	}
 	
@@ -120,12 +121,12 @@ public class MetalExtras_EH
 			case DIAMOND : name = "diamond_ore";
 			default : name = null;
 		}
-		IOreData data = null;
+		OreMaterial data = null;
 		if(name != null)
 		{
 			ResourceLocation location = new ResourceLocation(name);
-			for(IOreData data1 : MetalExtras_OH.ores)
-				if(data1.getOreName().equals(location))
+			for(OreMaterial data1 : MetalExtras_OH.ores)
+				if(data1.getName().equals(location))
 					data = data1;
 		}
 		if(data != null)
@@ -136,32 +137,32 @@ public class MetalExtras_EH
 	public static void loadOreGenData(Chunk chunk, NBTTagCompound compound)
 	{
 		if(!compound.hasKey("oreGenData"))
-			for(IOreData data : objectHolder.ores)
-				if(objectHolder.oresToReplace.contains(data.getOreName()))
-					if(!compound.getCompoundTag("oreGenData").getBoolean(data.getOreName().toString()))
+			for(OreMaterial data : objectHolder.ores)
+				if(objectHolder.oresToReplace.contains(data.getName()))
+					if(!compound.getCompoundTag("oreGenData").getBoolean(data.getName().toString()))
 						chunkGenerated.get(data).add(chunk);
 	}
 	
 	public static NBTTagCompound getOreGenData(Chunk chunk)
 	{
 		NBTTagCompound oreGenData = new NBTTagCompound();
-		for(IOreData data : objectHolder.ores)
-			if(objectHolder.oresToReplace.contains(data.getOreName()))
-				oreGenData.setBoolean(data.getOreName().toString(), !getChunkNeedsGenerating(data, chunk));
+		for(OreMaterial data : objectHolder.ores)
+			if(objectHolder.oresToReplace.contains(data.getName()))
+				oreGenData.setBoolean(data.getName().toString(), !getChunkNeedsGenerating(data, chunk));
 		return oreGenData;
 	}
 	
-	public static Boolean getChunkNeedsGenerating(IOreData data, Chunk chunk)
+	public static boolean getChunkNeedsGenerating(OreMaterial data, Chunk chunk)
 	{
 		return chunkGenerated.get(data).contains(chunk);
 	}
 	
-	public static void scheduleOreForGeneration(Chunk chunk, IOreData data)
+	public static void scheduleOreForGeneration(Chunk chunk, OreMaterial data)
 	{
 		chunks.add(Pair.of(chunk, data));
 	}
 	
-	public static void scheduleOreForGeneration(World world, Integer chunkX, Integer chunkZ, IOreData data)
+	public static void scheduleOreForGeneration(World world, Integer chunkX, Integer chunkZ, OreMaterial data)
 	{
 		chunks.add(Pair.of(world.getChunkFromChunkCoords(chunkX, chunkZ), data));
 	}

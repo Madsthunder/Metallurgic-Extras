@@ -41,7 +41,7 @@ public class ItemLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH>
 		ForgeRegistries.ITEMS.register(item);
 		return item;
 	}
-
+	
 	private Item registerGem(String name)
 	{
 		Item item = new Item().setUnlocalizedName(name + "_gem").setRegistryName(name + "_gem");

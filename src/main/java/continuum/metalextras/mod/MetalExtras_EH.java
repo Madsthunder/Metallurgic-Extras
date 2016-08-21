@@ -34,7 +34,10 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 public class MetalExtras_EH
 {
 	static MetalExtras_OH objectHolder;
-	/**Used to check if a chunk needs generating, will return true if the chunk is found*/
+	/**
+	 * Used to check if a chunk needs generating, will return true if the chunk
+	 * is found
+	 */
 	public static final HashMap<OreMaterial, HashSet<Chunk>> chunkGenerated = Maps.newHashMap();
 	private static final ArrayList<Pair<Chunk, OreMaterial>> chunks = Lists.newArrayList();
 	public static Random random = new Random();
@@ -80,7 +83,7 @@ public class MetalExtras_EH
 	public void onServerTick(TickEvent.ServerTickEvent event)
 	{
 		Integer min = Math.min(4, chunks.size());
-		for(Integer i = 0;i < min;i++)
+		for(Integer i = 0; i < min; i++)
 		{
 			Pair<Chunk, OreMaterial> pair = chunks.remove(0);
 			Chunk chunk = pair.getLeft();
@@ -106,20 +109,28 @@ public class MetalExtras_EH
 		String name;
 		switch(type)
 		{
-			case COAL : name = "coal_ore";
-			break;
-			case IRON : name = "iron_ore";
-			break;
-			case LAPIS : name = "lapis_ore";
-			break;
-			case GOLD : name = "gold_ore";
-			break;
-			case REDSTONE : name = "redstone_ore";
-			break;
-			case EMERALD : name = "emerald_ore";
-			break;
-			case DIAMOND : name = "diamond_ore";
-			default : name = null;
+			case COAL :
+				name = "coal_ore";
+				break;
+			case IRON :
+				name = "iron_ore";
+				break;
+			case LAPIS :
+				name = "lapis_ore";
+				break;
+			case GOLD :
+				name = "gold_ore";
+				break;
+			case REDSTONE :
+				name = "redstone_ore";
+				break;
+			case EMERALD :
+				name = "emerald_ore";
+				break;
+			case DIAMOND :
+				name = "diamond_ore";
+			default:
+				name = null;
 		}
 		OreMaterial data = null;
 		if(name != null)

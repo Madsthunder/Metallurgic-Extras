@@ -14,7 +14,7 @@ public class TileEntityTeleporter extends TileEntity
 	{
 		super.writeToNBT(compound);
 		if(this.other != null)
-			compound.setIntArray("other", new int[] { other.getX(), other.getY(), other.getZ() } );
+			compound.setIntArray("other", new int[] { other.getX(), other.getY(), other.getZ() });
 		return compound;
 	}
 	

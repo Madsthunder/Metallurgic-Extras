@@ -24,7 +24,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH>
-{	
+{
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void construction(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
@@ -33,7 +33,7 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 		holder.oreStateMapper = new StateMapperOre(holder);
 		holder.compressedStateMapper = new StateMapperCompressed();
 	}
-
+	
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void pre(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
@@ -58,7 +58,7 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 		registerAllModelsForCompressed(holder.compressedStateMapper, holder.sapphire_block);
 		registerAllModelsForCompressed(holder.compressedStateMapper, holder.ruby_block);
 	}
-
+	
 	@SideOnly(Side.CLIENT)
 	public void registerAllModelsForOre(OreMaterial data, MetalExtras_OH holder)
 	{
@@ -87,11 +87,11 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	{
 		return "Client";
 	}
-
+	
 	@Override
 	public Side getSide()
 	{
 		return Side.CLIENT;
 	}
-
+	
 }

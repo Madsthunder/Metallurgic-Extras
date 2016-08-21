@@ -67,16 +67,16 @@ public class BlockOre extends BlockFalling
 	}
 	
 	@Override
-    public List<ItemStack> getDrops(IBlockAccess access, BlockPos pos, IBlockState state, int fortune)
-    {
-        Random random = access instanceof World ? ((World)access).rand : RANDOM;
+	public List<ItemStack> getDrops(IBlockAccess access, BlockPos pos, IBlockState state, int fortune)
+	{
+		Random random = access instanceof World ? ((World)access).rand : RANDOM;
 		List<ItemStack> list = super.getDrops(access, pos, state, fortune);
 		IBlockState typeState = state.getValue(this.oreType).getState();
 		Block typeBlock = typeState.getBlock();
 		if(this.material.getItem() != this.objectHolder.ore)
 			list.add(new ItemStack(typeBlock.getItemDropped(typeState, random, 0), typeBlock.quantityDropped(random), typeBlock.damageDropped(typeState)));
 		return list;
-    }
+	}
 	
 	@Override
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult result, World world, BlockPos pos, EntityPlayer player)
@@ -107,16 +107,16 @@ public class BlockOre extends BlockFalling
 	@Override
 	public int quantityDroppedWithBonus(int fortune, Random random)
 	{
-        if (fortune > 0)
-        {
-            int i = random.nextInt(fortune + this.material.getFortuneAdditive()) - 1;
-            if (i < 0)
-                i = 0;
-            return this.quantityDropped(random) * (i + 1);
-        }
-        else
-            return this.quantityDropped(random);
-    }
+		if(fortune > 0)
+		{
+			int i = random.nextInt(fortune + this.material.getFortuneAdditive()) - 1;
+			if(i < 0)
+				i = 0;
+			return this.quantityDropped(random) * (i + 1);
+		}
+		else
+			return this.quantityDropped(random);
+	}
 	
 	@Override
 	public boolean canSilkHarvest()
@@ -129,42 +129,44 @@ public class BlockOre extends BlockFalling
 	{
 		return MathHelper.getRandomIntegerInRange(new Random(), this.material.getMinXP(), this.material.getMaxXP());
 	}
-    
-    @Override
-    public float getBlockHardness(IBlockState state, World world, BlockPos pos)
-    {
-    	return state.getValue(this.oreType).getHardness();
-    }
-    
-    @Override
-    public float getExplosionResistance(World world, BlockPos pos, Entity entity, Explosion explosion)
-    {
-    	return world.getBlockState(pos).getValue(this.oreType).getResistance();
-    }
-    
-    @Override
-    public int getHarvestLevel(IBlockState state)
-    {
-    	return state.getValue(this.oreType).getHarvestLevel();
-    }
-    
-    @Override
-    public String getHarvestTool(IBlockState state)
-    {
-    	return state.getValue(this.oreType).getHarvestTool();
-    }
 	
-    @Override
+	@Override
+	public float getBlockHardness(IBlockState state, World world, BlockPos pos)
+	{
+		return state.getValue(this.oreType).getHardness();
+	}
+	
+	@Override
+	public float getExplosionResistance(World world, BlockPos pos, Entity entity, Explosion explosion)
+	{
+		return world.getBlockState(pos).getValue(this.oreType).getResistance();
+	}
+	
+	@Override
+	public int getHarvestLevel(IBlockState state)
+	{
+		return state.getValue(this.oreType).getHarvestLevel();
+	}
+	
+	@Override
+	public String getHarvestTool(IBlockState state)
+	{
+		return state.getValue(this.oreType).getHarvestTool();
+	}
+	
+	@Override
 	public void onBlockAdded(World world, BlockPos pos, IBlockState state)
 	{
-		if(state.getValue(this.oreType).canFall()) world.scheduleUpdate(pos, this, this.tickRate(world));
-    }
+		if(state.getValue(this.oreType).canFall())
+			world.scheduleUpdate(pos, this, this.tickRate(world));
+	}
 	
-    @Override
-    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block)
-    {
-        if(state.getValue(this.oreType).canFall()) world.scheduleUpdate(pos, this, this.tickRate(world));
-    }
+	@Override
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block)
+	{
+		if(state.getValue(this.oreType).canFall())
+			world.scheduleUpdate(pos, this, this.tickRate(world));
+	}
 	
 	@Override
 	public void getSubBlocks(Item item, CreativeTabs tab, List list)
@@ -173,18 +175,19 @@ public class BlockOre extends BlockFalling
 			list.add(new ItemStack(item, 1, i));
 	}
 	
-    @Override
-    public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity)
-    {
-    	state.getValue(this.oreType).handleEntityCollision(world, pos, state, entity);
-    }
-
+	@Override
+	public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity)
+	{
+		state.getValue(this.oreType).handleEntityCollision(world, pos, state, entity);
+	}
+	
 	@Override
 	public void updateTick(World world, BlockPos pos, IBlockState state, Random random)
 	{
-		if(state.getValue(this.oreType).canFall()) super.updateTick(world, pos, state, random);
+		if(state.getValue(this.oreType).canFall())
+			super.updateTick(world, pos, state, random);
 	}
-    
+	
 	public PropertyValues<OreType> getOreTypeProperty()
 	{
 		return this.oreType;
@@ -204,7 +207,7 @@ public class BlockOre extends BlockFalling
 	{
 		return this.getDefaultState().withProperty(this.getOreTypeProperty(), type);
 	}
-    
+	
 	public OreMaterial getOreData()
 	{
 		return this.material;
@@ -216,10 +219,10 @@ public class BlockOre extends BlockFalling
 	}
 	
 	@Override
-    public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos)
-    {
-        return state.getValue(this.getOreTypeProperty()).getSelectionBox(world, pos);
-    }
+	public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos)
+	{
+		return state.getValue(this.getOreTypeProperty()).getSelectionBox(world, pos);
+	}
 	
 	public BlockStateContainer getBlockState()
 	{

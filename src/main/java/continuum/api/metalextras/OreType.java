@@ -39,12 +39,12 @@ public class OreType implements Comparable<OreType>, IStringSerializable
 	{
 		return this.state;
 	}
-
+	
 	public float getHardness()
 	{
 		return this.hardness;
 	}
-
+	
 	public float getResistance()
 	{
 		return this.resistance * 5;
@@ -63,13 +63,13 @@ public class OreType implements Comparable<OreType>, IStringSerializable
 	{
 		return this.category;
 	}
-
+	
 	public final String getName()
 	{
 		ResourceLocation name = this.getResourceName();
 		return name.getResourceDomain() + "_" + name.getResourcePath();
 	}
-
+	
 	public ResourceLocation getResourceName()
 	{
 		return this.name;

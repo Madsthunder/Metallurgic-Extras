@@ -24,25 +24,26 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class MetalExtras_OH implements ObjectHolder
 {
-
+	
 	static MetalExtras_OH getHolder()
 	{
 		return new MetalExtras_OH();
 	}
+	
 	@Override
-	public String getModid() 
+	public String getModid()
 	{
 		return "MetalExtras";
 	}
-
+	
 	@Override
-	public String getName() 
+	public String getName()
 	{
 		return "Metallurgic Extras";
 	}
-
+	
 	@Override
-	public String getVersion() 
+	public String getVersion()
 	{
 		return "1.2.1";
 	}

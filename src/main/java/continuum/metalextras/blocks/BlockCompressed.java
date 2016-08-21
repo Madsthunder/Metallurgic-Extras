@@ -8,6 +8,7 @@ import net.minecraft.block.state.IBlockState;
 public class BlockCompressed extends Block
 {
 	public final String name;
+	
 	public BlockCompressed(String name)
 	{
 		super(Material.IRON);

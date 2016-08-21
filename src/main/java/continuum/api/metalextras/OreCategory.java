@@ -16,12 +16,12 @@ public class OreCategory
 	{
 		this.name = new ResourceLocation(name);
 	}
-
+	
 	public ResourceLocation getName()
 	{
 		return this.name;
 	}
-
+	
 	public boolean addOreType(OreType type)
 	{
 		if(this.oreTypes.size() <= 16 && type.setCategory(this))

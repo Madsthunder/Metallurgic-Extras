@@ -16,6 +16,7 @@ public class BlockTeleporter extends BlockContainer
 {
 	public static final PropertyBool on = PropertyBool.create("on");
 	public static final PropertyEnum<EnumDyeColor> color = PropertyEnum.create("color", EnumDyeColor.class);
+	
 	public BlockTeleporter()
 	{
 		super(Material.ROCK);
@@ -48,5 +49,5 @@ public class BlockTeleporter extends BlockContainer
 	{
 		return new TileEntityTeleporter();
 	}
-
+	
 }

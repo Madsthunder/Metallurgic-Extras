@@ -49,7 +49,7 @@ public class ConfigLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	{
 		material.setOreProperties(new OreProperties(material, this.configs.get(material.getName().getResourceDomain()).getCategoryParser(material.getName().getResourcePath())));
 	}
-
+	
 	public static List<OreType> parseOreWhitelist(ConfigCategoryParser parser, List<OreType> defaults)
 	{
 		List<OreType> whitelist = Lists.newArrayList();

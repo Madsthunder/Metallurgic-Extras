@@ -1,4 +1,5 @@
 package continuum.metalextras.mod;
+
 import continuum.essentials.mod.CTMod;
 import continuum.metalextras.loaders.BlockLoader;
 import continuum.metalextras.loaders.ClientLoader;
@@ -16,15 +17,9 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 @Mod(modid = "metalextras", name = "Metallurgic Extras", version = "1.2.2")
 public class MetalExtras_Mod extends CTMod<MetalExtras_OH, MetalExtras_EH>
 {
-	public MetalExtras_Mod() 
+	public MetalExtras_Mod()
 	{
-		super(MetalExtras_OH.getHolder(), new MetalExtras_EH(), 
-				new ConfigLoader(),
-				new BlockLoader(),
-				new ItemLoader(),
-				new UtilityLoader(),
-				new RecipeLoader(),
-				new ClientLoader());
+		super(MetalExtras_OH.getHolder(), new MetalExtras_EH(), new ConfigLoader(), new BlockLoader(), new ItemLoader(), new UtilityLoader(), new RecipeLoader(), new ClientLoader());
 		MetalExtras_EH.objectHolder = this.getObjectHolder();
 		MinecraftForge.ORE_GEN_BUS.register(this.getEventHandler());
 	}
@@ -40,13 +35,13 @@ public class MetalExtras_Mod extends CTMod<MetalExtras_OH, MetalExtras_EH>
 	{
 		super.pre(event);
 	}
-
+	
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event)
 	{
 		super.init(event);
 	}
-
+	
 	@Mod.EventHandler
 	public void post(FMLPostInitializationEvent event)
 	{

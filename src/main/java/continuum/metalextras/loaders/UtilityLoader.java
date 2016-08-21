@@ -89,11 +89,11 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
 		holder.tabOres = new CreativeTab("ores", holder.ender_gem);
-		for (OreMaterial material : holder.ores)
+		for(OreMaterial material : holder.ores)
 		{
 			if(material.shouldReplaceExisting())
 				holder.oresToReplace.add(material.getName());
-			for (BlockOre ore : material.getBlocks())
+			for(BlockOre ore : material.getBlocks())
 				ore.setCreativeTab(holder.tabOres);
 		}
 		holder.copper_block.setCreativeTab(holder.tabOres);

@@ -66,6 +66,7 @@ public class OreProperties implements Predicate<IBlockState>
 	{
 		return this.maxVeinSize;
 	}
+	
 	public int getMaxVeinSize()
 	{
 		return this.maxVeinSize;

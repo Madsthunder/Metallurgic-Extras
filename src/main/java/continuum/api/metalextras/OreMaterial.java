@@ -88,47 +88,47 @@ public class OreMaterial
 	{
 		return this.name;
 	}
-
+	
 	public Item getItem()
 	{
 		return ForgeRegistries.ITEMS.getValue(this.itemDropped);
 	}
-
+	
 	public int getMinItems()
 	{
 		return this.minItemDrops;
 	}
-
+	
 	public int getMaxItems()
 	{
 		return this.maxItemDrops;
 	}
-
+	
 	public int getMetadata()
 	{
-		return this.metaDropped < 0  ? MetalExtras_OH.ores.indexOf(this) : this.metaDropped;
+		return this.metaDropped < 0 ? MetalExtras_OH.ores.indexOf(this) : this.metaDropped;
 	}
-
+	
 	public int getFortuneAdditive()
 	{
 		return this.fortuneAdditive;
 	}
-
+	
 	public int getMinXP()
 	{
 		return this.minXP;
 	}
-
+	
 	public int getMaxXP()
 	{
 		return this.maxXP;
 	}
-
+	
 	public int getHarvestLevel()
 	{
 		return this.harvestLevel;
 	}
-
+	
 	public ItemStack getIngot()
 	{
 		return new ItemStack(ForgeRegistries.ITEMS.getValue(this.ingot), 1, this.ingotMeta);
@@ -174,7 +174,7 @@ public class OreMaterial
 		this.properties = properties;
 		return true;
 	}
-
+	
 	public OreProperties getOreProperties()
 	{
 		return this.properties;

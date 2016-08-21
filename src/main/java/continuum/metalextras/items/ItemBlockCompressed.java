@@ -7,7 +7,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
 public class ItemBlockCompressed extends ItemBlock
-{	
+{
 	public ItemBlockCompressed(BlockCompressed block)
 	{
 		super(block);

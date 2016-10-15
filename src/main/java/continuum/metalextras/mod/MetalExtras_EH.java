@@ -50,7 +50,7 @@ public class MetalExtras_EH
 		if(block instanceof BlockOre)
 		{
 			OreType ore = ((BlockOre)block).getOreType(block.getStateFromMeta(stack.getMetadata()));
-			event.getToolTip().add(I18n.translateToLocal(ore.getCategory().getName().getResourcePath() + "." + ore.getName() + ".name"));
+			event.getToolTip().add(I18n.translateToLocal(ore.getCategory().getRegistryName().getResourcePath() + "." + ore.getName() + ".name"));
 		}
 	}
 	

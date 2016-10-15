@@ -34,7 +34,7 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 	public void construction(CTMod<MetalExtras_OH, MetalExtras_EH> mod)
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
-		holder.oreCategories.add(holder.rock_category = new OreCategory("rock"));
+		holder.oreCategories.add(holder.rock_category = new OreCategory().setRegistryName("rock"));
 		holder.rock_category.addOreType(new OreType("granite", Blocks.STONE.getStateFromMeta(1), 1.5F, 10F));
 		holder.rock_category.addOreType(new OreType("diorite", Blocks.STONE.getStateFromMeta(3), 1.5F, 10F));
 		holder.rock_category.addOreType(new OreType("andesite", Blocks.STONE.getStateFromMeta(5), 1.5F, 10F));
@@ -43,7 +43,7 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 		holder.rock_category.addOreType(new OreType("netherrack", Blocks.NETHERRACK.getDefaultState(), .4F, 0F));
 		holder.rock_category.addOreType(new OreType("end_stone", Blocks.END_STONE.getDefaultState(), 3F, 15F));
 		holder.rock_category.addOreType(new OreType("bedrock", Blocks.BEDROCK.getDefaultState(), -1F, 6000000F));
-		holder.oreCategories.add(holder.ground_category = new OreCategory("ground"));
+		holder.oreCategories.add(holder.ground_category = new OreCategory().setRegistryName("ground"));
 		holder.ground_category.addOreType(new OreType("dirt", Blocks.DIRT.getStateFromMeta(0), .5F, 0F));
 		holder.ground_category.addOreType(new OreType("coarse_dirt", Blocks.DIRT.getStateFromMeta(1), .5F, 0F));
 		holder.ground_category.addOreType(new OreType("sand", Blocks.SAND.getStateFromMeta(0), .5F, 0F));

@@ -6,21 +6,17 @@ import com.google.common.collect.Lists;
 
 import continuum.metalextras.mod.MetalExtras_OH;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.FMLContainer;
+import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.InjectedModContainer;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 
-public class OreCategory
+public class OreCategory implements IForgeRegistryEntry<OreCategory>
 {
-	private final ResourceLocation name;
+    private ResourceLocation registryName = null;
 	private final List<OreType> oreTypes = Lists.newArrayList();
-	
-	public OreCategory(String name)
-	{
-		this.name = new ResourceLocation(name);
-	}
-	
-	public ResourceLocation getName()
-	{
-		return this.name;
-	}
 	
 	public boolean addOreType(OreType type)
 	{
@@ -42,5 +38,36 @@ public class OreCategory
 		for(OreCategory category : MetalExtras_OH.oreCategories)
 			types.addAll(category.getOreTypes());
 		return types;
+	}
+
+	public final OreCategory setRegistryName(String modid, String name)
+	{
+		return this.setRegistryName(new ResourceLocation(modid, name));
+	}
+	
+	public final OreCategory setRegistryName(String name)
+	{
+        return this.setRegistryName(new ResourceLocation(name));
+    }
+
+	@Override
+	public final OreCategory setRegistryName(ResourceLocation name)
+	{
+        if(this.getRegistryName() != null)
+            throw new IllegalStateException("Attempted to set registry name with existing registry name! New: " + name + " Old: " + this.getRegistryName());
+        this.registryName = name;
+		return this;
+	}
+	
+	@Override
+	public final ResourceLocation getRegistryName()
+	{
+		return this.registryName;
+	}
+
+	@Override
+	public final Class<? super OreCategory> getRegistryType()
+	{
+		return OreCategory.class;
 	}
 }

@@ -2,15 +2,15 @@ package continuum.api.metalextras;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import continuum.metalextras.mod.MetalExtras_OH;
@@ -35,7 +35,7 @@ public class OreMaterial
 	private final int ingotMeta;
 	private final boolean replace;
 	private final ArrayList<Pair<String, Object>> extras = Lists.newArrayList();
-	private final HashSet<BlockOre> blocks = Sets.newHashSet();
+	private final Map<OreCategory, BlockOre> blocks = Maps.newHashMap();
 	private final OreProperties defaultProperties;
 	private OreProperties properties;
 	
@@ -144,24 +144,22 @@ public class OreMaterial
 		return replace;
 	}
 	
-	public boolean addBlockToList(BlockOre block)
+	public BlockOre generateBlock(MetalExtras_OH holder, OreCategory category)
 	{
-		for(BlockOre b : this.blocks)
-			if(b.getOreCategory().equals(block.getOreCategory()))
-				return false;
-		this.blocks.add(block);
-		return true;
+		BlockOre block = new BlockOre(holder, this, category);
+		this.blocks.put(category, block);
+		return new BlockOre(holder, this, category);
 	}
 	
-	public Set<BlockOre> getBlocks()
+	public Iterable<BlockOre> getBlocks()
 	{
-		return Sets.newHashSet(this.blocks);
+		return Sets.newHashSet(this.blocks.values());
 	}
 	
 	@Nullable
 	public IBlockState applyBlockState(OreType type)
 	{
-		for(BlockOre ore : this.blocks)
+		for(BlockOre ore : this.blocks.values())
 			if(ore.containsOreType(type))
 				return ore.withOreType(type);
 		return null;

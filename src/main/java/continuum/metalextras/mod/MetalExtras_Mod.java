@@ -19,7 +19,7 @@ public class MetalExtras_Mod extends CTMod<MetalExtras_OH, MetalExtras_EH>
 {
 	public MetalExtras_Mod()
 	{
-		super(MetalExtras_OH.getHolder(), new MetalExtras_EH(), new ConfigLoader(), new BlockLoader(), new ItemLoader(), new UtilityLoader(), new RecipeLoader(), new ClientLoader());
+		super(MetalExtras_OH.getHolder(), new ConfigLoader(), new BlockLoader(), new ItemLoader(), new UtilityLoader(), new RecipeLoader(), new ClientLoader());
 		MetalExtras_EH.objectHolder = this.getObjectHolder();
 		MinecraftForge.ORE_GEN_BUS.register(this.getEventHandler());
 	}

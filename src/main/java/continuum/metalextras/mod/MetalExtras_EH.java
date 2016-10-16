@@ -26,11 +26,13 @@ import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+@EventBusSubscriber
 public class MetalExtras_EH
 {
 	static MetalExtras_OH objectHolder;
@@ -43,7 +45,7 @@ public class MetalExtras_EH
 	public static Random random = new Random();
 	
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onItemTooltip(ItemTooltipEvent event)
+	public static void onItemTooltip(ItemTooltipEvent event)
 	{
 		ItemStack stack = event.getItemStack();
 		Block block = Block.getBlockFromItem(stack.getItem());
@@ -55,7 +57,7 @@ public class MetalExtras_EH
 	}
 	
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onChunkDataLoad(ChunkDataEvent.Load event)
+	public static void onChunkDataLoad(ChunkDataEvent.Load event)
 	{
 		Chunk chunk = event.getChunk();
 		if(chunk.isTerrainPopulated())
@@ -63,13 +65,13 @@ public class MetalExtras_EH
 	}
 	
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onChunkDataSave(ChunkDataEvent.Save event)
+	public static void onChunkDataSave(ChunkDataEvent.Save event)
 	{
 		event.getData().setTag("oreGenData", getOreGenData(event.getChunk()));
 	}
 	
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onChunkLoad(ChunkEvent.Load event)
+	public static void onChunkLoad(ChunkEvent.Load event)
 	{
 		Chunk chunk = event.getChunk();
 		World world = chunk.getWorld();
@@ -80,7 +82,7 @@ public class MetalExtras_EH
 	}
 	
 	@SubscribeEvent
-	public void onServerTick(TickEvent.ServerTickEvent event)
+	public static void onServerTick(TickEvent.ServerTickEvent event)
 	{
 		Integer min = Math.min(4, chunks.size());
 		for(Integer i = 0; i < min; i++)
@@ -96,14 +98,14 @@ public class MetalExtras_EH
 	}
 	
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onChunkUnload(ChunkEvent.Unload event)
+	public static void onChunkUnload(ChunkEvent.Unload event)
 	{
 		for(OreMaterial data : chunkGenerated.keySet())
 			chunkGenerated.get(data).remove(event.getChunk());
 	}
 	
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onOreGen(GenerateMinable event)
+	public static void onOreGen(GenerateMinable event)
 	{
 		EventType type = event.getType();
 		String name;

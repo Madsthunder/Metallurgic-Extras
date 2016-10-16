@@ -135,5 +135,13 @@ public class OreType implements Comparable<OreType>, IStringSerializable, IForge
 	public final Class<? super OreType> getRegistryType()
 	{
 		return OreType.class;
-	}	
+	}
+	
+	@Override
+	public final String toString()
+	{
+		if(this.name == null)
+			return null;
+		return this.name.getResourceDomain() + "_" + this.name.getResourcePath();
+	}
 }

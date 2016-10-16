@@ -15,7 +15,6 @@ import net.minecraft.block.state.BlockStateContainer.Builder;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -30,7 +29,7 @@ import net.minecraft.world.World;
 
 public class BlockOre extends BlockFalling
 {
-	private final PropertyValues<OreType> oreType;
+	private final OreTypeProperty oreType;
 	private final BlockStateContainer realContainer;
 	private final ResourceLocation name;
 	public final MetalExtras_OH objectHolder;
@@ -42,7 +41,7 @@ public class BlockOre extends BlockFalling
 		super(Material.ROCK);
 		this.setRegistryName(material.getRegistryName().getResourcePath() + "_" + category.getRegistryName().getResourcePath());
 		this.objectHolder = objectHolder;
-		this.realContainer = new Builder(this).add(this.oreType = PropertyValues.create("type", OreType.class, (this.category = category).getOreTypes())).build();
+		this.realContainer = new Builder(this).add(this.oreType = new OreTypeProperty(this.category = category)).build();
 		this.name = (this.material = material).getRegistryName();
 		this.setUnlocalizedName(this.name.getResourcePath());
 		this.setDefaultState(this.realContainer.getBaseState());
@@ -188,7 +187,7 @@ public class BlockOre extends BlockFalling
 			super.updateTick(world, pos, state, random);
 	}
 	
-	public PropertyValues<OreType> getOreTypeProperty()
+	public OreTypeProperty getOreTypeProperty()
 	{
 		return this.oreType;
 	}

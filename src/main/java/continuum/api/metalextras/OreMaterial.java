@@ -19,10 +19,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 
-public class OreMaterial
+public class OreMaterial implements IForgeRegistryEntry<OreMaterial>
 {
-	private final ResourceLocation name;
+	private ResourceLocation name;
 	private final int harvestLevel;
 	private final ResourceLocation itemDropped;
 	private final int minItemDrops;
@@ -39,29 +40,28 @@ public class OreMaterial
 	private final OreProperties defaultProperties;
 	private OreProperties properties;
 	
-	public OreMaterial(String ore, int harvestLevel, String ingot, int meta, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extraData)
+	public OreMaterial(int harvestLevel, String ingot, int meta, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extraData)
 	{
-		this(ore, harvestLevel, "metalextras:ore", 1, 1, -1, 0, 0, 0, ingot, meta, replace, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, extraData);
+		this(harvestLevel, "metalextras:ore", 1, 1, -1, 0, 0, 0, ingot, meta, replace, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, extraData);
 	}
 	
-	public OreMaterial(String ore, int harvestLevel, String item, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extraData)
+	public OreMaterial(int harvestLevel, String item, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extraData)
 	{
-		this(ore, harvestLevel, item, 0, replace, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, extraData);
+		this(harvestLevel, item, 0, replace, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, extraData);
 	}
 	
-	public OreMaterial(String ore, int harvestLevel, String item, String ingot, int meta, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extraData)
+	public OreMaterial(int harvestLevel, String item, String ingot, int meta, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extraData)
 	{
-		this(ore, harvestLevel, item, 1, 1, 0, 0, 0, 0, ingot, meta, replace, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, extraData);
+		this(harvestLevel, item, 1, 1, 0, 0, 0, 0, ingot, meta, replace, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, extraData);
 	}
 	
-	public OreMaterial(String ore, int harvestLevel, String item, int minItems, int maxItems, int metadata, int fortuneAdditive, int minXP, int maxXP, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extraData)
+	public OreMaterial(int harvestLevel, String item, int minItems, int maxItems, int metadata, int fortuneAdditive, int minXP, int maxXP, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extraData)
 	{
-		this(ore, harvestLevel, item, minItems, maxItems, metadata, fortuneAdditive, minXP, maxXP, item, metadata, replace, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, extraData);
+		this(harvestLevel, item, minItems, maxItems, metadata, fortuneAdditive, minXP, maxXP, item, metadata, replace, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, extraData);
 	}
 	
-	public OreMaterial(String ore, int harvestLevel, String item, int minItems, int maxItems, int metadata, int fortuneAdditive, int minXP, int maxXP, String ingot, int meta, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extras)
+	public OreMaterial(int harvestLevel, String item, int minItems, int maxItems, int metadata, int fortuneAdditive, int minXP, int maxXP, String ingot, int meta, boolean replace, int spawnTriesPC, int minVeinSize, int maxVeinSize, int minGenHeight, int maxGenHeight, Collection<Pair<String, Object>> extras)
 	{
-		this.name = new ResourceLocation(ore);
 		this.harvestLevel = harvestLevel;
 		this.itemDropped = new ResourceLocation(item);
 		this.minItemDrops = minItems;
@@ -186,5 +186,36 @@ public class OreMaterial
 	public int hashCode()
 	{
 		return this.getName().hashCode();
+	}
+
+	public final OreMaterial setRegistryName(String modid, String name)
+	{
+		return this.setRegistryName(new ResourceLocation(modid, name));
+	}
+	
+	public final OreMaterial setRegistryName(String name)
+	{
+        return this.setRegistryName(new ResourceLocation(name));
+    }
+
+	@Override
+	public final OreMaterial setRegistryName(ResourceLocation name)
+	{
+        if(this.getRegistryName() != null)
+            throw new IllegalStateException("Attempted to set registry name with existing registry name! New: " + name + " Old: " + this.getRegistryName());
+        this.name = name;
+		return this;
+	}
+	
+	@Override
+	public final ResourceLocation getRegistryName()
+	{
+		return this.name;
+	}
+
+	@Override
+	public final Class<? super OreMaterial> getRegistryType()
+	{
+		return OreMaterial.class;
 	}
 }

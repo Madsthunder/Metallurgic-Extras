@@ -14,7 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 
-public class OreType implements Comparable<OreType>, IStringSerializable, IForgeRegistryEntry
+public class OreType implements Comparable<OreType>, IStringSerializable, IForgeRegistryEntry<OreType>
 {
 	private ResourceLocation name;
 	private OreCategory category;
@@ -132,8 +132,8 @@ public class OreType implements Comparable<OreType>, IStringSerializable, IForge
 	}
 
 	@Override
-	public final Class<? super OreCategory> getRegistryType()
+	public final Class<? super OreType> getRegistryType()
 	{
-		return OreCategory.class;
+		return OreType.class;
 	}	
 }

@@ -35,22 +35,22 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 	{
 		MetalExtras_OH holder = mod.getObjectHolder();
 		holder.oreCategories.add(holder.rock_category = new OreCategory().setRegistryName("rock"));
-		holder.rock_category.addOreType(new OreType("granite", Blocks.STONE.getStateFromMeta(1), 1.5F, 10F));
-		holder.rock_category.addOreType(new OreType("diorite", Blocks.STONE.getStateFromMeta(3), 1.5F, 10F));
-		holder.rock_category.addOreType(new OreType("andesite", Blocks.STONE.getStateFromMeta(5), 1.5F, 10F));
-		holder.rock_category.addOreType(new OreType("sandstone", Blocks.SANDSTONE.getDefaultState(), .8F, 0F));
-		holder.rock_category.addOreType(new OreType("red_sandstone", Blocks.RED_SANDSTONE.getDefaultState(), .8F, 0F));
-		holder.rock_category.addOreType(new OreType("netherrack", Blocks.NETHERRACK.getDefaultState(), .4F, 0F));
-		holder.rock_category.addOreType(new OreType("end_stone", Blocks.END_STONE.getDefaultState(), 3F, 15F));
-		holder.rock_category.addOreType(new OreType("bedrock", Blocks.BEDROCK.getDefaultState(), -1F, 6000000F));
+		holder.rock_category.addOreType(new OreType(Blocks.STONE.getStateFromMeta(1), 1.5F, 10F).setRegistryName("minecraft", "granite"));
+		holder.rock_category.addOreType(new OreType(Blocks.STONE.getStateFromMeta(3), 1.5F, 10F).setRegistryName("minecraft", "diorite"));
+		holder.rock_category.addOreType(new OreType(Blocks.STONE.getStateFromMeta(5), 1.5F, 10F).setRegistryName("minecraft", "andesite"));
+		holder.rock_category.addOreType(new OreType(Blocks.SANDSTONE.getDefaultState(), .8F, 0F).setRegistryName("minecraft", "sandstone"));
+		holder.rock_category.addOreType(new OreType(Blocks.RED_SANDSTONE.getDefaultState(), .8F, 0F).setRegistryName("minecraft", "red_sandstone"));
+		holder.rock_category.addOreType(new OreType(Blocks.NETHERRACK.getDefaultState(), .4F, 0F).setRegistryName("minecraft", "netherrack"));
+		holder.rock_category.addOreType(new OreType(Blocks.END_STONE.getDefaultState(), 3F, 15F).setRegistryName("minecraft", "end_stone"));
+		holder.rock_category.addOreType(new OreType(Blocks.BEDROCK.getDefaultState(), -1F, 6000000F).setRegistryName("minecraft", "bedrock"));
 		holder.oreCategories.add(holder.ground_category = new OreCategory().setRegistryName("ground"));
-		holder.ground_category.addOreType(new OreType("dirt", Blocks.DIRT.getStateFromMeta(0), .5F, 0F));
-		holder.ground_category.addOreType(new OreType("coarse_dirt", Blocks.DIRT.getStateFromMeta(1), .5F, 0F));
-		holder.ground_category.addOreType(new OreType("sand", Blocks.SAND.getStateFromMeta(0), .5F, 0F));
-		holder.ground_category.addOreType(new OreType("red_sand", Blocks.SAND.getStateFromMeta(1), .5F, 0F));
-		holder.ground_category.addOreType(new OreType("clay", Blocks.CLAY.getDefaultState(), .6F, 0F));
-		holder.ground_category.addOreType(new OreType("gravel", Blocks.GRAVEL.getDefaultState(), .6F, 0F));
-		holder.ground_category.addOreType(new OreType("soul_sand", Blocks.SOUL_SAND.getDefaultState(), .5F, 0F)
+		holder.ground_category.addOreType(new OreType(Blocks.DIRT.getStateFromMeta(0), .5F, 0F).setRegistryName("minecraft", "dirt"));
+		holder.ground_category.addOreType(new OreType(Blocks.DIRT.getStateFromMeta(1), .5F, 0F).setRegistryName("minecraft", "coarse_dirt"));
+		holder.ground_category.addOreType(new OreType(Blocks.SAND.getStateFromMeta(0), .5F, 0F).setRegistryName("minecraft", "sand"));
+		holder.ground_category.addOreType(new OreType(Blocks.SAND.getStateFromMeta(1), .5F, 0F).setRegistryName("minecraft", "red_sand"));
+		holder.ground_category.addOreType(new OreType(Blocks.CLAY.getDefaultState(), .6F, 0F).setRegistryName("minecraft", "clay"));
+		holder.ground_category.addOreType(new OreType(Blocks.GRAVEL.getDefaultState(), .6F, 0F).setRegistryName("minecraft", "gravel"));
+		holder.ground_category.addOreType(new OreType(Blocks.SOUL_SAND.getDefaultState(), .5F, 0F)
 		{
 			@Override
 			public void handleEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity)
@@ -64,7 +64,7 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 			{
 				return new AxisAlignedBB(0, 0, 0, 1, 0.875, 1);
 			}
-		});
+		}.setRegistryName("minecraft", "soul_sand"));
 		holder.ingotList = Maps.newHashMap();
 		holder.ores.add(new OreMaterial(1, "metalextras:copper_ingot", 0, false, 20, 1, 9, 0, 64, Lists.newArrayList()).setRegistryName("metalextras:copper_ore"));
 		holder.ores.add(new OreMaterial(1, "metalextras:tin_ingot", 0, false, 20, 1, 9, 0, 64, Lists.newArrayList(Pair.of("minecraft", "end_stone"))).setRegistryName("metalextras:tin_ore"));

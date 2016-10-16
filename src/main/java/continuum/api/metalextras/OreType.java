@@ -2,7 +2,6 @@ package continuum.api.metalextras;
 
 import java.util.List;
 
-import continuum.metalextras.mod.MetalExtras_OH;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.SoundType;
@@ -13,18 +12,18 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 
-public class OreType implements Comparable<OreType>, IStringSerializable
+public class OreType implements Comparable<OreType>, IStringSerializable, IForgeRegistryEntry
 {
-	private final ResourceLocation name;
+	private ResourceLocation name;
 	private OreCategory category;
 	private final IBlockState state;
 	private final float hardness;
 	private final float resistance;
 	
-	public OreType(String name, IBlockState state, float hardness, float resistance)
+	public OreType(IBlockState state, float hardness, float resistance)
 	{
-		this.name = new ResourceLocation(name);
 		this.state = state;
 		this.hardness = hardness;
 		this.resistance = resistance * 3;
@@ -64,15 +63,11 @@ public class OreType implements Comparable<OreType>, IStringSerializable
 		return this.category;
 	}
 	
+	@Override
 	public final String getName()
 	{
-		ResourceLocation name = this.getResourceName();
+		ResourceLocation name = this.getRegistryName();
 		return name.getResourceDomain() + "_" + name.getResourcePath();
-	}
-	
-	public ResourceLocation getResourceName()
-	{
-		return this.name;
 	}
 	
 	public SoundType getSoundType()
@@ -110,4 +105,35 @@ public class OreType implements Comparable<OreType>, IStringSerializable
 	{
 		return Block.FULL_BLOCK_AABB;
 	}
+
+	public final OreType setRegistryName(String modid, String name)
+	{
+		return this.setRegistryName(new ResourceLocation(modid, name));
+	}
+	
+	public final OreType setRegistryName(String name)
+	{
+        return this.setRegistryName(new ResourceLocation(name));
+    }
+
+	@Override
+	public final OreType setRegistryName(ResourceLocation name)
+	{
+        if(this.getRegistryName() != null)
+            throw new IllegalStateException("Attempted to set registry name with existing registry name! New: " + name + " Old: " + this.getRegistryName());
+        this.name = name;
+		return this;
+	}
+	
+	@Override
+	public final ResourceLocation getRegistryName()
+	{
+		return this.name;
+	}
+
+	@Override
+	public final Class<? super OreCategory> getRegistryType()
+	{
+		return OreCategory.class;
+	}	
 }

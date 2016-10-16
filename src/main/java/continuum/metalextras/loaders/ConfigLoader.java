@@ -54,7 +54,7 @@ public class ConfigLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	{
 		List<OreType> whitelist = Lists.newArrayList();
 		for(OreType type : OreCategory.getAllOreTypes())
-			if(parser.getBoolean("spawnInside." + type.getResourceName().toString(), defaults.contains(type)))
+			if(parser.getBoolean("spawnInside." + type.getRegistryName().toString(), defaults.contains(type)))
 				whitelist.add(type);
 		return whitelist;
 	}

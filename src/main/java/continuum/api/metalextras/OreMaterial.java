@@ -76,7 +76,7 @@ public class OreMaterial implements IForgeRegistryEntry<OreMaterial>
 		List<OreType> whitelist = Lists.newArrayList();
 		Pair<String, String> p;
 		for(OreType type : OreCategory.getAllOreTypes())
-			if(extras.contains(p = Pair.of(type.getResourceName().getResourceDomain(), type.getResourceName().getResourcePath())))
+			if(extras.contains(p = Pair.of(type.getRegistryName().getResourceDomain(), type.getRegistryName().getResourcePath())))
 				extras.remove(p);
 			else
 				whitelist.add(type);

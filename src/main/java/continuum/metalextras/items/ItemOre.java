@@ -26,7 +26,7 @@ public class ItemOre extends Item
 	@Override
 	public String getUnlocalizedName(ItemStack stack)
 	{
-		return "tile." + this.objectHolder.ores.get(stack.getMetadata()).getName().getResourcePath();
+		return "tile." + this.objectHolder.ores.get(stack.getMetadata()).getRegistryName().getResourcePath();
 	}
 	
 	@Override

@@ -84,11 +84,6 @@ public class OreMaterial implements IForgeRegistryEntry<OreMaterial>
 		this.defaultProperties = new OreProperties(this, true, spawnTriesPC, minVeinSize, maxVeinSize, minGenHeight, maxGenHeight, whitelist, this.extras);
 	}
 	
-	public ResourceLocation getName()
-	{
-		return this.name;
-	}
-	
 	public Item getItem()
 	{
 		return ForgeRegistries.ITEMS.getValue(this.itemDropped);
@@ -185,7 +180,7 @@ public class OreMaterial implements IForgeRegistryEntry<OreMaterial>
 	
 	public int hashCode()
 	{
-		return this.getName().hashCode();
+		return this.getRegistryName().hashCode();
 	}
 
 	public final OreMaterial setRegistryName(String modid, String name)

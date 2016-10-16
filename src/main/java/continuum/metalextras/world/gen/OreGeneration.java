@@ -41,8 +41,8 @@ public class OreGeneration implements IWorldGenerator
 	public void generate(Random random, int x, int z, World world, IChunkGenerator generator, IChunkProvider provider)
 	{
 		DimensionType type = world.provider.getDimensionType();
-		for(OreMaterial data : this.objectHolder.ores)
-			if(type == DimensionType.NETHER || this.objectHolder.oresToReplace.contains(data.getName()))
-				MetalExtras_EH.scheduleOreForGeneration(world, x, z, data);
+		for(OreMaterial material : this.objectHolder.ores)
+			if(type == DimensionType.NETHER || this.objectHolder.oresToReplace.contains(material.getRegistryName()))
+				MetalExtras_EH.scheduleOreForGeneration(world, x, z, material);
 	}
 }

@@ -32,7 +32,7 @@ public class ConfigLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	{
 		String modid;
 		for(OreMaterial material : MetalExtras_OH.ores)
-			if(!configs.containsKey(modid = material.getName().getResourceDomain()))
+			if(!configs.containsKey(modid = material.getRegistryName().getResourceDomain()))
 				configs.put(modid, new ConfigParser(new File(oresFolder, modid + ".cfg")));
 	}
 	
@@ -47,7 +47,7 @@ public class ConfigLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	
 	private void loadOreProperties(OreMaterial material)
 	{
-		material.setOreProperties(new OreProperties(material, this.configs.get(material.getName().getResourceDomain()).getCategoryParser(material.getName().getResourcePath())));
+		material.setOreProperties(new OreProperties(material, this.configs.get(material.getRegistryName().getResourceDomain()).getCategoryParser(material.getRegistryName().getResourcePath())));
 	}
 	
 	public static List<OreType> parseOreWhitelist(ConfigCategoryParser parser, List<OreType> defaults)

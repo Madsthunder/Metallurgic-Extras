@@ -60,11 +60,11 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	}
 	
 	@SideOnly(Side.CLIENT)
-	public void registerAllModelsForOre(OreMaterial data, MetalExtras_OH holder)
+	public void registerAllModelsForOre(OreMaterial material, MetalExtras_OH holder)
 	{
-		for(BlockOre ore : data.getBlocks())
+		for(BlockOre ore : material.getBlocks())
 			this.registerModelsForOre(ore, holder.oreStateMapper, ore.getOreTypeProperty().getAllowedValues());
-		ModelLoader.setCustomModelResourceLocation(holder.ore, holder.ores.indexOf(data), new ModelResourceLocation(new ResourceLocation("metalextras", data.getName().getResourcePath() + "_item"), "inventory"));
+		ModelLoader.setCustomModelResourceLocation(holder.ore, holder.ores.indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.getRegistryName().getResourcePath() + "_item"), "inventory"));
 	}
 	
 	@SideOnly(Side.CLIENT)
@@ -79,7 +79,7 @@ public class ClientLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 	{
 		ModelLoader.setCustomStateMapper(block, mapper);
 		for(Integer i : ObjectHooks.increment(strings.size()))
-			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(block), i, new ModelResourceLocation(new ResourceLocation("metalextras", block.getOreData().getName().getResourcePath()), "type=" + strings.get(i).getName()));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(block), i, new ModelResourceLocation(new ResourceLocation("metalextras", block.getOreData().getRegistryName().getResourcePath()), "type=" + strings.get(i).getName()));
 	}
 	
 	@Override

@@ -40,10 +40,10 @@ public class BlockOre extends BlockFalling
 	public BlockOre(MetalExtras_OH objectHolder, OreMaterial material, OreCategory category)
 	{
 		super(Material.ROCK);
-		this.setRegistryName(material.getName().getResourcePath() + "_" + category.getRegistryName().getResourcePath());
+		this.setRegistryName(material.getRegistryName().getResourcePath() + "_" + category.getRegistryName().getResourcePath());
 		this.objectHolder = objectHolder;
 		this.realContainer = new Builder(this).add(this.oreType = PropertyValues.create("type", OreType.class, (this.category = category).getOreTypes())).build();
-		this.name = (this.material = material).getName();
+		this.name = (this.material = material).getRegistryName();
 		this.setUnlocalizedName(this.name.getResourcePath());
 		this.setDefaultState(this.realContainer.getBaseState());
 		this.setDefaultState(this.getDefaultState().withProperty(oreType, category.getOreTypes().get(0)));

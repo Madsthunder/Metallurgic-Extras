@@ -21,6 +21,6 @@ public class StateMapperOre extends StateMapperBase
 	protected ModelResourceLocation getModelResourceLocation(IBlockState state)
 	{
 		BlockOre block = (BlockOre)state.getBlock();
-		return new ModelResourceLocation("metalextras:" + block.getOreData().getName().getResourcePath(), "type=" + block.getOreType(state).getName());
+		return new ModelResourceLocation("metalextras:" + block.getOreData().getRegistryName().getResourcePath(), "type=" + block.getOreType(state).getName());
 	}
 }

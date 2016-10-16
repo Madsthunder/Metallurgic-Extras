@@ -29,7 +29,7 @@ public class RecipeLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_EH
 			List<ItemStack> stacks = Lists.newArrayList();
 			ItemStack ingot = data.getIngot();
 			Integer i = 0;
-			String name = data.getName().getResourcePath().split("_")[0];
+			String name = data.getRegistryName().getResourcePath().split("_")[0];
 			name = "ore" + name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
 			for(BlockOre ore : data.getBlocks())
 				for(Integer j : ObjectHooks.increment(ore.getOreTypeProperty().getAllowedValues().size()))

@@ -137,7 +137,7 @@ public class MetalExtras_EH
 		{
 			ResourceLocation location = new ResourceLocation(name);
 			for(OreMaterial data1 : MetalExtras_OH.ores)
-				if(data1.getName().equals(location))
+				if(data1.getRegistryName().equals(location))
 					data = data1;
 		}
 		if(data != null)
@@ -148,18 +148,18 @@ public class MetalExtras_EH
 	public static void loadOreGenData(Chunk chunk, NBTTagCompound compound)
 	{
 		if(!compound.hasKey("oreGenData"))
-			for(OreMaterial data : objectHolder.ores)
-				if(objectHolder.oresToReplace.contains(data.getName()))
-					if(!compound.getCompoundTag("oreGenData").getBoolean(data.getName().toString()))
-						chunkGenerated.get(data).add(chunk);
+			for(OreMaterial material : objectHolder.ores)
+				if(objectHolder.oresToReplace.contains(material.getRegistryName()))
+					if(!compound.getCompoundTag("oreGenData").getBoolean(material.getRegistryName().toString()))
+						chunkGenerated.get(material).add(chunk);
 	}
 	
 	public static NBTTagCompound getOreGenData(Chunk chunk)
 	{
 		NBTTagCompound oreGenData = new NBTTagCompound();
-		for(OreMaterial data : objectHolder.ores)
-			if(objectHolder.oresToReplace.contains(data.getName()))
-				oreGenData.setBoolean(data.getName().toString(), !getChunkNeedsGenerating(data, chunk));
+		for(OreMaterial material : objectHolder.ores)
+			if(objectHolder.oresToReplace.contains(material.getRegistryName()))
+				oreGenData.setBoolean(material.getRegistryName().toString(), !getChunkNeedsGenerating(material, chunk));
 		return oreGenData;
 	}
 	

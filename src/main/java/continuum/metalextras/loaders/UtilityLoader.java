@@ -92,7 +92,7 @@ public class UtilityLoader implements ObjectLoader<MetalExtras_OH, MetalExtras_E
 		for(OreMaterial material : holder.ores)
 		{
 			if(material.shouldReplaceExisting())
-				holder.oresToReplace.add(material.getName());
+				holder.oresToReplace.add(material.getRegistryName());
 			for(BlockOre ore : material.getBlocks())
 				ore.setCreativeTab(holder.tabOres);
 		}

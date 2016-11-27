@@ -1,0 +1,7 @@
+{
+    "variants":
+    {
+        "normal": { "model": "metalextras:ender_block" },
+        "inventory": { "model": "metalextras:ender_block" }
+    }
+}

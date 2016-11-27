@@ -1,0 +1,7 @@
+{
+    "variants":
+    {
+        "normal": { "model": "metalextras:sapphire_block" },
+        "inventory": { "model": "metalextras:sapphire_block" }
+    }
+}

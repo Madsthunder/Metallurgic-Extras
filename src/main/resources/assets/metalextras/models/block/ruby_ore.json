@@ -1,0 +1,7 @@
+{
+    "parent": "metalextras:block/emerald_ore",
+    "textures":
+    {
+        "particle": "metalextras:items/ruby_ore"
+    }
+}

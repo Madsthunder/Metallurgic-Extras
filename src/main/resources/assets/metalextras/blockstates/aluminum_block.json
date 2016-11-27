@@ -1,0 +1,7 @@
+{
+    "variants":
+    {
+        "normal": { "model": "metalextras:aluminum_block" },
+        "inventory": { "model": "metalextras:aluminum_block" }
+    }
+}

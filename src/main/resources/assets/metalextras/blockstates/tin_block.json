@@ -1,7 +1,6 @@
 {
     "variants":
     {
-        "normal": { "model": "metalextras:tin_block" },
-        "inventory": { "model": "metalextras:tin_block" }
+        "normal": { "model": "metalextras:tin_block" }
     }
 }

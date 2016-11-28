@@ -20,12 +20,12 @@ import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
-@EventBusSubscriber
 public class OreUtils
 {
 	public static final ResourceLocation ORETYPE_TO_IBLOCKSTATE = new ResourceLocation("metalextras", "oretype_to_iblockstate");
@@ -34,12 +34,12 @@ public class OreUtils
 	
 	public static IForgeRegistry<OreMaterial> getMaterialsRegistry()
 	{
-		return materials;
+		return materials == null ? materials = GameRegistry.findRegistry(OreMaterial.class) : materials;
 	}
 	
 	public static IForgeRegistry<OreTypes> getTypeCollectionsRegistry()
 	{
-		return typeCollections;
+		return typeCollections == null ? typeCollections = GameRegistry.findRegistry(OreTypes.class) : typeCollections;
 	}
 	
 	public static List<OreType> getAllOreTypes()
@@ -175,17 +175,5 @@ public class OreUtils
 		}
 		return true;
 		
-	}
-	
-	@SubscribeEvent
-	public void onOreMaterialsRegister(RegistryEvent.Register<OreMaterial> event)
-	{
-		materials = event.getRegistry();
-	}
-	
-	@SubscribeEvent
-	public void onOreTypesRegister(RegistryEvent.Register<OreTypes> event)
-	{
-		typeCollections = event.getRegistry();
 	}
 }

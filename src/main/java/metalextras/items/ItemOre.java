@@ -53,7 +53,7 @@ public class ItemOre extends Item
 			for (OreMaterial material : OreUtils.getMaterialsRegistry())
 			{
 				CreativeTabs tab = material.getCreativeTab();
-				if(tab != null)
+				if(tab != null && !tabs.contains(tab))
 					tabs.add(tab);
 			}
 		return Iterables.toArray(tabs, CreativeTabs.class);

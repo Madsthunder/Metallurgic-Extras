@@ -151,7 +151,7 @@ public abstract class OreType implements Comparable<OreType>, IStringSerializabl
 		public Impl(OreTypes types, IBlockState state, OreTypeDictionary... entries)
 		{
 			super(types, state, entries);
-			this.langKey = state.getBlock().getUnlocalizedName();
+			this.langKey = state.getBlock().getUnlocalizedName() + ".name";
 		}
 		
 		public OreType.Impl setHardness(float hardness)

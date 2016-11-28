@@ -76,16 +76,13 @@ public class OreGeneration implements IWorldGenerator
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public static void onOreGen(GenerateMinable event)
 	{
-		if(event.getResult() != Result.DENY)
-		{
-			boolean deny = false;
-			for (OreMaterial material : OreUtils.getMaterialsRegistry())
-				if(material.getOreProperties().getSpawnEnabled() && material.getOverrides().contains(event.getType()))
-					OreGeneration.spawnOresInChunk(event.getWorld().getChunkFromBlockCoords(event.getPos()), event.getRand(), material);
-			deny = true;
-			if(deny)
-				event.setResult(Result.DENY);
-		}
+		boolean deny = false;
+		for (OreMaterial material : OreUtils.getMaterialsRegistry())
+			if(material.getOreProperties().getSpawnEnabled() && material.getOverrides().contains(event.getType()))
+				OreGeneration.spawnOresInChunk(event.getWorld().getChunkFromBlockCoords(event.getPos()), event.getRand(), material);
+		deny = true;
+		if(deny)
+			event.setResult(Result.DENY);
 	}
 	
 	@SubscribeEvent

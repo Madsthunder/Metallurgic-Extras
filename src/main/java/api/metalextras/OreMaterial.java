@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class OreMaterial implements IForgeRegistryEntry<OreMaterial>
+public abstract class OreMaterial extends IForgeRegistryEntry.Impl<OreMaterial>
 {
 	@GameRegistry.ObjectHolder("metalextras:ore")
 	public static final Item ORE = null;
@@ -105,37 +105,6 @@ public abstract class OreMaterial implements IForgeRegistryEntry<OreMaterial>
 		return "OreMaterial{" + this.getRegistryName() + "}";
 	}
 	
-	public final OreMaterial setRegistryName(String modid, String name)
-	{
-		return this.setRegistryName(new ResourceLocation(modid, name));
-	}
-	
-	public final OreMaterial setRegistryName(String name)
-	{
-		return this.setRegistryName(new ResourceLocation(name));
-	}
-	
-	@Override
-	public final OreMaterial setRegistryName(ResourceLocation name)
-	{
-		if(this.getRegistryName() != null)
-			throw new IllegalStateException("Attempted to set registry name with existing registry name! New: " + name + " Old: " + this.getRegistryName());
-		this.name = name;
-		return this;
-	}
-	
-	@Override
-	public final ResourceLocation getRegistryName()
-	{
-		return this.name;
-	}
-	
-	@Override
-	public final Class<? super OreMaterial> getRegistryType()
-	{
-		return OreMaterial.class;
-	}
-	
 	public static class Impl extends OreMaterial
 	{
 		private final OreProperties properties;
@@ -151,6 +120,7 @@ public abstract class OreMaterial implements IForgeRegistryEntry<OreMaterial>
 		private ResourceLocation model = null;
 		private ModelType modelType = ModelType.IRON;
 		private Collection<GenerateMinable.EventType> overrides = Sets.newHashSet();
+		private CreativeTabs tab = null;
 		
 		public Impl(OreProperties properties)
 		{
@@ -289,6 +259,18 @@ public abstract class OreMaterial implements IForgeRegistryEntry<OreMaterial>
 		public Collection<GenerateMinable.EventType> getOverrides()
 		{
 			return this.overrides;
+		}
+		
+		public OreMaterial.Impl setCreativeTab(CreativeTabs tab)
+		{
+			this.tab = tab;
+			return this;
+		}
+		
+		@Override
+		public CreativeTabs getCreativeTab()
+		{
+			return this.tab;
 		}
 	}
 }

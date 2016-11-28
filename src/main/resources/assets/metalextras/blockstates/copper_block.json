@@ -1,7 +1,6 @@
 {
     "variants":
     {
-        "normal": { "model": "metalextras:copper_block" },
-        "inventory": { "model": "metalextras:copper_block" }
+        "normal": { "model": "metalextras:copper_block" }
     }
 }

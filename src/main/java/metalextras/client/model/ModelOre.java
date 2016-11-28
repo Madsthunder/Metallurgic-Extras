@@ -108,8 +108,8 @@ public class ModelOre implements IModel
 				OreType type = ore.getOreType(state);
 				if(type != null)
 				{
-					Set<IBakedModel> models = Sets.newHashSet(ore.getOreMaterial().getModel(type).bake(this.modelState, this.vertexFormat, this.textureGetter));
-					IModel model = type.getModel(ore.getOreMaterial());
+					Set<IBakedModel> models = Sets.newHashSet(type.getModel(ore.getOreMaterial()).bake(this.modelState, this.vertexFormat, this.textureGetter));
+					IModel model = ore.getOreMaterial().getModel(type);
 					models.add(model.bake(ModelRotation.X0_Y0, this.vertexFormat, this.textureGetter));
 					models.add(model.bake(ModelRotation.X180_Y0, this.vertexFormat, this.textureGetter));
 					models.add(model.bake(ModelRotation.X90_Y180, this.vertexFormat, this.textureGetter));
@@ -192,7 +192,8 @@ public class ModelOre implements IModel
 				Map<EnumFacing, List<BakedQuad>> faceQuads = Maps.newHashMap();
 				for(EnumFacing facing : EnumFacing.values())
 					faceQuads.put(facing, original.getQuads(state, facing, 0L));
-				IBakedModel model = new SimpleBakedModel(generalQuads, faceQuads, original.isAmbientOcclusion(), original.isGui3d(), original.getParticleTexture(), ClientHooks.DEFAULT_BLOCK_TRANSFORMATIONS, ItemOverrideList.NONE);
+				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreMaterial()); 
+				IBakedModel model = new SimpleBakedModel(generalQuads, faceQuads, original.isAmbientOcclusion(), original.isGui3d(), original.getParticleTexture(), typeModel.bake(typeModel.getDefaultState(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getItemCameraTransforms(), ItemOverrideList.NONE);
 				this.models.get(stack.getItem()).addKey(stack.getMetadata(), model);
 				return model;
 			}

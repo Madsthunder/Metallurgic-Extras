@@ -8,10 +8,7 @@ import static api.metalextras.OreTypeDictionary.ROCKY;
 import static api.metalextras.OreTypeDictionary.SANDY;
 import static api.metalextras.OreTypeDictionary.WET;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 
 import com.google.common.base.Predicate;
@@ -19,20 +16,16 @@ import com.google.common.base.Predicates;
 
 import api.metalextras.ModelType;
 import api.metalextras.OreMaterial;
-import api.metalextras.OreProperties;
 import api.metalextras.OreType;
 import api.metalextras.OreTypeDictionary;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
 import continuum.essentials.mod.ObjectHolder;
-import metalextras.client.state.StateMapperCompressed;
-import metalextras.client.state.StateMapperOre;
 import metalextras.items.ItemOre;
 import metalextras.mod.MetalExtras_Callbacks;
 import metalextras.mod.MetalExtras_Config;
 import metalextras.mod.MetalExtras_Proxies;
 import metalextras.ores.VanillaOreMaterial;
-import metalextras.ores.VanillaOreMaterial.GenerateType;
 import metalextras.ores.properties.ConfigurationOreProperties;
 import metalextras.world.gen.OreGeneration;
 import net.minecraft.block.Block;
@@ -42,7 +35,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -58,15 +50,12 @@ import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.RegistryBuilder;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 @EventBusSubscriber
 @Mod(modid = MetalExtras.MODID, name = MetalExtras.NAME, version = MetalExtras.VERSION, guiFactory = "metalextras.mod.MetalExtras_Config")
@@ -74,7 +63,7 @@ public class MetalExtras
 {
 	public static final String MODID = "metalextras";
 	public static final String NAME = "Metallurgic Extras";
-	public static final String VERSION = "2.0.0 RC1";
+	public static final String VERSION = "2.0.0 RC2";
 	
 	public static final OreTypeDictionary OTD_NETHER = OreTypeDictionary.byDimension(DimensionType.NETHER);
 	public static final OreTypeDictionary OTD_END = OreTypeDictionary.byDimension(DimensionType.THE_END);
@@ -146,7 +135,7 @@ public class MetalExtras
 	public static final Item LEAD_INGOT = null;
 	@GameRegistry.ObjectHolder("metalextras:silver_ingot")
 	public static final Item SILVER_INGOT = null;
-	@GameRegistry.ObjectHolder("metalextras:ender_Gem")
+	@GameRegistry.ObjectHolder("metalextras:ender_gem")
 	public static final Item ENDER_GEM = null;
 	@GameRegistry.ObjectHolder("metalextras:sapphire_gem")
 	public static final Item SAPPHIRE_GEM = null;
@@ -271,13 +260,13 @@ public class MetalExtras
 	@SubscribeEvent
 	public static void onOreMaterialsRegister(RegistryEvent.Register<OreMaterial> event)
 	{
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("copper_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Predicates.alwaysTrue())).setHarvestLevel(1).setItemDroppedAsOre().setOverrides(MetalExtras.COPPER_EVT).setLanguageKey("tile.metalextras:copper_ore").setModel(new ResourceLocation("metalextras:block/copper_ore")).setRegistryName("metalextras", "copper_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("tin_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, OreTypeDictionary.notAny(MetalExtras.OTD_END))).setHarvestLevel(1).setItemDroppedAsOre().setOverrides(MetalExtras.TIN_EVT).setLanguageKey("tile.metalextras:tin_ore").setModel(new ResourceLocation("metalextras:block/tin_ore")).setRegistryName("metalextras", "tin_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("aluminum_ore", true, 6, 32, 128, -Float.MAX_VALUE, Float.MAX_VALUE, 5, OreTypeDictionary.all(ROCKY))).setHarvestLevel(1).setItemDroppedAsOre().setOverrides(MetalExtras.ALUMINUM_EVT).setLanguageKey("tile.metalextras:aluminum_ore").setModel(new ResourceLocation("metalextras:block/aluminum_ore")).setRegistryName("metalextras", "aluminum_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("lead_ore", true, 8, 32, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 8, OreTypeDictionary.notAny(DIRTY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setOverrides(MetalExtras.LEAD_EVT).setLanguageKey("tile.metalextras:lead_ore").setModel(new ResourceLocation("metalextras:block/lead_ore")).setRegistryName("metalextras", "lead_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("silver_ore", true, 8, 0, 32, -Float.MAX_VALUE, Float.MAX_VALUE, 8, OreTypeDictionary.notAny(DIRTY, SANDY, MetalExtras.OTD_END))).setItemDroppedAsOre().setHarvestLevel(2).setOverrides(MetalExtras.SILVER_EVT).setLanguageKey("tile.metalextras:silver_ore").setModel(new ResourceLocation("metalextras:block/silver_ore")).setRegistryName("metalextras", "silver_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("ender_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, OreTypeDictionary.all(MetalExtras.OTD_END))).setHarvestLevel(3).setItemDropped(MetalExtras.ENDER_GEM, 0, 3, 7).setOverrides(MetalExtras.ENDER_EVT).setLanguageKey("tile.metalextras:ender_ore").setModel(new ResourceLocation("metalextras:block/ender_ore")).setRegistryName("metalextras", "ender_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("sapphire_ore", true, 20, 0, 64, -Float.MAX_VALUE, 0.2F, 3, OreTypeDictionary.notAny(LOOSE, DRY, SANDY, HOT, MetalExtras.OTD_NETHER))).setHarvestLevel(3).setItemDropped(MetalExtras.SAPPHIRE_GEM, 0, 3, 7).setOverrides(MetalExtras.SAPPHIRE_EVT).setLanguageKey("tile.metalextras:sapphire_ore").setModel(new ResourceLocation("metalextras:block/sapphire_ore")).setRegistryName("metalextras", "sapphire_ore"));
+		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("copper_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Predicates.alwaysTrue())).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(MetalExtras.COPPER_EVT).setLanguageKey("tile.metalextras:copper_ore").setRegistryName("metalextras:copper_ore"));
+		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("tin_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, OreTypeDictionary.notAny(MetalExtras.OTD_END))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(MetalExtras.TIN_EVT).setLanguageKey("tile.metalextras:tin_ore").setRegistryName("metalextras:tin_ore"));
+		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("aluminum_ore", true, 6, 32, 128, -Float.MAX_VALUE, Float.MAX_VALUE, 5, OreTypeDictionary.all(ROCKY))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(MetalExtras.ALUMINUM_EVT).setLanguageKey("tile.metalextras:aluminum_ore").setRegistryName("metalextras:aluminum_ore"));
+		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("lead_ore", true, 8, 32, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 8, OreTypeDictionary.notAny(DIRTY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(MetalExtras.LEAD_EVT).setLanguageKey("tile.metalextras:lead_ore").setRegistryName("metalextras:lead_ore"));
+		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("silver_ore", true, 8, 0, 32, -Float.MAX_VALUE, Float.MAX_VALUE, 8, OreTypeDictionary.notAny(DIRTY, SANDY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(MetalExtras.SILVER_EVT).setLanguageKey("tile.metalextras:silver_ore").setRegistryName("metalextras:silver_ore"));
+		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("ender_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, OreTypeDictionary.all(MetalExtras.OTD_END))).setHarvestLevel(3).setItemDropped(MetalExtras.ENDER_GEM, 0, 3, 7).setCreativeTab(METALLURGIC_EXTRAS).setOverrides(MetalExtras.ENDER_EVT).setLanguageKey("tile.metalextras:ender_ore").setRegistryName("metalextras:ender_ore"));
+		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("sapphire_ore", true, 20, 0, 64, -Float.MAX_VALUE, 0.2F, 3, OreTypeDictionary.notAny(LOOSE, DRY, SANDY, HOT, MetalExtras.OTD_NETHER))).setHarvestLevel(3).setItemDropped(MetalExtras.SAPPHIRE_GEM, 0, 3, 7).setCreativeTab(METALLURGIC_EXTRAS).setOverrides(MetalExtras.SAPPHIRE_EVT).setLanguageKey("tile.metalextras:sapphire_ore").setRegistryName("metalextras:sapphire_ore"));
 		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("ruby_ore", true, 20, 0, 64, 1F, Float.MAX_VALUE, 3, new Predicate<Collection<OreTypeDictionary>>()
 		{
 			@Override
@@ -294,7 +283,7 @@ public class MetalExtras
 				}
 				return !entries.contains(MetalExtras.OTD_END);
 			}
-		})).setHarvestLevel(3).setItemDropped(MetalExtras.RUBY_GEM, 0, 3, 7).setOverrides(MetalExtras.RUBY_EVT).setLanguageKey("tile.metalextras:ruby_ore").setModel(new ResourceLocation("metalextras:block/ruby_ore")).setRegistryName("metalextras", "ruby_ore"));
+		})).setHarvestLevel(3).setItemDropped(MetalExtras.RUBY_GEM, 0, 3, 7).setOverrides(MetalExtras.RUBY_EVT).setCreativeTab(METALLURGIC_EXTRAS).setLanguageKey("tile.metalextras:ruby_ore").setModel(new ResourceLocation("metalextras:block/ruby_ore")).setRegistryName("metalextras", "ruby_ore"));
 		event.getRegistry().register(new VanillaOreMaterial(Blocks.COAL_ORE.getDefaultState(), 0, 2, ModelType.IRON, EventType.COAL)
 		{
 			@Override
@@ -315,7 +304,7 @@ public class MetalExtras
 			{
 				return OreGeneration.getChunkProviderSettings(decorator).coalSize;
 			}
-		}.setRegistryName("minecraft:coal_ore"));
+		}.setRegistryName("metalextras:coal_ore"));
 		event.getRegistry().register(new VanillaOreMaterial(Blocks.IRON_ORE.getDefaultState(), 0, 0, ModelType.IRON, EventType.IRON)
 		{
 			@Override
@@ -336,7 +325,7 @@ public class MetalExtras
 			{
 				return (decorator.chunkProviderSettings == null ? OreGeneration.defaultSettings : decorator.chunkProviderSettings).ironSize;
 			}
-		}.setRegistryName("minecraft:iron_ore"));
+		}.setRegistryName("metalextras:iron_ore"));
 		event.getRegistry().register(new VanillaOreMaterial(Blocks.LAPIS_ORE.getDefaultState(), 2, 5, ModelType.LAPIS, EventType.LAPIS)
 		{
 			@Override
@@ -363,7 +352,7 @@ public class MetalExtras
 			{
 				return OreGeneration.getChunkProviderSettings(decorator).lapisSize;
 			}
-		}.setRegistryName("minecraft:lapis_ore"));
+		}.setRegistryName("metalextras:lapis_ore"));
 		event.getRegistry().register(new VanillaOreMaterial(Blocks.GOLD_ORE.getDefaultState(), 0, 0, ModelType.IRON, EventType.GOLD)
 		{
 			@Override
@@ -384,7 +373,7 @@ public class MetalExtras
 			{
 				return OreGeneration.getChunkProviderSettings(decorator).goldSize;
 			}
-		}.setRegistryName("minecraft:gold_ore"));
+		}.setRegistryName("metalextras:gold_ore"));
 		event.getRegistry().register(new VanillaOreMaterial(Blocks.REDSTONE_ORE.getDefaultState(), 0, 0, ModelType.IRON, EventType.REDSTONE)
 		{
 			@Override
@@ -405,7 +394,7 @@ public class MetalExtras
 			{
 				return OreGeneration.getChunkProviderSettings(decorator).redstoneSize;
 			}
-		}.setRegistryName("minecraft:redstone_ore"));
+		}.setRegistryName("metalextras:redstone_ore"));
 		event.getRegistry().register(new VanillaOreMaterial(Blocks.EMERALD_ORE.getDefaultState(), 3, 7, ModelType.EMERALD, EventType.EMERALD)
 		{
 			@Override
@@ -432,7 +421,7 @@ public class MetalExtras
 			{
 				return 1;
 			}
-		}.setRegistryName("minecraft:emerald_ore"));
+		}.setRegistryName("metalextras:emerald_ore"));
 		event.getRegistry().register(new VanillaOreMaterial(Blocks.DIAMOND_ORE.getDefaultState(), 3, 7, ModelType.IRON, EventType.DIAMOND)
 		{
 			@Override
@@ -453,7 +442,7 @@ public class MetalExtras
 			{
 				return OreGeneration.getChunkProviderSettings(decorator).diamondSize;
 			}
-		}.setRegistryName("minecraft:diamond_ore"));
+		}.setRegistryName("metalextras:diamond_ore"));
 	}
 	
 	@SubscribeEvent

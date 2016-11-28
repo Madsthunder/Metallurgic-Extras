@@ -2,6 +2,6 @@
     "parent": "minecraft:block/cube_all",
     "textures":
     {
-        "all": "metalextras:blocks/mystery_block"
+        "all": "metalextras:blocks/ender_block"
     }
 }

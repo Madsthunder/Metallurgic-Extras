@@ -1,7 +1,6 @@
 {
     "variants":
     {
-        "normal": { "model": "metalextras:silver_block" },
-        "inventory": { "model": "metalextras:silver_block" }
+        "normal": { "model": "metalextras:silver_block" }
     }
 }

@@ -1,7 +1,6 @@
 {
     "variants":
     {
-        "normal": { "model": "metalextras:lead_block" },
-        "inventory": { "model": "metalextras:lead_block" }
+        "normal": { "model": "metalextras:lead_block" }
     }
 }

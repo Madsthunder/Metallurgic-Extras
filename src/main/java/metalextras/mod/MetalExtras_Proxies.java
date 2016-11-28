@@ -29,19 +29,6 @@ public class MetalExtras_Proxies
 	{
 		public void pre()
 		{
-			
-		}
-		
-		public void init()
-		{
-			OreUtils.registerOreMaterialSmelting(MetalExtras.COPPER_ORE, new ItemStack(MetalExtras.COPPER_INGOT), 0.7F, true);
-			OreUtils.registerOreMaterialSmelting(MetalExtras.TIN_ORE, new ItemStack(MetalExtras.TIN_INGOT), 0.7F, true);
-			OreUtils.registerOreMaterialSmelting(MetalExtras.ALUMINUM_ORE, new ItemStack(MetalExtras.ALUMINUM_INGOT), .5F, true);
-			OreUtils.registerOreMaterialSmelting(MetalExtras.LEAD_ORE, new ItemStack(MetalExtras.LEAD_INGOT), .9F, true);
-			OreUtils.registerOreMaterialSmelting(MetalExtras.SILVER_ORE, new ItemStack(MetalExtras.SILVER_INGOT), 0.9F, true);
-			OreUtils.registerOreMaterialSmelting(MetalExtras.ENDER_ORE, new ItemStack(MetalExtras.ENDER_GEM), 1F, true);
-			OreUtils.registerOreMaterialSmelting(MetalExtras.SAPPHIRE_ORE, new ItemStack(MetalExtras.SAPPHIRE_GEM), 1.5F, true);
-			OreUtils.registerOreMaterialSmelting(MetalExtras.RUBY_ORE, new ItemStack(MetalExtras.RUBY_GEM), 1.5F, true);
 			OreUtils.registerOreMaterialOrDctnry(MetalExtras.COPPER_ORE, "oreCopper", true);
 			OreUtils.registerOreMaterialOrDctnry(MetalExtras.TIN_ORE, "oreTin", true);
 			OreUtils.registerOreMaterialOrDctnry(MetalExtras.ALUMINUM_ORE, "oreAluminum", true);
@@ -65,7 +52,19 @@ public class MetalExtras_Proxies
 			OreDictionary.registerOre("ingotSilver", MetalExtras.SILVER_INGOT);
 			OreDictionary.registerOre("gemEnder", MetalExtras.ENDER_GEM);
 			OreDictionary.registerOre("gemSapphire", MetalExtras.SAPPHIRE_GEM);
-			OreDictionary.registerOre("gemRuby", MetalExtras.RUBY_GEM);
+			OreDictionary.registerOre("gemRuby", MetalExtras.RUBY_GEM);			
+		}
+		
+		public void init()
+		{
+			OreUtils.registerOreMaterialSmelting(MetalExtras.COPPER_ORE, new ItemStack(MetalExtras.COPPER_INGOT), 0.7F, true);
+			OreUtils.registerOreMaterialSmelting(MetalExtras.TIN_ORE, new ItemStack(MetalExtras.TIN_INGOT), 0.7F, true);
+			OreUtils.registerOreMaterialSmelting(MetalExtras.ALUMINUM_ORE, new ItemStack(MetalExtras.ALUMINUM_INGOT), .5F, true);
+			OreUtils.registerOreMaterialSmelting(MetalExtras.LEAD_ORE, new ItemStack(MetalExtras.LEAD_INGOT), .9F, true);
+			OreUtils.registerOreMaterialSmelting(MetalExtras.SILVER_ORE, new ItemStack(MetalExtras.SILVER_INGOT), 0.9F, true);
+			OreUtils.registerOreMaterialSmelting(MetalExtras.ENDER_ORE, new ItemStack(MetalExtras.ENDER_GEM), 1F, true);
+			OreUtils.registerOreMaterialSmelting(MetalExtras.SAPPHIRE_ORE, new ItemStack(MetalExtras.SAPPHIRE_GEM), 1.5F, true);
+			OreUtils.registerOreMaterialSmelting(MetalExtras.RUBY_ORE, new ItemStack(MetalExtras.RUBY_GEM), 1.5F, true);
 			GameRegistry.addShapedRecipe(new ItemStack(MetalExtras.COPPER_BLOCK), "III", "III", "III", 'I', MetalExtras.COPPER_INGOT);
 			GameRegistry.addShapelessRecipe(new ItemStack(MetalExtras.COPPER_INGOT, 9), MetalExtras.COPPER_BLOCK);
 			GameRegistry.addShapedRecipe(new ItemStack(MetalExtras.TIN_BLOCK), "III", "III", "III", 'I', MetalExtras.ALUMINUM_INGOT);
@@ -109,6 +108,14 @@ public class MetalExtras_Proxies
 			ModelLoader.setCustomModelResourceLocation(MetalExtras.ENDER_GEM, 0, new ModelResourceLocation("metalextras:ender_gem", "inventory"));
 			ModelLoader.setCustomModelResourceLocation(MetalExtras.SAPPHIRE_GEM, 0, new ModelResourceLocation("metalextras:sapphire_gem", "inventory"));
 			ModelLoader.setCustomModelResourceLocation(MetalExtras.RUBY_GEM, 0, new ModelResourceLocation("metalextras:ruby_gem", "inventory"));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras.COPPER_BLOCK), 0, new ModelResourceLocation("metalextras:copper_block", "normal"));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras.TIN_BLOCK), 0, new ModelResourceLocation("metalextras:tin_block", "normal"));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras.ALUMINUM_BLOCK), 0, new ModelResourceLocation("metalextras:aluminum_block", "normal"));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras.LEAD_BLOCK), 0, new ModelResourceLocation("metalextras:lead_block", "normal"));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras.SILVER_BLOCK), 0, new ModelResourceLocation("metalextras:silver_block", "normal"));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras.ENDER_BLOCK), 0, new ModelResourceLocation("metalextras:ender_block", "normal"));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras.SAPPHIRE_BLOCK), 0, new ModelResourceLocation("metalextras:sapphire_block", "normal"));
+			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras.RUBY_BLOCK), 0, new ModelResourceLocation("metalextras:ruby_block", "normal"));
 				for (OreMaterial material : OreUtils.getMaterialsRegistry())
 				{
 					for (BlockOre block : material.getBlocks())

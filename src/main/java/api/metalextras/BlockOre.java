@@ -42,7 +42,7 @@ public class BlockOre extends BlockFalling
 	public BlockOre(OreMaterial material, OreTypes types)
 	{
 		super(Material.ROCK);
-		this.setRegistryName(material.getRegistryName().getResourcePath() + "_" + types.getRegistryName().getResourcePath());
+		this.setRegistryName(material.getRegistryName().toString() + "." + types.getRegistryName().toString().replaceFirst(":", "_"));
 		this.property = new OreTypeProperty(types, this);
 		this.setDefaultState(this.getBlockState().getBaseState());
 		this.setDefaultState(this.getBlockState().getProperties().isEmpty() ? this.getDefaultState() : this.getDefaultState().withProperty(this.getOreTypeProperty(), this.getOreTypeProperty().getAllowedValues().get(0)));
@@ -293,6 +293,12 @@ public class BlockOre extends BlockFalling
 	public boolean addLandingEffects(IBlockState state, WorldServer world, BlockPos pos, IBlockState useless, EntityLivingBase entity, int particles)
 	{
 		return true;
+	}
+	
+	@Override
+	public CreativeTabs getCreativeTabToDisplayOn()
+	{
+		return this.material.getCreativeTab();
 	}
 	
 	public OreTypeProperty getOreTypeProperty()

@@ -1,0 +1,7 @@
+{
+    "parent": "metalextras:block/iron_ore",
+    "textures":
+    {
+        "particle": "metalextras:items/redstone_ore"
+    }
+}

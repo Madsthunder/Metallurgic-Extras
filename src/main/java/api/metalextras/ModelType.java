@@ -1,21 +1,10 @@
 package api.metalextras;
 
 import net.minecraftforge.common.util.EnumHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-public enum ModelType
+public class ModelType
 {
-	IRON,
-	EMERALD,
-	LAPIS;
-	
-	public static ModelType getModelType(String name)
-	{
-		name = name.toUpperCase();
-		for(ModelType type : ModelType.values())
-			if(type.name().equals(name))
-				return type;
-		return EnumHelper.addEnum(ModelType.class, name, new Class[0]);
-	}
+	public static final ModelType IRON = new ModelType();
+	public static final ModelType EMERALD = new ModelType();
+	public static final ModelType LAPIS = new ModelType();
 }

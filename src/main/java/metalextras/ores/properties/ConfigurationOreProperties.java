@@ -13,8 +13,9 @@ import api.metalextras.OreProperties;
 import api.metalextras.OreType;
 import api.metalextras.OreTypeDictionary;
 import api.metalextras.OreUtils;
+import continuum.essentials.config.ConfigHandler;
+import metalextras.MetalExtras;
 import metalextras.config.OreConfigHandler;
-import metalextras.mod.MetalExtras_Config;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
@@ -39,7 +40,7 @@ public class ConfigurationOreProperties extends OreProperties
 			}
 		};
 		this.handler = new OreConfigHandler(name, spawnEnabled, spawnTries, minHeight, maxHeight, minTemperature, maxTemperature, veinSize, defaultPredicates);
-		MetalExtras_Config.handlers.add(this.handler);
+		MetalExtras.CONFIGURATION_HANDLER.addConfigSubHandler(this.handler);
 		cfgs.put(name, this);
 	}
 	

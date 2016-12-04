@@ -40,18 +40,16 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.fml.common.registry.GameData;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
 
 public class ModelOre implements IModel
-{	
+{
 	@Override
 	public Collection<ResourceLocation> getDependencies()
 	{
 		List<ResourceLocation> dependencies = Lists.newArrayList();
-		for (OreMaterial material : OreUtils.getMaterialsRegistry())
-			for (OreTypes types : OreUtils.getTypeCollectionsRegistry())
-				for (OreType type : types)
+		for(OreMaterial material : OreUtils.getMaterialsRegistry())
+			for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
+				for(OreType type : types)
 				{
 					dependencies.addAll(material.getModel(type).getDependencies());
 					dependencies.addAll(type.getModel(material).getDependencies());
@@ -63,13 +61,13 @@ public class ModelOre implements IModel
 	public Collection<ResourceLocation> getTextures()
 	{
 		List<ResourceLocation> textures = Lists.newArrayList();
-			for (OreMaterial material : OreUtils.getMaterialsRegistry())
-				for (OreTypes types : OreUtils.getTypeCollectionsRegistry())
-					for (OreType type : types)
-					{
-						textures.addAll(material.getModel(type).getTextures());
-						textures.addAll(type.getModel(material).getTextures());
-					}
+		for(OreMaterial material : OreUtils.getMaterialsRegistry())
+			for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
+				for(OreType type : types)
+				{
+					textures.addAll(material.getModel(type).getTextures());
+					textures.addAll(type.getModel(material).getTextures());
+				}
 		return textures;
 	}
 	
@@ -192,7 +190,7 @@ public class ModelOre implements IModel
 				Map<EnumFacing, List<BakedQuad>> faceQuads = Maps.newHashMap();
 				for(EnumFacing facing : EnumFacing.values())
 					faceQuads.put(facing, original.getQuads(state, facing, 0L));
-				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreMaterial()); 
+				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreMaterial());
 				IBakedModel model = new SimpleBakedModel(generalQuads, faceQuads, original.isAmbientOcclusion(), original.isGui3d(), original.getParticleTexture(), typeModel.bake(typeModel.getDefaultState(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getItemCameraTransforms(), ItemOverrideList.NONE);
 				this.models.get(stack.getItem()).addKey(stack.getMetadata(), model);
 				return model;

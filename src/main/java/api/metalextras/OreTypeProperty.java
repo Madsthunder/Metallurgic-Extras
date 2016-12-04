@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.BlockStateContainer.Builder;
@@ -13,7 +12,7 @@ public class OreTypeProperty implements IProperty<OreType>
 {
 	private final OreTypes types;
 	private final BlockOre block;
-	private BlockStateContainer container;
+	private final BlockStateContainer container;
 	
 	public OreTypeProperty(OreTypes types, BlockOre block)
 	{
@@ -46,24 +45,24 @@ public class OreTypeProperty implements IProperty<OreType>
 	@Override
 	public Optional<OreType> parseValue(String value)
 	{
-		for (OreType type : this.types.getOreTypes())
-			if(type.toString().equals(value))
+		for(OreType type : this.types.getOreTypes())
+			if(type.getRegistryName().toString().replaceAll(":", "_").equals(value))
 				return Optional.fromNullable(type);
 		return Optional.absent();
 	}
 	
 	@Override
-	public String getName(OreType value)
+	public String getName(OreType type)
 	{
-		return value.toString();
+		return type.getRegistryName().toString().replaceAll(":", "_");
 	}
 	
-	public OreTypes getTypes()
+	public final OreTypes getTypes()
 	{
 		return this.types;
 	}
 	
-	public BlockStateContainer getBlockState()
+	public final BlockStateContainer getBlockState()
 	{
 		return this.container;
 	}

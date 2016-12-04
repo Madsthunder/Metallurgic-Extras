@@ -5,10 +5,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import metalextras.MetalExtras;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
 
 public class OreTypes implements IForgeRegistryEntry<OreTypes>, Iterable<OreType>
@@ -28,6 +25,11 @@ public class OreTypes implements IForgeRegistryEntry<OreTypes>, Iterable<OreType
 		else
 			return false;
 		return true;
+	}
+	
+	public boolean hasOreType(OreType type)
+	{
+		return this.types.contains(type);
 	}
 	
 	public List<OreType> getOreTypes()

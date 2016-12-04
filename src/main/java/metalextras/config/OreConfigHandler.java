@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.annotation.Nonnull;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -17,17 +15,15 @@ import api.metalextras.OreType;
 import api.metalextras.OreTypeDictionary;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
-import continuum.essentials.config.IConfigHandler;
+import continuum.essentials.config.IConfigSubHandler;
 import continuum.essentials.config.IConfigValue;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
 
-public class OreConfigHandler implements IConfigHandler
+public class OreConfigHandler implements IConfigSubHandler
 {
 	public final String name;
 	public final Predicate<Collection<OreTypeDictionary>> defaultWhitelist;
-	public final  IConfigValue<Boolean> spawnEnabled;
+	public final IConfigValue<Boolean> spawnEnabled;
 	public final IConfigValue<Integer> spawnTries;
 	public final IConfigValue<Integer> minHeight;
 	public final IConfigValue<Integer> maxHeight;
@@ -120,7 +116,7 @@ public class OreConfigHandler implements IConfigHandler
 			else
 			{
 				JsonObject object1 = element.getAsJsonObject();
-				for (Entry<String, JsonElement> entry : object1.entrySet())
+				for(Entry<String, JsonElement> entry : object1.entrySet())
 				{
 					ResourceLocation location = new ResourceLocation(entry.getKey());
 					if(entry.getKey().equals(location.toString()))
@@ -160,12 +156,12 @@ public class OreConfigHandler implements IConfigHandler
 		this.veinSize.write(baseObj);
 		JsonElement whitelistElement = baseObj.get("type_whitelist");
 		JsonObject whitelistObject = whitelistElement == null || !whitelistElement.isJsonObject() ? new JsonObject() : whitelistElement.getAsJsonObject();
-			for (OreTypes types : OreUtils.getTypeCollectionsRegistry())
-				for (OreType type : types)
-					whitelistObject.addProperty(type.getRegistryName().toString(), this.whitelist == null ? this.defaultWhitelist.apply(type.getOreTypeDictionaryList()) : this.whitelist.contains(type));
+		for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
+			for(OreType type : types)
+				whitelistObject.addProperty(type.getRegistryName().toString(), this.whitelist == null ? this.defaultWhitelist.apply(type.getOreTypeDictionaryList()) : this.whitelist.contains(type));
 		baseObj.add("type_whitelist", whitelistObject);
 	}
-
+	
 	@Override
 	public String getName()
 	{
@@ -181,8 +177,8 @@ public class OreConfigHandler implements IConfigHandler
 	private static List<OreType> getWhitelist(Predicate<Collection<OreTypeDictionary>> defaultWhitelist)
 	{
 		List<OreType> whitelist = Lists.newArrayList();
-		for (OreTypes types : OreUtils.getTypeCollectionsRegistry())
-			for (OreType type : types)
+		for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
+			for(OreType type : types)
 				if(defaultWhitelist.apply(type.getOreTypeDictionaryList()))
 					whitelist.add(type);
 		return whitelist;

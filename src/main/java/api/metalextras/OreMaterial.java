@@ -14,7 +14,6 @@ import com.google.common.collect.Sets;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.model.IModel;
@@ -67,16 +66,14 @@ public abstract class OreMaterial extends IForgeRegistryEntry.Impl<OreMaterial>
 	@Nullable
 	public IBlockState applyBlockState(OreType type)
 	{
-		for (BlockOre ore : this.blocks.values())
-			if(ore.hasOreType(type))
+		for(BlockOre ore : this.blocks.values())
+			if(ore.getOreTypeProperty().getTypes().hasOreType(type))
 				return ore.withOreType(type);
 		return null;
 	}
 	
-	@Nonnull
 	public abstract OreProperties getOreProperties();
 	
-	@Nonnull
 	public Collection<GenerateMinable.EventType> getOverrides()
 	{
 		return Sets.newHashSet();
@@ -89,11 +86,9 @@ public abstract class OreMaterial extends IForgeRegistryEntry.Impl<OreMaterial>
 	}
 	
 	@SideOnly(Side.CLIENT)
-	@Nonnull
 	public abstract IModel getModel(OreType type);
 	
 	@SideOnly(Side.CLIENT)
-	@Nonnull
 	public ModelType getModelType()
 	{
 		return ModelType.IRON;

@@ -1,18 +1,13 @@
 package api.metalextras;
 
 import java.util.Collection;
-import java.util.Set;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DimensionType;
 import net.minecraftforge.common.util.EnumHelper;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
 
 public enum OreTypeDictionary
 {
@@ -31,7 +26,7 @@ public enum OreTypeDictionary
 	public static OreTypeDictionary byName(String name)
 	{
 		name = name.toUpperCase();
-		for (OreTypeDictionary dictionary : OreTypeDictionary.values())
+		for(OreTypeDictionary dictionary : OreTypeDictionary.values())
 			if(dictionary.name().equals(name))
 				return dictionary;
 		return EnumHelper.addEnum(OreTypeDictionary.class, name, new Class[0]);
@@ -49,7 +44,7 @@ public enum OreTypeDictionary
 			@Override
 			public boolean apply(Collection<OreTypeDictionary> entries1)
 			{
-				for (OreTypeDictionary entry : entries)
+				for(OreTypeDictionary entry : entries)
 					if(entries1.contains(entry))
 						return false;
 				return true;
@@ -64,7 +59,7 @@ public enum OreTypeDictionary
 			@Override
 			public boolean apply(Collection<OreTypeDictionary> entries1)
 			{
-				for (OreTypeDictionary entry : entries)
+				for(OreTypeDictionary entry : entries)
 					if(!entries1.contains(entry))
 						return false;
 				return true;

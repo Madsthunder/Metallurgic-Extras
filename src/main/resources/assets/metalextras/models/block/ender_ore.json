@@ -2,6 +2,6 @@
     "parent": "metalextras:block/iron_ore",
     "textures":
     {
-        "ore": "metalextras:items/ender_ore"
+        "particle": "metalextras:items/ender_ore"
     }
 }

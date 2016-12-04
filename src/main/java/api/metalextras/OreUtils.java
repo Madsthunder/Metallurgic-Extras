@@ -17,11 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.oredict.OreDictionary;
@@ -50,6 +46,7 @@ public class OreUtils
 				result.add(type);
 		return result;
 	}
+	
 	public static OreType getOreType(IBlockState state)
 	{
 		BiMap<OreType, IBlockState> map = getTypeCollectionsRegistry().getSlaveMap(ORETYPE_TO_IBLOCKSTATE, BiMap.class);
@@ -63,16 +60,16 @@ public class OreUtils
 	{
 		if(location == null)
 			throw new IllegalStateException("Parameter 'location' Cannot be Null");
-		for (OreTypes types : getTypeCollectionsRegistry())
-			for (OreType type : types)
+		for(OreTypes types : getTypeCollectionsRegistry())
+			for(OreType type : types)
 				if(location.equals(type.getRegistryName()))
 					return type;
 		return null;
 	}
 	
-	public static void registerOreMaterialSmelting(OreMaterial material, ItemStack ingot, float xp, boolean registerItem)
+	public static void registerMaterialSmeltingRecipe(OreMaterial material, ItemStack ingot, float xp, boolean registerItem)
 	{
-		for (BlockOre block : material.getBlocks())
+		for(BlockOre block : material.getBlocks())
 			FurnaceRecipes.instance().addSmeltingRecipeForBlock(block, ingot, xp);
 		if(registerItem)
 		{
@@ -82,9 +79,9 @@ public class OreUtils
 		}
 	}
 	
-	public static void registerOreMaterialOrDctnry(OreMaterial material, String name, boolean registerItem)
+	public static void addMaterialToOreDictionary(OreMaterial material, String name, boolean registerItem)
 	{
-		for (BlockOre block : material.getBlocks())
+		for(BlockOre block : material.getBlocks())
 			OreDictionary.registerOre(name, block);
 		if(registerItem)
 		{
@@ -109,7 +106,7 @@ public class OreUtils
 	public static GenerateMinable.EventType getEventType(String name)
 	{
 		name = name.toUpperCase();
-		for (GenerateMinable.EventType type : GenerateMinable.EventType.values())
+		for(GenerateMinable.EventType type : GenerateMinable.EventType.values())
 			if(type.name().equals(name))
 				return type;
 		return EnumHelper.addEnum(GenerateMinable.EventType.class, name, new Class[0]);
@@ -125,7 +122,7 @@ public class OreUtils
 		double d4 = (double)(pos.getY() + random.nextInt(3) - 2);
 		double d5 = (double)(pos.getY() + random.nextInt(3) - 2);
 		
-		for (int i = 0; i < blocks; ++i)
+		for(int i = 0; i < blocks; ++i)
 		{
 			float f1 = (float)i / (float)blocks;
 			double d6 = d0 + (d1 - d0) * (double)f1;
@@ -141,19 +138,19 @@ public class OreUtils
 			int j1 = MathHelper.floor_double(d7 + d11 / 2.0D);
 			int k1 = MathHelper.floor_double(d8 + d10 / 2.0D);
 			
-			for (int l1 = j; l1 <= i1; ++l1)
+			for(int l1 = j; l1 <= i1; ++l1)
 			{
 				double d12 = ((double)l1 + 0.5D - d6) / (d10 / 2.0D);
 				
 				if(d12 * d12 < 1.0D)
 				{
-					for (int i2 = k; i2 <= j1; ++i2)
+					for(int i2 = k; i2 <= j1; ++i2)
 					{
 						double d13 = ((double)i2 + 0.5D - d7) / (d11 / 2.0D);
 						
 						if(d12 * d12 + d13 * d13 < 1.0D)
 						{
-							for (int j2 = l; j2 <= k1; ++j2)
+							for(int j2 = l; j2 <= k1; ++j2)
 							{
 								double d14 = ((double)j2 + 0.5D - d8) / (d10 / 2.0D);
 								

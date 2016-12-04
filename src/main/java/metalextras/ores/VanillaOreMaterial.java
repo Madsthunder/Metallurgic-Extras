@@ -69,7 +69,8 @@ public abstract class VanillaOreMaterial extends OreMaterial
 	@Override
 	public int getDropMeta()
 	{
-		return this.state.getBlock().damageDropped(this.state);
+		Item drop = this.state.getBlock().getItemDropped(this.state, new Random(), 0);
+		return Block.getBlockFromItem(drop) == this.state.getBlock() ? -1 : this.state.getBlock().damageDropped(this.state);
 	}
 	
 	@Override

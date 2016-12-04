@@ -6,7 +6,6 @@ import javax.annotation.Nonnull;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Sets;
 
 import api.metalextras.BlockOre;
 import api.metalextras.OreMaterial;
@@ -37,7 +36,7 @@ public class MetalExtras_Callbacks
 			IForgeRegistry<Item> items = GameRegistry.findRegistry(Item.class);
 			IForgeRegistry<OreTypes> typeCollections = GameRegistry.findRegistry(OreTypes.class);
 			if(blocks != null && items != null && typeCollections != null)
-				for (OreTypes types : typeCollections)
+				for(OreTypes types : typeCollections)
 					tryRegister(material, types, blocks, items);
 		}
 	}
@@ -49,13 +48,13 @@ public class MetalExtras_Callbacks
 		{
 			types.lock();
 			if(slaveset.containsKey(OreUtils.ORETYPE_TO_IBLOCKSTATE))
-				for (OreType type : types)
+				for(OreType type : types)
 					((BiMap<OreType, IBlockState>)slaveset.get(OreUtils.ORETYPE_TO_IBLOCKSTATE)).put(type, type.getState());
 			IForgeRegistry<Block> blocks = GameRegistry.findRegistry(Block.class);
 			IForgeRegistry<Item> items = GameRegistry.findRegistry(Item.class);
 			IForgeRegistry<OreMaterial> materials = GameRegistry.findRegistry(OreMaterial.class);
 			if(blocks != null && items != null && materials != null)
-				for (OreMaterial material : materials)
+				for(OreMaterial material : materials)
 					tryRegister(material, types, blocks, items);
 		}
 		

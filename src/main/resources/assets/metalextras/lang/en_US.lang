@@ -12,7 +12,7 @@ tile.metalextras:tin_block.name=Tin Block
 tile.metalextras:aluminum_block.name=Aluminum Block
 tile.metalextras:lead_block.name=Lead Block
 tile.metalextras:silver_block.name=Silver Block
-tile.metalextras:ender_block.name=Mystery Block
+tile.metalextras:ender_block.name=Ender Block
 tile.metalextras:sapphire_block.name=Sapphire Block
 tile.metalextras:ruby_block.name=Ruby Block
 

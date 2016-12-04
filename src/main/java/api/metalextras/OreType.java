@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.SoundType;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
@@ -24,7 +25,7 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class OreType implements Comparable<OreType>, IStringSerializable
+public abstract class OreType implements Comparable<OreType>
 {
 	private ResourceLocation name;
 	private final OreTypes types;
@@ -54,13 +55,6 @@ public abstract class OreType implements Comparable<OreType>, IStringSerializabl
 		return this.types;
 	}
 	
-	@Override
-	public final String getName()
-	{
-		ResourceLocation name = this.getRegistryName();
-		return name.getResourceDomain() + "_" + name.getResourcePath();
-	}
-	
 	public SoundType getSoundType()
 	{
 		return this.getState().getBlock().getSoundType();
@@ -69,6 +63,11 @@ public abstract class OreType implements Comparable<OreType>, IStringSerializabl
 	public String getHarvestTool()
 	{
 		return this.getState().getBlock().getHarvestTool(this.getState());
+	}
+	
+	public Material getMaterial()
+	{
+		return this.getState().getBlock().getMaterial(this.getState());
 	}
 	
 	public int getHarvestLevel()
@@ -126,14 +125,6 @@ public abstract class OreType implements Comparable<OreType>, IStringSerializabl
 	public final Class<? super OreType> getRegistryType()
 	{
 		return OreType.class;
-	}
-	
-	@Override
-	public final String toString()
-	{
-		if(this.name == null)
-			return null;
-		return this.name.getResourceDomain() + "_" + this.name.getResourcePath();
 	}
 	
 	public Collection<OreTypeDictionary> getOreTypeDictionaryList()

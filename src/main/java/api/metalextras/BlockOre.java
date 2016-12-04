@@ -3,6 +3,8 @@ package api.metalextras;
 import java.util.List;
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Lists;
 
 import continuum.essentials.hooks.ObjectHooks;
@@ -19,11 +21,15 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -49,14 +55,15 @@ public class BlockOre extends BlockFalling
 		this.material = material;
 	}
 	
-	public final int getMetaFromState(IBlockState state)
+	public OreMaterial getOreMaterial()
 	{
-		return this.getIndex(this.getOreType(state));
+		return this.material;
 	}
 	
-	public final IBlockState getStateFromMeta(int meta)
+	@Override
+	public final Material getMaterial(IBlockState state)
 	{
-		return this.getBlockState(this.getOreType(meta));
+		return this.getOreType(state).getMaterial();
 	}
 	
 	@Override
@@ -66,14 +73,35 @@ public class BlockOre extends BlockFalling
 	}
 	
 	@Override
+    public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, @Nullable TileEntity entity, @Nullable ItemStack stack)
+    {
+		boolean harvest = false;
+		if(stack != null)
+			for(String tool : stack.getItem().getToolClasses(stack))
+				if(this.isToolEffective(tool, state))
+				{
+					harvest = true;
+					break;
+				}
+		if(harvest)
+			super.harvestBlock(world, player, pos, state, entity, stack);
+		else
+		{
+			OreType type = this.getOreType(state);
+			Block block = type.getState().getBlock();
+			if(type.getState().getBlock().canHarvestBlock(world, pos, player))
+				Block.spawnAsEntity(world, pos, new ItemStack(block.getItemDropped(type.getState(), world.rand, 0), block.quantityDropped(world.rand), block.damageDropped(type.getState())));
+		}
+    }
+	
+	@Override
 	public List<ItemStack> getDrops(IBlockAccess access, BlockPos pos, IBlockState state, int fortune)
 	{
 		Random random = access instanceof World ? ((World)access).rand : RANDOM;
 		List<ItemStack> list = super.getDrops(access, pos, state, fortune);
 		IBlockState typeState = this.getOreType(state).getState();
 		Block typeBlock = typeState.getBlock();
-		if(this.material.getDrop() == OreMaterial.ORE)
-			list.add(new ItemStack(typeBlock.getItemDropped(typeState, random, 0), typeBlock.quantityDropped(random), typeBlock.damageDropped(typeState)));
+		list.add(new ItemStack(typeBlock.getItemDropped(typeState, random, 0), typeBlock.quantityDropped(random), typeBlock.damageDropped(typeState)));
 		return list;
 	}
 	
@@ -117,7 +145,7 @@ public class BlockOre extends BlockFalling
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
 	{
-		tooltip.add(I18n.format(this.getOreType(stack.getMetadata()).getLanguageKey()));
+		tooltip.add((this.getOreType(stack.getMetadata()).getState().getBlock().getLocalizedName()));
 	}
 	
 	@Override
@@ -149,7 +177,7 @@ public class BlockOre extends BlockFalling
 	@Override
 	public String getHarvestTool(IBlockState state)
 	{
-		return state.getValue(this.property).getHarvestTool();
+		return this.getOreType(state).getHarvestTool();
 	}
 	
 	@Override
@@ -169,7 +197,7 @@ public class BlockOre extends BlockFalling
 	@Override
 	public void getSubBlocks(Item item, CreativeTabs tab, List list)
 	{
-		for (Integer i : ObjectHooks.increment(this.property.getAllowedValues().size()))
+		for(Integer i : ObjectHooks.increment(this.property.getAllowedValues().size()))
 			list.add(new ItemStack(item, 1, i));
 	}
 	
@@ -189,7 +217,7 @@ public class BlockOre extends BlockFalling
 	@Override
 	public boolean addDestroyEffects(World world, BlockPos pos, ParticleManager manager)
 	{
-        IBlockState state = world.getBlockState(pos).getActualState(world, pos);
+		IBlockState state = world.getBlockState(pos).getActualState(world, pos);
 		List<TextureAtlasSprite> textures = Lists.newArrayList();
 		{
 			OreType type = this.getOreType(state);
@@ -202,20 +230,20 @@ public class BlockOre extends BlockFalling
 		}
 		if(textures.isEmpty())
 			return super.addDestroyEffects(world, pos, manager);
-        int i = 4;
-        for (int j = 0; j < 4; j++)
-            for (int k = 0; k < 4; k++)
-                for (int l = 0; l < 4; l++)
-                {
-                    double x = pos.getX() + (j + .5) / 4;
-                    double y = pos.getY() + (k + .5) / 4;
-                    double z = pos.getZ() + (l + .5) / 4;
-                    ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().getEntityFX(0, world, x, y, z, x - pos.getX() - .5, y - pos.getY() - .5, z - pos.getZ() - .5, Block.getStateId(state));
-                    particle.setBlockPos(pos);
-                    particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
-                    manager.addEffect(particle);
-                }
-    
+		int i = 4;
+		for(int j = 0; j < 4; j++)
+			for(int k = 0; k < 4; k++)
+				for(int l = 0; l < 4; l++)
+				{
+					double x = pos.getX() + (j + .5) / 4;
+					double y = pos.getY() + (k + .5) / 4;
+					double z = pos.getZ() + (l + .5) / 4;
+					ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().getEntityFX(0, world, x, y, z, x - pos.getX() - .5, y - pos.getY() - .5, z - pos.getZ() - .5, Block.getStateId(state));
+					particle.setBlockPos(pos);
+					particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
+					manager.addEffect(particle);
+				}
+			
 		return true;
 	}
 	
@@ -236,57 +264,58 @@ public class BlockOre extends BlockFalling
 			return super.addHitEffects(state, world, result, manager);
 		BlockPos pos = result.getBlockPos();
 		EnumFacing side = result.sideHit;
-        int i = pos.getX();
-        int j = pos.getY();
-        int k = pos.getZ();
-        float f = 0.1F;
-        AxisAlignedBB axisalignedbb = state.getBoundingBox(world, pos);
-        double d0 = (double)i + world.rand.nextDouble() * (axisalignedbb.maxX - axisalignedbb.minX - 0.20000000298023224D) + 0.10000000149011612D + axisalignedbb.minX;
-        double d1 = (double)j + world.rand.nextDouble() * (axisalignedbb.maxY - axisalignedbb.minY - 0.20000000298023224D) + 0.10000000149011612D + axisalignedbb.minY;
-        double d2 = (double)k + world.rand.nextDouble() * (axisalignedbb.maxZ - axisalignedbb.minZ - 0.20000000298023224D) + 0.10000000149011612D + axisalignedbb.minZ;
-
-        switch(side)
-        {
-        	case DOWN :
-        	{
-        		d1 = j + axisalignedbb.minY - 0.10000000149011612D;
-        		break;
-        	}
-        	case UP :
-        	{
-        		d1 = j + axisalignedbb.maxY + 0.10000000149011612D;
-        		break;
-        	}
-        	case NORTH :
-        	{
-        		d2 = k + axisalignedbb.minZ - 0.10000000149011612D;
-        		break;
-        	}
-        	case SOUTH :
-        	{
-        		d2 = k + axisalignedbb.maxZ + 0.10000000149011612D;
-        		break;
-        	}
-        	case WEST :
-        	{
-        		d0 = i + axisalignedbb.minX - 0.10000000149011612D;
-        		break;
-        	}
-        	case EAST :
-        	{
-        		d0 = i + axisalignedbb.maxX + 0.10000000149011612D;
-        		break;
-        	}
-        		
-        	default : ;
-        }
-
-        ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().getEntityFX(0, world, d0, d1, d2, 0, 0, 0, Block.getStateId(state));
-        particle.setBlockPos(pos);
-        particle.multiplyVelocity(0.2F);
-        particle.multipleParticleScaleBy(0.6F);
-        particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
-        manager.addEffect(particle);
+		int i = pos.getX();
+		int j = pos.getY();
+		int k = pos.getZ();
+		float f = 0.1F;
+		AxisAlignedBB axisalignedbb = state.getBoundingBox(world, pos);
+		double d0 = (double)i + world.rand.nextDouble() * (axisalignedbb.maxX - axisalignedbb.minX - 0.20000000298023224D) + 0.10000000149011612D + axisalignedbb.minX;
+		double d1 = (double)j + world.rand.nextDouble() * (axisalignedbb.maxY - axisalignedbb.minY - 0.20000000298023224D) + 0.10000000149011612D + axisalignedbb.minY;
+		double d2 = (double)k + world.rand.nextDouble() * (axisalignedbb.maxZ - axisalignedbb.minZ - 0.20000000298023224D) + 0.10000000149011612D + axisalignedbb.minZ;
+		
+		switch(side)
+		{
+			case DOWN :
+			{
+				d1 = j + axisalignedbb.minY - 0.10000000149011612D;
+				break;
+			}
+			case UP :
+			{
+				d1 = j + axisalignedbb.maxY + 0.10000000149011612D;
+				break;
+			}
+			case NORTH :
+			{
+				d2 = k + axisalignedbb.minZ - 0.10000000149011612D;
+				break;
+			}
+			case SOUTH :
+			{
+				d2 = k + axisalignedbb.maxZ + 0.10000000149011612D;
+				break;
+			}
+			case WEST :
+			{
+				d0 = i + axisalignedbb.minX - 0.10000000149011612D;
+				break;
+			}
+			case EAST :
+			{
+				d0 = i + axisalignedbb.maxX + 0.10000000149011612D;
+				break;
+			}
+			
+			default:
+				;
+		}
+		
+		ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().getEntityFX(0, world, d0, d1, d2, 0, 0, 0, Block.getStateId(state));
+		particle.setBlockPos(pos);
+		particle.multiplyVelocity(0.2F);
+		particle.multipleParticleScaleBy(0.6F);
+		particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
+		manager.addEffect(particle);
 		return true;
 	}
 	
@@ -316,15 +345,27 @@ public class BlockOre extends BlockFalling
 		return this.getDefaultState().withProperty(this.getOreTypeProperty(), type);
 	}
 	
-	public OreMaterial getOreMaterial()
-	{
-		return this.material;
-	}
-	
 	@Override
 	public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos)
 	{
 		return state.getValue(this.getOreTypeProperty()).getSelectionBox(world, pos);
+	}
+	
+	@Override
+	public String getUnlocalizedName()
+	{
+		String langKey = this.material.getLanguageKey();
+		return langKey == null ? this.material.getRegistryName().getResourcePath() : this.material.getLanguageKey();
+	}
+	
+	public final int getMetaFromState(IBlockState state)
+	{
+		return this.getIndex(this.getOreType(state));
+	}
+	
+	public final IBlockState getStateFromMeta(int meta)
+	{
+		return this.getBlockState(this.getOreType(meta));
 	}
 	
 	public final BlockStateContainer getBlockState()
@@ -337,25 +378,18 @@ public class BlockOre extends BlockFalling
 		return this.getBlockState().getProperties().isEmpty() ? this.property.getAllowedValues().get(0) : state.getValue(this.property);
 	}
 	
-	public final OreType getOreType(int index)
-	{
-		return this.property.getAllowedValues().get(index);
-	}
-	
 	public final IBlockState getBlockState(OreType type)
 	{
 		return this.getBlockState().getProperties().isEmpty() ? this.getDefaultState() : this.getDefaultState().withProperty(this.property, type);
 	}
 	
+	public final OreType getOreType(int index)
+	{
+		return this.property.getAllowedValues().get(index);
+	}
+	
 	public final int getIndex(OreType type)
 	{
 		return type.getTypes() == this.getOreTypeProperty().getTypes() ? this.getBlockState().getProperties().isEmpty() ? 0 : this.property.getAllowedValues().indexOf(type) : -1;
-	}
-	
-	@Override
-	public final String getUnlocalizedName()
-	{
-		String langKey = this.material.getLanguageKey();
-		return langKey == null ? this.material.getRegistryName().getResourcePath() : this.material.getLanguageKey();
 	}
 }

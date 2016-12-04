@@ -36,7 +36,7 @@ public class OreGeneration implements IWorldGenerator
 	public static void spawnOresInChunk(Chunk chunk, Random random, OreMaterial material)
 	{
 		OreProperties properties = material.getOreProperties();
-		for (int i = 0; i < properties.getSpawnTriesPerChunk(chunk.getWorld(), random); i++)
+		for(int i = 0; i < properties.getSpawnTriesPerChunk(chunk.getWorld(), random); i++)
 		{
 			BlockPos pos = properties.getRandomSpawnPos(chunk.getWorld(), random).add(chunk.xPosition * 16, 0, chunk.zPosition * 16);
 			properties.getWorldGenerator(chunk.getWorld(), pos).generate(chunk.getWorld(), random, pos);
@@ -47,9 +47,9 @@ public class OreGeneration implements IWorldGenerator
 	public void generate(Random random, int x, int z, World world, IChunkGenerator generator, IChunkProvider provider)
 	{
 		DimensionType type = world.provider.getDimensionType();
-			for (OreMaterial material : OreUtils.getMaterialsRegistry())
-				if(material.getOverrides().isEmpty())
-					spawnOresInChunk(world.getChunkFromChunkCoords(x, z), random, material);
+		for(OreMaterial material : OreUtils.getMaterialsRegistry())
+			if(material.getOverrides().isEmpty())
+				spawnOresInChunk(world.getChunkFromChunkCoords(x, z), random, material);
 	}
 	
 	@SubscribeEvent
@@ -77,7 +77,7 @@ public class OreGeneration implements IWorldGenerator
 	public static void onOreGen(GenerateMinable event)
 	{
 		boolean deny = false;
-		for (OreMaterial material : OreUtils.getMaterialsRegistry())
+		for(OreMaterial material : OreUtils.getMaterialsRegistry())
 			if(material.getOreProperties().getSpawnEnabled() && material.getOverrides().contains(event.getType()))
 				OreGeneration.spawnOresInChunk(event.getWorld().getChunkFromBlockCoords(event.getPos()), event.getRand(), material);
 		deny = true;

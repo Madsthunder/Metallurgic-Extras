@@ -228,10 +228,11 @@ public class MetalExtras
 	
 	public static final CreativeTabs METALLURGIC_EXTRAS = new CreativeTabs("metalextras:metallurgic_extras")
 	{
+		private final ItemStack stack = new ItemStack(ENDER_GEM);
 		@Override
-		public Item getTabIconItem()
+		public ItemStack getTabIconItem()
 		{
-			return ENDER_GEM;
+			return stack;
 		}
 	};
 	

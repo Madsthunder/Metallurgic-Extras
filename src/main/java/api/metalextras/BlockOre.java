@@ -19,18 +19,15 @@ import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -143,7 +140,7 @@ public class BlockOre extends BlockFalling
 	}
 	
 	@Override
-	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
+	public void func_190948_a(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean advanced)
 	{
 		tooltip.add((this.getOreType(stack.getMetadata()).getState().getBlock().getLocalizedName()));
 	}
@@ -188,14 +185,14 @@ public class BlockOre extends BlockFalling
 	}
 	
 	@Override
-	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block)
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos neighbor)
 	{
 		if(state.getValue(this.property).canFall())
 			world.scheduleUpdate(pos, this, this.tickRate(world));
 	}
 	
 	@Override
-	public void getSubBlocks(Item item, CreativeTabs tab, List list)
+	public void getSubBlocks(Item item, CreativeTabs tab, NonNullList<ItemStack> list)
 	{
 		for(Integer i : ObjectHooks.increment(this.property.getAllowedValues().size()))
 			list.add(new ItemStack(item, 1, i));
@@ -238,7 +235,7 @@ public class BlockOre extends BlockFalling
 					double x = pos.getX() + (j + .5) / 4;
 					double y = pos.getY() + (k + .5) / 4;
 					double z = pos.getZ() + (l + .5) / 4;
-					ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().getEntityFX(0, world, x, y, z, x - pos.getX() - .5, y - pos.getY() - .5, z - pos.getZ() - .5, Block.getStateId(state));
+					ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().createParticle(0, world, x, y, z, x - pos.getX() - .5, y - pos.getY() - .5, z - pos.getZ() - .5, Block.getStateId(state));
 					particle.setBlockPos(pos);
 					particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
 					manager.addEffect(particle);
@@ -310,7 +307,7 @@ public class BlockOre extends BlockFalling
 				;
 		}
 		
-		ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().getEntityFX(0, world, d0, d1, d2, 0, 0, 0, Block.getStateId(state));
+		ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().createParticle(0, world, d0, d1, d2, 0, 0, 0, Block.getStateId(state));
 		particle.setBlockPos(pos);
 		particle.multiplyVelocity(0.2F);
 		particle.multipleParticleScaleBy(0.6F);

@@ -17,6 +17,6 @@ public class WorldGenOre extends WorldGenerator
 	
 	public boolean generate(World world, Random random, BlockPos pos)
 	{
-		return OreUtils.generateOres(world, pos, random, this.properties.getVeinSize(world, world.getBiomeGenForCoords(pos)), this.properties);
+		return OreUtils.generateOres(world, pos, random, this.properties.getVeinSize(world, world.getBiome(pos)), this.properties);
 	}
 }

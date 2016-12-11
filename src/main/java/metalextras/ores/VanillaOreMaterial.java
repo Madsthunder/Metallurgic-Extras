@@ -137,7 +137,7 @@ public abstract class VanillaOreMaterial extends OreMaterial
 				@Override
 				public boolean generate(World world, Random random, BlockPos pos)
 				{
-					return OreUtils.generateOres(world, pos, random, VanillaOreMaterial.this.getVeinSize(world.getBiomeGenForCoords(pos).theBiomeDecorator), Properties.this);
+					return OreUtils.generateOres(world, pos, random, VanillaOreMaterial.this.getVeinSize(world.getBiome(pos).theBiomeDecorator), Properties.this);
 				}
 			};
 		}

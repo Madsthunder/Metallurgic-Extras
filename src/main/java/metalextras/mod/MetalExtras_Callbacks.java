@@ -16,10 +16,12 @@ import metalextras.items.ItemBlockOre;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;
+import net.minecraft.util.ObjectIntIdentityMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistry.AddCallback;
+import net.minecraftforge.fml.common.registry.IForgeRegistry.ClearCallback;
 import net.minecraftforge.fml.common.registry.IForgeRegistry.CreateCallback;
 
 public class MetalExtras_Callbacks
@@ -50,12 +52,16 @@ public class MetalExtras_Callbacks
 			if(slaveset.containsKey(OreUtils.ORETYPE_TO_IBLOCKSTATE))
 				for(OreType type : types)
 					((BiMap<OreType, IBlockState>)slaveset.get(OreUtils.ORETYPE_TO_IBLOCKSTATE)).put(type, type.getState());
+			if(slaveset.containsKey(OreUtils.ORETYPE_TO_ID))
+				for(int i = 0; i < types.getOreTypes().size(); i++)
+					((ObjectIntIdentityMap<OreType>)slaveset.get(OreUtils.ORETYPE_TO_ID)).put(types.getOreTypes().get(i), (id * 16) + i);
 			IForgeRegistry<Block> blocks = GameRegistry.findRegistry(Block.class);
 			IForgeRegistry<Item> items = GameRegistry.findRegistry(Item.class);
 			IForgeRegistry<OreMaterial> materials = GameRegistry.findRegistry(OreMaterial.class);
 			if(blocks != null && items != null && materials != null)
 				for(OreMaterial material : materials)
 					tryRegister(material, types, blocks, items);
+			types.update();
 		}
 		
 		@Override
@@ -63,6 +69,7 @@ public class MetalExtras_Callbacks
 		{
 			Map<ResourceLocation, Object> slaves = (Map<ResourceLocation, Object>)slaveset;
 			slaves.put(OreUtils.ORETYPE_TO_IBLOCKSTATE, HashBiMap.<OreType, IBlockState>create());
+			slaves.put(OreUtils.ORETYPE_TO_ID, new ObjectIntIdentityMap<OreType>());
 		}
 	}
 	

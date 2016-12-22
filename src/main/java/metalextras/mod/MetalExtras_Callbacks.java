@@ -21,7 +21,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.common.registry.IForgeRegistry.AddCallback;
-import net.minecraftforge.fml.common.registry.IForgeRegistry.ClearCallback;
 import net.minecraftforge.fml.common.registry.IForgeRegistry.CreateCallback;
 
 public class MetalExtras_Callbacks

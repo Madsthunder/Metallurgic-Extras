@@ -76,7 +76,7 @@ public abstract class VanillaOreMaterial extends OreMaterial
 	@Override
 	public int getDropXP(Random random)
 	{
-		return MathHelper.getRandomIntegerInRange(random, this.xpMin, this.xpMax);
+		return MathHelper.getInt(random, this.xpMin, this.xpMax);
 	}
 	
 	/**

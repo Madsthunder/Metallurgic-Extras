@@ -85,6 +85,7 @@ public class ModelOre implements IModel
 	
 	private static class BakedModelOre implements IBakedModel
 	{
+		private static final Map<IBlockState, IBakedModel> models = Maps.newHashMap();
 		private final IModelState modelState;
 		private final VertexFormat vertexFormat;
 		private final Function<ResourceLocation, TextureAtlasSprite> textureGetter;
@@ -99,26 +100,33 @@ public class ModelOre implements IModel
 		@Override
 		public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand)
 		{
-			List<BakedQuad> quads = Lists.newArrayList();
-			if(state != null && state.getBlock() instanceof BlockOre)
+			if(state != null)
 			{
-				BlockOre ore = (BlockOre)state.getBlock();
-				OreType type = ore.getOreType(state);
-				if(type != null)
+				IBakedModel baked_model = models.get(state);
+				if(baked_model != null)
+					return baked_model.getQuads(state, side, 0L);
+				if(state.getBlock() instanceof BlockOre)
 				{
-					Set<IBakedModel> models = Sets.newHashSet(type.getModel(ore.getOreMaterial()).bake(this.modelState, this.vertexFormat, this.textureGetter));
-					IModel model = ore.getOreMaterial().getModel(type);
-					models.add(model.bake(ModelRotation.X0_Y0, this.vertexFormat, this.textureGetter));
-					models.add(model.bake(ModelRotation.X180_Y0, this.vertexFormat, this.textureGetter));
-					models.add(model.bake(ModelRotation.X90_Y180, this.vertexFormat, this.textureGetter));
-					models.add(model.bake(ModelRotation.X90_Y0, this.vertexFormat, this.textureGetter));
-					models.add(model.bake(ModelRotation.X90_Y90, this.vertexFormat, this.textureGetter));
-					models.add(model.bake(ModelRotation.X90_Y270, this.vertexFormat, this.textureGetter));
-					quads.addAll(ClientHooks.joinModels(state, 0L, this, models).getQuads(state, side, 0L));
-					
+					BlockOre ore = (BlockOre)state.getBlock();
+					OreType type = ore.getOreType(state);
+					if(type != null)
+					{
+						Set<IBakedModel> models = Sets.newHashSet(type.getModel(ore.getOreMaterial()).bake(this.modelState, this.vertexFormat, this.textureGetter));
+						IModel model = ore.getOreMaterial().getModel(type);
+						models.add(model.bake(ModelRotation.X0_Y0, this.vertexFormat, this.textureGetter));
+						models.add(model.bake(ModelRotation.X180_Y0, this.vertexFormat, this.textureGetter));
+						models.add(model.bake(ModelRotation.X90_Y180, this.vertexFormat, this.textureGetter));
+						models.add(model.bake(ModelRotation.X90_Y0, this.vertexFormat, this.textureGetter));
+						models.add(model.bake(ModelRotation.X90_Y90, this.vertexFormat, this.textureGetter));
+						models.add(model.bake(ModelRotation.X90_Y270, this.vertexFormat, this.textureGetter));
+						baked_model = ClientHooks.joinModels(state, 0L, this, models);
+						BakedModelOre.this.models.put(state, baked_model);
+						return baked_model.getQuads(state, side, 0L);
+					}
 				}
 			}
-			return quads;
+			
+			return Lists.newArrayList();
 		}
 		
 		@Override

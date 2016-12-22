@@ -80,9 +80,7 @@ public abstract class VanillaOreMaterial extends OreMaterial
 	}
 	
 	/**
-	 * @Override public ItemStack getIngot() { return
-	 *           FurnaceRecipes.instance().getSmeltingResult(new
-	 *           ItemStack(this.state.getBlock())); }
+	 * @Override public ItemStack getIngot() { return FurnaceRecipes.instance().getSmeltingResult(new ItemStack(this.state.getBlock())); }
 	 */
 	
 	@Override
@@ -111,7 +109,7 @@ public abstract class VanillaOreMaterial extends OreMaterial
 	@Override
 	public Collection<GenerateMinable.EventType> getOverrides()
 	{
-		return Sets.newHashSet(type);
+		return Sets.newHashSet(this.type);
 	}
 	
 	@Override

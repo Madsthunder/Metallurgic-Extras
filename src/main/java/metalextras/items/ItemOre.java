@@ -39,7 +39,7 @@ public class ItemOre extends Item
 	public void getSubItems(Item item, CreativeTabs tab, NonNullList<ItemStack> list)
 	{
 		for(OreMaterial material : OreUtils.getMaterialsRegistry())
-			if(tab == tab.SEARCH || material.getCreativeTab() == tab)
+			if(tab == CreativeTabs.SEARCH || material.getCreativeTab() == tab)
 				list.add(new ItemStack(item, 1, OreUtils.getMaterialsRegistry().getValues().indexOf(material)));
 	}
 	

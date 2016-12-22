@@ -169,6 +169,7 @@ public class MetalExtras
 		
 		public static class ClientProxy extends Proxy
 		{
+			@Override
 			public void pre()
 			{
 				super.pre();
@@ -229,10 +230,11 @@ public class MetalExtras
 	public static final CreativeTabs METALLURGIC_EXTRAS = new CreativeTabs("metalextras:metallurgic_extras")
 	{
 		private final ItemStack stack = new ItemStack(ENDER_GEM);
+
 		@Override
 		public ItemStack getTabIconItem()
 		{
-			return stack;
+			return this.stack;
 		}
 	};
 	
@@ -449,24 +451,11 @@ public class MetalExtras
 			@Override
 			public boolean apply(Collection<OreTypeDictionary> entries)
 			{
-				if((entries.contains(DIRTY)))// && (entries.contains(LOOSE) ?
-												// (entries.contains(SANDY) &&
-												// entries.contains(DRY)) :
-												// (entries.contains(SANDY) ||
-												// entries.contains(WET) ? false
-												// :
-												// !entries.contains(MetalExtras_OH.OTD_END))))
-												// || (!entries.contains(DIRTY)
-												// &&
-												// !entries.contains(MetalExtras_OH.OTD_END)))
-				{
+				if((entries.contains(DIRTY)))
 					if(entries.contains(LOOSE))
-					{
 						return entries.contains(SANDY) && entries.contains(DRY);
-					}
 					else if(entries.contains(SANDY) || entries.contains(WET))
 						return false;
-				}
 				return !entries.contains(OTD_END);
 			}
 		})).setHarvestLevel(3).setItemDropped(RUBY_GEM, 0, 3, 7).setOverrides(RUBY_EVT).setCreativeTab(METALLURGIC_EXTRAS).setLanguageKey("tile.metalextras:ruby_ore").setModel(new ResourceLocation("metalextras:block/ruby_ore")).setRegistryName("metalextras", "ruby_ore"));
@@ -482,7 +471,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[] { settings.coalMinHeight, settings.coalMaxHeight };
+				return new int[ ] {settings.coalMinHeight, settings.coalMaxHeight};
 			}
 			
 			@Override
@@ -503,7 +492,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[] { settings.ironMinHeight, settings.ironMaxHeight };
+				return new int[ ] {settings.ironMinHeight, settings.ironMaxHeight};
 			}
 			
 			@Override
@@ -524,7 +513,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[] { settings.lapisCenterHeight, settings.lapisSpread };
+				return new int[ ] {settings.lapisCenterHeight, settings.lapisSpread};
 			}
 			
 			@Override
@@ -551,7 +540,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[] { settings.goldMinHeight, settings.goldMaxHeight };
+				return new int[ ] {settings.goldMinHeight, settings.goldMaxHeight};
 			}
 			
 			@Override
@@ -572,7 +561,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[] { settings.redstoneMinHeight, settings.redstoneMaxHeight };
+				return new int[ ] {settings.redstoneMinHeight, settings.redstoneMaxHeight};
 			}
 			
 			@Override
@@ -593,7 +582,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[] { 28, 4 };
+				return new int[ ] {28, 4};
 			}
 			
 			@Override
@@ -620,7 +609,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[] { settings.diamondMinHeight, settings.diamondMaxHeight };
+				return new int[ ] {settings.diamondMinHeight, settings.diamondMaxHeight};
 			}
 			
 			@Override

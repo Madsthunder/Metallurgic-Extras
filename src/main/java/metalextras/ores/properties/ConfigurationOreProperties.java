@@ -13,7 +13,6 @@ import api.metalextras.OreProperties;
 import api.metalextras.OreType;
 import api.metalextras.OreTypeDictionary;
 import api.metalextras.OreUtils;
-import continuum.essentials.config.ConfigHandler;
 import metalextras.MetalExtras;
 import metalextras.config.OreConfigHandler;
 import net.minecraft.util.math.BlockPos;

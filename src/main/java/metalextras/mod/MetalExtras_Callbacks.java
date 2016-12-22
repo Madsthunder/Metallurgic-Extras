@@ -67,7 +67,7 @@ public class MetalExtras_Callbacks
 		public void onCreate(Map<ResourceLocation, ?> slaveset, BiMap<ResourceLocation, ? extends IForgeRegistry<?>> registries)
 		{
 			Map<ResourceLocation, Object> slaves = (Map<ResourceLocation, Object>)slaveset;
-			slaves.put(OreUtils.ORETYPE_TO_IBLOCKSTATE, HashBiMap.<OreType, IBlockState>create());
+			slaves.put(OreUtils.ORETYPE_TO_IBLOCKSTATE, HashBiMap.<OreType, IBlockState> create());
 			slaves.put(OreUtils.ORETYPE_TO_ID, new ObjectIntIdentityMap<OreType>());
 		}
 	}

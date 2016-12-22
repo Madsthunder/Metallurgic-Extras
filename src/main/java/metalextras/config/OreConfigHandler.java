@@ -78,6 +78,7 @@ public class OreConfigHandler implements IConfigSubHandler
 	{
 		boolean difference = !this.spawnEnabled.isDefault() || !this.spawnTries.isDefault() || this.minHeight.isDefault() || !this.maxHeight.isDefault() || !this.minTemperature.isDefault() || !this.maxTemperature.isDefault() || !this.veinSize.isDefault() || this.whitelist == null ? false : !Iterables.all(this.whitelist, new Predicate<OreType>()
 		{
+			@Override
 			public boolean apply(OreType type)
 			{
 				return OreConfigHandler.this.defaultWhitelist.apply(type.getOreTypeDictionaryList());
@@ -123,7 +124,6 @@ public class OreConfigHandler implements IConfigSubHandler
 					{
 						OreType type = OreUtils.findOreType(location);
 						if(type != null)
-						{
 							try
 							{
 								if(entry.getValue().getAsBoolean())
@@ -133,7 +133,6 @@ public class OreConfigHandler implements IConfigSubHandler
 							{
 								
 							}
-						}
 					}
 				}
 			}

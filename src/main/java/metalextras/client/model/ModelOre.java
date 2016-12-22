@@ -120,7 +120,7 @@ public class ModelOre implements IModel
 						models.add(model.bake(ModelRotation.X90_Y90, this.vertexFormat, this.textureGetter));
 						models.add(model.bake(ModelRotation.X90_Y270, this.vertexFormat, this.textureGetter));
 						baked_model = ClientHooks.joinModels(state, 0L, this, models);
-						BakedModelOre.this.models.put(state, baked_model);
+						BakedModelOre.models.put(state, baked_model);
 						return baked_model.getQuads(state, side, 0L);
 					}
 				}

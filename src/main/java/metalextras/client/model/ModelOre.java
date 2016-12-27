@@ -125,7 +125,6 @@ public class ModelOre implements IModel
 					}
 				}
 			}
-			
 			return Lists.newArrayList();
 		}
 		

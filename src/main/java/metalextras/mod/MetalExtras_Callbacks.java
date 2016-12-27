@@ -74,15 +74,21 @@ public class MetalExtras_Callbacks
 	
 	private static void tryRegister(OreMaterial material, OreTypes types, @Nonnull IForgeRegistry<Block> blocks, @Nonnull IForgeRegistry<Item> items)
 	{
-		Block block = material.generateBlock(types);
-		if(blocks.containsKey(block.getRegistryName()))
-			block = blocks.getValue(block.getRegistryName());
-		else
-			blocks.register(block);
-		Item item = null;
-		if(block instanceof BlockOre)
-			item = new ItemBlockOre(block, ((BlockOre)block).getOreTypeProperty()).setRegistryName(block.getRegistryName()).setUnlocalizedName(block.getRegistryName().toString());
-		if(item != null && !items.containsKey(item.getRegistryName()))
-			items.register(item);
+		for(BlockOre block : material.getBlocksToRegister(types))
+		{
+			if(blocks.containsKey(block.getRegistryName()))
+			{
+				Block block1 = blocks.getValue(block.getRegistryName());
+				if(block1 instanceof BlockOre)
+					block = (BlockOre)block1;
+				else
+					throw new IllegalStateException("There Is Already A Block \"" + block.getRegistryName() + "\" Registered That Doesn't Extend BlockOre.");
+			}
+			else
+				blocks.register(block);
+			Item item = new ItemBlockOre(block, block.getOreTypeProperty()).setRegistryName(block.getRegistryName()).setUnlocalizedName(block.getRegistryName().toString());
+			if(item != null && !items.containsKey(item.getRegistryName()))
+				items.register(item);
+		}
 	}
 }

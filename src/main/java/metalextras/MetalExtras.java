@@ -1,13 +1,5 @@
 package metalextras;
 
-import static api.metalextras.OreTypeDictionary.DIRTY;
-import static api.metalextras.OreTypeDictionary.DRY;
-import static api.metalextras.OreTypeDictionary.HOT;
-import static api.metalextras.OreTypeDictionary.LOOSE;
-import static api.metalextras.OreTypeDictionary.ROCKY;
-import static api.metalextras.OreTypeDictionary.SANDY;
-import static api.metalextras.OreTypeDictionary.WET;
-
 import java.util.Collection;
 import java.util.Random;
 
@@ -16,12 +8,15 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
 import api.metalextras.BlockOre;
+import api.metalextras.Characteristic;
+import api.metalextras.IBlockOreMulti;
 import api.metalextras.ModelType;
 import api.metalextras.OreMaterial;
 import api.metalextras.OreType;
-import api.metalextras.OreTypeDictionary;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
+import api.metalextras.SPacketBlockOreLandingParticles;
+import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import continuum.core.mod.CTCore_OH;
 import continuum.essentials.client.state.StateMapperStatic;
 import continuum.essentials.config.ConfigHandler;
@@ -31,6 +26,7 @@ import metalextras.items.ItemOre;
 import metalextras.mod.MetalExtras_Callbacks;
 import metalextras.ores.VanillaOreMaterial;
 import metalextras.ores.properties.ConfigurationOreProperties;
+import metalextras.packets.OreLandingParticleMessageHandler;
 import metalextras.world.gen.OreGeneration;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -46,6 +42,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
@@ -66,8 +63,13 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.common.registry.RegistryBuilder;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 
 @EventBusSubscriber
@@ -76,7 +78,7 @@ public class MetalExtras
 {
 	public static final String MODID = "metalextras";
 	public static final String NAME = "Metallurgic Extras";
-	public static final String VERSION = "2.0.0";
+	public static final String VERSION = "2.1.0";
 	public static final ConfigHandler CONFIGURATION_HANDLER = new ConfigHandler("config\\Metallurgic Extras");
 	
 	public static class Proxy
@@ -122,6 +124,7 @@ public class MetalExtras
 			OreDictionary.registerOre("gemEnder", ENDER_GEM);
 			OreDictionary.registerOre("gemSapphire", SAPPHIRE_GEM);
 			OreDictionary.registerOre("gemRuby", RUBY_GEM);
+			LANDING_PARTICLE_WRAPPER.registerMessage(OreLandingParticleMessageHandler.class, SPacketBlockOreLandingParticles.class, 0, Side.CLIENT);
 			CONFIGURATION_HANDLER.refreshAll();
 		}
 		
@@ -167,6 +170,7 @@ public class MetalExtras
 			CONFIGURATION_HANDLER.refreshAll();
 		}
 		
+		@SideOnly(Side.CLIENT)
 		public static class ClientProxy extends Proxy
 		{
 			@Override
@@ -206,31 +210,38 @@ public class MetalExtras
 					{
 						StateMapperStatic mapper = StateMapperStatic.create(new ModelResourceLocation(new ResourceLocation("metalextras", "ore"), "normal"));
 						ModelLoader.setCustomStateMapper(block, mapper);
+						Item item = Item.getItemFromBlock(block);
 						for(int i = 0; i < block.getOreTypeProperty().getAllowedValues().size(); i++)
-						{
-							Item item = Item.getItemFromBlock(block);
 							ModelLoader.setCustomModelResourceLocation(item, i, mapper.getModelLocation(new ItemStack(item, 1, i)));
-						}
+						if(block instanceof IBlockOreMulti)
+							for(BlockOre other : ((IBlockOreMulti)block).getOthers())
+							{
+								ModelLoader.setCustomStateMapper(other, mapper);
+								item = Item.getItemFromBlock(other);
+								if(item != null)
+									for(int i = 0; i < other.getOreTypeProperty().getAllowedValues().size(); i++)
+										ModelLoader.setCustomModelResourceLocation(item, i, mapper.getModelLocation(new ItemStack(item, 1, i)));
+							}
 					}
 					ModelLoader.setCustomModelResourceLocation(OreMaterial.ORE, OreUtils.getMaterialsRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.getRegistryName().getResourcePath() + "_item"), "inventory"));
 				}
-				
 			}
 		}
 		
+		@SideOnly(Side.SERVER)
 		public static class ServerProxy extends Proxy
 		{
 			
 		}
 	}
 	
-	public static final OreTypeDictionary OTD_NETHER = OreTypeDictionary.byDimension(DimensionType.NETHER);
-	public static final OreTypeDictionary OTD_END = OreTypeDictionary.byDimension(DimensionType.THE_END);
+	public static final Characteristic OTD_NETHER = Characteristic.byDimension(DimensionType.NETHER);
+	public static final Characteristic OTD_END = Characteristic.byDimension(DimensionType.THE_END);
 	
 	public static final CreativeTabs METALLURGIC_EXTRAS = new CreativeTabs("metalextras:metallurgic_extras")
 	{
 		private final ItemStack stack = new ItemStack(ENDER_GEM);
-
+		
 		@Override
 		public ItemStack getTabIconItem()
 		{
@@ -253,21 +264,21 @@ public class MetalExtras
 	@GameRegistry.ObjectHolder("metalextras:diamond_ore")
 	public static final VanillaOreMaterial DIAMOND_ORE = null;
 	@GameRegistry.ObjectHolder("metalextras:copper_ore")
-	public static final OreMaterial.Impl COPPER_ORE = null;
+	public static final OreMaterial.SimpleImpl COPPER_ORE = null;
 	@GameRegistry.ObjectHolder("metalextras:tin_ore")
-	public static final OreMaterial.Impl TIN_ORE = null;
+	public static final OreMaterial.SimpleImpl TIN_ORE = null;
 	@GameRegistry.ObjectHolder("metalextras:aluminum_ore")
-	public static final OreMaterial.Impl ALUMINUM_ORE = null;
+	public static final OreMaterial.SimpleImpl ALUMINUM_ORE = null;
 	@GameRegistry.ObjectHolder("metalextras:lead_ore")
-	public static final OreMaterial.Impl LEAD_ORE = null;
+	public static final OreMaterial.SimpleImpl LEAD_ORE = null;
 	@GameRegistry.ObjectHolder("metalextras:silver_ore")
-	public static final OreMaterial.Impl SILVER_ORE = null;
+	public static final OreMaterial.SimpleImpl SILVER_ORE = null;
 	@GameRegistry.ObjectHolder("metalextras:ender_ore")
-	public static final OreMaterial.Impl ENDER_ORE = null;
+	public static final OreMaterial.SimpleImpl ENDER_ORE = null;
 	@GameRegistry.ObjectHolder("metalextras:sapphire_ore")
-	public static final OreMaterial.Impl SAPPHIRE_ORE = null;
+	public static final OreMaterial.SimpleImpl SAPPHIRE_ORE = null;
 	@GameRegistry.ObjectHolder("metalextras:ruby_ore")
-	public static final OreMaterial.Impl RUBY_ORE = null;
+	public static final OreMaterial.SimpleImpl RUBY_ORE = null;
 	
 	@GameRegistry.ObjectHolder(value = "minecraft:rocks")
 	public static final OreTypes ROCKS = null;
@@ -316,6 +327,8 @@ public class MetalExtras
 	public static final Item SAPPHIRE_GEM = null;
 	@GameRegistry.ObjectHolder("metalextras:ruby_gem")
 	public static final Item RUBY_GEM = null;
+	
+	public static final SimpleNetworkWrapper LANDING_PARTICLE_WRAPPER = NetworkRegistry.INSTANCE.newSimpleChannel("metalextras:landing_particles");
 	
 	public MetalExtras()
 	{
@@ -392,7 +405,7 @@ public class MetalExtras
 	public static void onOreTypesRegister(RegistryEvent.Register<OreTypes> event)
 	{
 		OreTypes rocks = new OreTypes().setRegistryName("rocks");
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(0), OreTypeDictionary.ROCKY, OreTypeDictionary.DENSE)
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(0), Characteristic.ROCKY, Characteristic.DENSE)
 		{
 			@Override
 			public IModel getModel(OreMaterial material)
@@ -402,23 +415,23 @@ public class MetalExtras
 				return super.getModel(material);
 			}
 		}.setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone")).setRegistryName("minecraft:stone"));
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(1), OreTypeDictionary.ROCKY, OreTypeDictionary.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_granite")).setRegistryName("minecraft:granite"));
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(3), OreTypeDictionary.ROCKY, OreTypeDictionary.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_diorite")).setRegistryName("minecraft:diorite"));
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(5), OreTypeDictionary.ROCKY, OreTypeDictionary.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_andesite")).setRegistryName("minecraft:andesite"));
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.SANDSTONE.getDefaultState(), OreTypeDictionary.ROCKY, OreTypeDictionary.SANDY, OreTypeDictionary.COMPACT, OreTypeDictionary.DRY).setHardness(.8F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/sandstone_normal")).setRegistryName("minecraft:sandstone"));
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.RED_SANDSTONE.getDefaultState(), OreTypeDictionary.ROCKY, OreTypeDictionary.SANDY, OreTypeDictionary.COMPACT, OreTypeDictionary.DRY).setHardness(.8F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/red_sandstone_normal")).setRegistryName("minecraft:red_sandstone"));
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.NETHERRACK.getDefaultState(), OreTypeDictionary.ROCKY, OTD_NETHER, OreTypeDictionary.HOT, OreTypeDictionary.COMPACT).setHardness(.4F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/netherrack")).setRegistryName("minecraft:netherrack"));
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.END_STONE.getDefaultState(), OreTypeDictionary.ROCKY, OTD_END, OreTypeDictionary.DENSE).setHardness(3F).setResistance(15F).setModelTexture(new ResourceLocation("minecraft:blocks/end_stone")).setRegistryName("minecraft:end_stone"));
-		rocks.addOreType(new OreType.Impl(rocks, Blocks.BEDROCK.getDefaultState(), OreTypeDictionary.ROCKY, OreTypeDictionary.DENSE).setHardness(-1F).setResistance(6000000F).setModelTexture(new ResourceLocation("minecraft:blocks/bedrock")).setRegistryName("minecraft:bedrock"));
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(1), Characteristic.ROCKY, Characteristic.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_granite")).setRegistryName("minecraft:granite"));
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(3), Characteristic.ROCKY, Characteristic.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_diorite")).setRegistryName("minecraft:diorite"));
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(5), Characteristic.ROCKY, Characteristic.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_andesite")).setRegistryName("minecraft:andesite"));
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.SANDSTONE.getDefaultState(), Characteristic.ROCKY, Characteristic.SANDY, Characteristic.COMPACT, Characteristic.DRY).setHardness(.8F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/sandstone_normal")).setRegistryName("minecraft:sandstone"));
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.RED_SANDSTONE.getDefaultState(), Characteristic.ROCKY, Characteristic.SANDY, Characteristic.COMPACT, Characteristic.DRY).setHardness(.8F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/red_sandstone_normal")).setRegistryName("minecraft:red_sandstone"));
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.NETHERRACK.getDefaultState(), Characteristic.ROCKY, OTD_NETHER, Characteristic.HOT, Characteristic.COMPACT).setHardness(.4F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/netherrack")).setRegistryName("minecraft:netherrack"));
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.END_STONE.getDefaultState(), Characteristic.ROCKY, OTD_END, Characteristic.DENSE).setHardness(3F).setResistance(15F).setModelTexture(new ResourceLocation("minecraft:blocks/end_stone")).setRegistryName("minecraft:end_stone"));
+		rocks.addOreType(new OreType.Impl(rocks, Blocks.BEDROCK.getDefaultState(), Characteristic.ROCKY, Characteristic.DENSE).setHardness(-1F).setResistance(6000000F).setModelTexture(new ResourceLocation("minecraft:blocks/bedrock")).setRegistryName("minecraft:bedrock"));
 		event.getRegistry().register(rocks);
 		OreTypes dirts = new OreTypes().setRegistryName("dirts");
-		dirts.addOreType(new OreType.Impl(dirts, Blocks.DIRT.getStateFromMeta(0), OreTypeDictionary.DIRTY, OreTypeDictionary.COMPACT).setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/dirt")).setRegistryName("minecraft:dirt"));
-		dirts.addOreType(new OreType.Impl(dirts, Blocks.DIRT.getStateFromMeta(1), OreTypeDictionary.DIRTY, OreTypeDictionary.ROCKY, OreTypeDictionary.COMPACT).setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/coarse_dirt")).setRegistryName("minecraft:coarse_dirt"));
-		dirts.addOreType(new OreType.Impl(dirts, Blocks.SAND.getStateFromMeta(0), OreTypeDictionary.DIRTY, OreTypeDictionary.SANDY, OreTypeDictionary.LOOSE, OreTypeDictionary.DRY).setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/sand")).setRegistryName("minecraft:sand"));
-		dirts.addOreType(new OreType.Impl(dirts, Blocks.SAND.getStateFromMeta(1), OreTypeDictionary.DIRTY, OreTypeDictionary.SANDY, OreTypeDictionary.LOOSE, OreTypeDictionary.DRY).setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/red_sand")).setRegistryName("minecraft:red_sand"));
-		dirts.addOreType(new OreType.Impl(dirts, Blocks.CLAY.getDefaultState(), OreTypeDictionary.DIRTY, OreTypeDictionary.COMPACT, OreTypeDictionary.WET).setHardness(.6F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/clay")).setRegistryName("minecraft:clay"));
-		dirts.addOreType(new OreType.Impl(dirts, Blocks.GRAVEL.getDefaultState(), OreTypeDictionary.DIRTY, OreTypeDictionary.ROCKY, OreTypeDictionary.LOOSE).setHardness(.6F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/gravel")).setRegistryName("minecraft:gravel"));
-		dirts.addOreType(new OreType.Impl(dirts, Blocks.SOUL_SAND.getDefaultState(), OreTypeDictionary.DIRTY, OreTypeDictionary.SANDY, OTD_NETHER)
+		dirts.addOreType(new OreType.Impl(dirts, Blocks.DIRT.getStateFromMeta(0), Characteristic.DIRTY, Characteristic.COMPACT).setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/dirt")).setRegistryName("minecraft:dirt"));
+		dirts.addOreType(new OreType.Impl(dirts, Blocks.DIRT.getStateFromMeta(1), Characteristic.DIRTY, Characteristic.ROCKY, Characteristic.COMPACT).setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/coarse_dirt")).setRegistryName("minecraft:coarse_dirt"));
+		dirts.addOreType(new OreType.Impl(dirts, Blocks.SAND.getStateFromMeta(0), Characteristic.DIRTY, Characteristic.SANDY, Characteristic.LOOSE, Characteristic.DRY).setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/sand")).setRegistryName("minecraft:sand"));
+		dirts.addOreType(new OreType.Impl(dirts, Blocks.SAND.getStateFromMeta(1), Characteristic.DIRTY, Characteristic.SANDY, Characteristic.LOOSE, Characteristic.DRY).setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/red_sand")).setRegistryName("minecraft:red_sand"));
+		dirts.addOreType(new OreType.Impl(dirts, Blocks.CLAY.getDefaultState(), Characteristic.DIRTY, Characteristic.COMPACT, Characteristic.WET).setHardness(.6F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/clay")).setRegistryName("minecraft:clay"));
+		dirts.addOreType(new OreType.Impl(dirts, Blocks.GRAVEL.getDefaultState(), Characteristic.DIRTY, Characteristic.ROCKY, Characteristic.LOOSE).setHardness(.6F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/gravel")).setRegistryName("minecraft:gravel"));
+		dirts.addOreType(new OreType.Impl(dirts, Blocks.SOUL_SAND.getDefaultState(), Characteristic.DIRTY, Characteristic.SANDY, OTD_NETHER)
 		{
 			@Override
 			public void handleEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity)
@@ -439,24 +452,24 @@ public class MetalExtras
 	@SubscribeEvent
 	public static void onOreMaterialsRegister(RegistryEvent.Register<OreMaterial> event)
 	{
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("copper_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Predicates.alwaysTrue())).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(COPPER_EVT).setLanguageKey("tile.metalextras:copper_ore").setRegistryName("metalextras:copper_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("tin_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, OreTypeDictionary.notAny(OTD_END))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(TIN_EVT).setLanguageKey("tile.metalextras:tin_ore").setRegistryName("metalextras:tin_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("aluminum_ore", true, 6, 32, 128, -Float.MAX_VALUE, Float.MAX_VALUE, 5, OreTypeDictionary.all(ROCKY))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(ALUMINUM_EVT).setLanguageKey("tile.metalextras:aluminum_ore").setRegistryName("metalextras:aluminum_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("lead_ore", true, 8, 32, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 8, OreTypeDictionary.notAny(DIRTY, OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(LEAD_EVT).setLanguageKey("tile.metalextras:lead_ore").setRegistryName("metalextras:lead_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("silver_ore", true, 8, 0, 32, -Float.MAX_VALUE, Float.MAX_VALUE, 8, OreTypeDictionary.notAny(DIRTY, SANDY, OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(SILVER_EVT).setLanguageKey("tile.metalextras:silver_ore").setRegistryName("metalextras:silver_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("ender_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, OreTypeDictionary.all(OTD_END))).setHarvestLevel(3).setItemDropped(ENDER_GEM, 0, 3, 7).setCreativeTab(METALLURGIC_EXTRAS).setOverrides(ENDER_EVT).setLanguageKey("tile.metalextras:ender_ore").setRegistryName("metalextras:ender_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("sapphire_ore", true, 20, 0, 64, -Float.MAX_VALUE, 0.2F, 3, OreTypeDictionary.notAny(LOOSE, DRY, SANDY, HOT, OTD_NETHER))).setHarvestLevel(3).setItemDropped(SAPPHIRE_GEM, 0, 3, 7).setCreativeTab(METALLURGIC_EXTRAS).setOverrides(SAPPHIRE_EVT).setLanguageKey("tile.metalextras:sapphire_ore").setRegistryName("metalextras:sapphire_ore"));
-		event.getRegistry().register(new OreMaterial.Impl(ConfigurationOreProperties.func("ruby_ore", true, 20, 0, 64, 1F, Float.MAX_VALUE, 3, new Predicate<Collection<OreTypeDictionary>>()
+		event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("copper_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Predicates.alwaysTrue())).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(COPPER_EVT).setLanguageKey("tile.metalextras:copper_ore").setRegistryName("metalextras:copper_ore"));
+		event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("tin_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Characteristic.notAny(OTD_END))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(TIN_EVT).setLanguageKey("tile.metalextras:tin_ore").setRegistryName("metalextras:tin_ore"));
+		event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("aluminum_ore", true, 6, 32, 128, -Float.MAX_VALUE, Float.MAX_VALUE, 5, Characteristic.all(Characteristic.ROCKY))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(ALUMINUM_EVT).setLanguageKey("tile.metalextras:aluminum_ore").setRegistryName("metalextras:aluminum_ore"));
+		event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("lead_ore", true, 8, 32, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 8, Characteristic.notAny(Characteristic.DIRTY, OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(LEAD_EVT).setLanguageKey("tile.metalextras:lead_ore").setRegistryName("metalextras:lead_ore"));
+		event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("silver_ore", true, 8, 0, 32, -Float.MAX_VALUE, Float.MAX_VALUE, 8, Characteristic.notAny(Characteristic.DIRTY, Characteristic.SANDY, OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(METALLURGIC_EXTRAS).setOverrides(SILVER_EVT).setLanguageKey("tile.metalextras:silver_ore").setRegistryName("metalextras:silver_ore"));
+		event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("ender_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Characteristic.all(OTD_END))).setHarvestLevel(3).setItemDropped(ENDER_GEM, 0, 3, 7).setCreativeTab(METALLURGIC_EXTRAS).setOverrides(ENDER_EVT).setLanguageKey("tile.metalextras:ender_ore").setRegistryName("metalextras:ender_ore"));
+		event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("sapphire_ore", true, 20, 0, 64, -Float.MAX_VALUE, 0.2F, 3, Characteristic.notAny(Characteristic.LOOSE, Characteristic.DRY, Characteristic.SANDY, Characteristic.HOT, OTD_NETHER))).setHarvestLevel(3).setItemDropped(SAPPHIRE_GEM, 0, 3, 7).setCreativeTab(METALLURGIC_EXTRAS).setOverrides(SAPPHIRE_EVT).setLanguageKey("tile.metalextras:sapphire_ore").setRegistryName("metalextras:sapphire_ore"));
+		event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("ruby_ore", true, 20, 0, 64, 1F, Float.MAX_VALUE, 3, new Predicate<Collection<Characteristic>>()
 		{
 			@Override
-			public boolean apply(Collection<OreTypeDictionary> entries)
+			public boolean apply(Collection<Characteristic> characteristics)
 			{
-				if((entries.contains(DIRTY)))
-					if(entries.contains(LOOSE))
-						return entries.contains(SANDY) && entries.contains(DRY);
-					else if(entries.contains(SANDY) || entries.contains(WET))
+				if((characteristics.contains(Characteristic.DIRTY)))
+					if(characteristics.contains(Characteristic.LOOSE))
+						return characteristics.contains(Characteristic.SANDY) && characteristics.contains(Characteristic.DRY);
+					else if(characteristics.contains(Characteristic.SANDY) || characteristics.contains(Characteristic.WET))
 						return false;
-				return !entries.contains(OTD_END);
+				return !characteristics.contains(OTD_END);
 			}
 		})).setHarvestLevel(3).setItemDropped(RUBY_GEM, 0, 3, 7).setOverrides(RUBY_EVT).setCreativeTab(METALLURGIC_EXTRAS).setLanguageKey("tile.metalextras:ruby_ore").setModel(new ResourceLocation("metalextras:block/ruby_ore")).setRegistryName("metalextras", "ruby_ore"));
 		event.getRegistry().register(new VanillaOreMaterial(Blocks.COAL_ORE.getDefaultState(), 0, 2, ModelType.IRON, EventType.COAL)
@@ -471,7 +484,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[ ] {settings.coalMinHeight, settings.coalMaxHeight};
+				return new int[] { settings.coalMinHeight, settings.coalMaxHeight };
 			}
 			
 			@Override
@@ -492,7 +505,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[ ] {settings.ironMinHeight, settings.ironMaxHeight};
+				return new int[] { settings.ironMinHeight, settings.ironMaxHeight };
 			}
 			
 			@Override
@@ -513,7 +526,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[ ] {settings.lapisCenterHeight, settings.lapisSpread};
+				return new int[] { settings.lapisCenterHeight, settings.lapisSpread };
 			}
 			
 			@Override
@@ -540,7 +553,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[ ] {settings.goldMinHeight, settings.goldMaxHeight};
+				return new int[] { settings.goldMinHeight, settings.goldMaxHeight };
 			}
 			
 			@Override
@@ -549,7 +562,7 @@ public class MetalExtras
 				return OreGeneration.getChunkProviderSettings(decorator).goldSize;
 			}
 		}.setRegistryName("metalextras:gold_ore"));
-		event.getRegistry().register(new VanillaOreMaterial(Blocks.REDSTONE_ORE.getDefaultState(), 0, 0, ModelType.IRON, EventType.REDSTONE)
+		event.getRegistry().register(new VanillaOreMaterial(Blocks.REDSTONE_ORE.getDefaultState(), 0, 0, ModelType.IRON, EventType.REDSTONE, true)
 		{
 			@Override
 			public int getSpawnTries(World world, Random random)
@@ -561,7 +574,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[ ] {settings.redstoneMinHeight, settings.redstoneMaxHeight};
+				return new int[] { settings.redstoneMinHeight, settings.redstoneMaxHeight };
 			}
 			
 			@Override
@@ -582,7 +595,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[ ] {28, 4};
+				return new int[] { 28, 4 };
 			}
 			
 			@Override
@@ -609,7 +622,7 @@ public class MetalExtras
 			public int[] getSpawnParams(World world)
 			{
 				ChunkProviderSettings settings = OreGeneration.getChunkProviderSettings(world);
-				return new int[ ] {settings.diamondMinHeight, settings.diamondMaxHeight};
+				return new int[] { settings.diamondMinHeight, settings.diamondMaxHeight };
 			}
 			
 			@Override
@@ -643,5 +656,13 @@ public class MetalExtras
 						return;
 			event.setExpToDrop(0);
 		}
+	}
+	
+	@SubscribeEvent
+	public static void onLandingParticlesSpawn(SendLandingParticlesEvent event)
+	{
+		SPacketBlockOreLandingParticles message = event.getMessage();
+		Vec3d pos = message.getPosition();
+		LANDING_PARTICLE_WRAPPER.sendToAllAround(message, new TargetPoint(event.getDimension(), pos.xCoord, pos.yCoord, pos.zCoord, 1024));
 	}
 }

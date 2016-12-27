@@ -8,10 +8,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 
+import api.metalextras.Characteristic;
 import api.metalextras.OreMaterial;
 import api.metalextras.OreProperties;
 import api.metalextras.OreType;
-import api.metalextras.OreTypeDictionary;
 import api.metalextras.OreUtils;
 import metalextras.MetalExtras;
 import metalextras.config.OreConfigHandler;
@@ -27,7 +27,7 @@ public class ConfigurationOreProperties extends OreProperties
 	public final WorldGenerator generator;
 	public final OreConfigHandler handler;
 	
-	public ConfigurationOreProperties(OreMaterial material, String name, boolean spawnEnabled, int spawnTries, int minHeight, int maxHeight, float minTemperature, float maxTemperature, int veinSize, Predicate<Collection<OreTypeDictionary>> defaultPredicates)
+	public ConfigurationOreProperties(OreMaterial material, String name, boolean spawnEnabled, int spawnTries, int minHeight, int maxHeight, float minTemperature, float maxTemperature, int veinSize, Predicate<Collection<Characteristic>> defaultPredicates)
 	{
 		this.material = material;
 		this.generator = new WorldGenerator()
@@ -88,7 +88,7 @@ public class ConfigurationOreProperties extends OreProperties
 		return this.handler.whitelist.contains(type);
 	}
 	
-	public static Function<OreMaterial, OreProperties> func(String name, boolean spawnEnabled, int spawnTries, int minHeight, int maxHeight, float minTemperature, float maxTemperature, int veinSize, Predicate<Collection<OreTypeDictionary>> defaultPredicate)
+	public static Function<OreMaterial, OreProperties> func(String name, boolean spawnEnabled, int spawnTries, int minHeight, int maxHeight, float minTemperature, float maxTemperature, int veinSize, Predicate<Collection<Characteristic>> defaultPredicate)
 	{
 		return new Function<OreMaterial, OreProperties>()
 		{

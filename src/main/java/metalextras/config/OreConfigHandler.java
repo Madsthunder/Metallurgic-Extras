@@ -11,8 +11,8 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import api.metalextras.Characteristic;
 import api.metalextras.OreType;
-import api.metalextras.OreTypeDictionary;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
 import continuum.essentials.config.IConfigSubHandler;
@@ -22,7 +22,7 @@ import net.minecraft.util.ResourceLocation;
 public class OreConfigHandler implements IConfigSubHandler
 {
 	public final String name;
-	public final Predicate<Collection<OreTypeDictionary>> defaultWhitelist;
+	public final Predicate<Collection<Characteristic>> defaultWhitelist;
 	public final IConfigValue<Boolean> spawnEnabled;
 	public final IConfigValue<Integer> spawnTries;
 	public final IConfigValue<Integer> minHeight;
@@ -32,7 +32,7 @@ public class OreConfigHandler implements IConfigSubHandler
 	public final IConfigValue<Integer> veinSize;
 	public List<OreType> whitelist;
 	
-	public OreConfigHandler(String name, boolean spawnEnabled, int spawnTries, int minHeight, int maxHeight, float minTemperature, float maxTemperature, int veinSize, Predicate<Collection<OreTypeDictionary>> whitelist)
+	public OreConfigHandler(String name, boolean spawnEnabled, int spawnTries, int minHeight, int maxHeight, float minTemperature, float maxTemperature, int veinSize, Predicate<Collection<Characteristic>> whitelist)
 	{
 		this.name = name;
 		this.spawnEnabled = new IConfigValue.Impl<Boolean>("spawn_enabled", "config.metalextras:value.spawn_enabled.name", spawnEnabled);
@@ -81,7 +81,7 @@ public class OreConfigHandler implements IConfigSubHandler
 			@Override
 			public boolean apply(OreType type)
 			{
-				return OreConfigHandler.this.defaultWhitelist.apply(type.getOreTypeDictionaryList());
+				return OreConfigHandler.this.defaultWhitelist.apply(type.getCharacteristics());
 			}
 		});
 		if(!simulate)
@@ -157,7 +157,7 @@ public class OreConfigHandler implements IConfigSubHandler
 		JsonObject whitelistObject = whitelistElement == null || !whitelistElement.isJsonObject() ? new JsonObject() : whitelistElement.getAsJsonObject();
 		for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
 			for(OreType type : types)
-				whitelistObject.addProperty(type.getRegistryName().toString(), this.whitelist == null ? this.defaultWhitelist.apply(type.getOreTypeDictionaryList()) : this.whitelist.contains(type));
+				whitelistObject.addProperty(type.getRegistryName().toString(), this.whitelist == null ? this.defaultWhitelist.apply(type.getCharacteristics()) : this.whitelist.contains(type));
 		baseObj.add("type_whitelist", whitelistObject);
 	}
 	
@@ -173,12 +173,12 @@ public class OreConfigHandler implements IConfigSubHandler
 		return new File(origin, "ores.json");
 	}
 	
-	private static List<OreType> getWhitelist(Predicate<Collection<OreTypeDictionary>> defaultWhitelist)
+	private static List<OreType> getWhitelist(Predicate<Collection<Characteristic>> defaultWhitelist)
 	{
 		List<OreType> whitelist = Lists.newArrayList();
 		for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
 			for(OreType type : types)
-				if(defaultWhitelist.apply(type.getOreTypeDictionaryList()))
+				if(defaultWhitelist.apply(type.getCharacteristics()))
 					whitelist.add(type);
 		return whitelist;
 	}

@@ -24,6 +24,11 @@ item.metalextras:silver_ingot.name=Silver Ingot
 item.metalextras:ender_gem.name=Ender Gem
 item.metalextras:sapphire_gem.name=Sapphire Gem
 item.metalextras:ruby_gem.name=Ruby Gem
+item.metalextras:copper_nugget.name=Copper Nugget
+item.metalextras:tin_nugget.name=Tin Nugget
+item.metalextras:aluminum_nugget.name=Aluminum Nugget
+item.metalextras:lead_nugget.name=Lead Nugget
+item.metalextras:silver_nugget.name=Silver Nugget
 
 itemGroup.metalextras:metallurgic_extras=Metallurgic Extras
 

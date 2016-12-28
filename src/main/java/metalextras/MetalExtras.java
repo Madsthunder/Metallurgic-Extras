@@ -124,6 +124,11 @@ public class MetalExtras
 			OreDictionary.registerOre("gemEnder", ENDER_GEM);
 			OreDictionary.registerOre("gemSapphire", SAPPHIRE_GEM);
 			OreDictionary.registerOre("gemRuby", RUBY_GEM);
+			OreDictionary.registerOre("nuggetCopper", COPPER_NUGGET);
+			OreDictionary.registerOre("nuggetTin", TIN_NUGGET);
+			OreDictionary.registerOre("nuggetAluminum", ALUMINUM_NUGGET);
+			OreDictionary.registerOre("nuggetLead", LEAD_NUGGET);
+			OreDictionary.registerOre("nuggetSilver", SILVER_NUGGET);
 			LANDING_PARTICLE_WRAPPER.registerMessage(OreLandingParticleMessageHandler.class, SPacketBlockOreLandingParticles.class, 0, Side.CLIENT);
 			CONFIGURATION_HANDLER.refreshAll();
 		}
@@ -145,22 +150,32 @@ public class MetalExtras
 			OreUtils.registerMaterialSmeltingRecipe(ENDER_ORE, new ItemStack(ENDER_GEM), 1F, true);
 			OreUtils.registerMaterialSmeltingRecipe(SAPPHIRE_ORE, new ItemStack(SAPPHIRE_GEM), 1.5F, true);
 			OreUtils.registerMaterialSmeltingRecipe(RUBY_ORE, new ItemStack(RUBY_GEM), 1.5F, true);
-			GameRegistry.addShapedRecipe(new ItemStack(COPPER_BLOCK), "III", "III", "III", 'I', COPPER_INGOT);
+			GameRegistry.addShapelessRecipe(new ItemStack(COPPER_NUGGET, 9), COPPER_INGOT);
+			GameRegistry.addShapelessRecipe(new ItemStack(TIN_NUGGET, 9), TIN_INGOT);
+			GameRegistry.addShapelessRecipe(new ItemStack(ALUMINUM_NUGGET, 9), ALUMINUM_INGOT);
+			GameRegistry.addShapelessRecipe(new ItemStack(LEAD_NUGGET, 9), LEAD_INGOT);
+			GameRegistry.addShapelessRecipe(new ItemStack(SILVER_NUGGET, 9), SILVER_INGOT);
+			GameRegistry.addShapedRecipe(new ItemStack(COPPER_INGOT), "NNN", "NNN", "NNN", 'N', COPPER_NUGGET);
+			GameRegistry.addShapedRecipe(new ItemStack(TIN_INGOT), "NNN", "NNN", "NNN", 'N', TIN_NUGGET);
+			GameRegistry.addShapedRecipe(new ItemStack(ALUMINUM_INGOT), "NNN", "NNN", "NNN", 'N', ALUMINUM_NUGGET);
+			GameRegistry.addShapedRecipe(new ItemStack(LEAD_INGOT), "NNN", "NNN", "NNN", 'N', LEAD_NUGGET);
+			GameRegistry.addShapedRecipe(new ItemStack(SILVER_INGOT), "NNN", "NNN", "NNN", 'N', SILVER_NUGGET);
 			GameRegistry.addShapelessRecipe(new ItemStack(COPPER_INGOT, 9), COPPER_BLOCK);
-			GameRegistry.addShapedRecipe(new ItemStack(TIN_BLOCK), "III", "III", "III", 'I', TIN_INGOT);
 			GameRegistry.addShapelessRecipe(new ItemStack(TIN_INGOT, 9), TIN_BLOCK);
-			GameRegistry.addShapedRecipe(new ItemStack(ALUMINUM_BLOCK), "III", "III", "III", 'I', ALUMINUM_INGOT);
 			GameRegistry.addShapelessRecipe(new ItemStack(ALUMINUM_INGOT, 9), ALUMINUM_BLOCK);
-			GameRegistry.addShapedRecipe(new ItemStack(LEAD_BLOCK), "III", "III", "III", 'I', LEAD_INGOT);
 			GameRegistry.addShapelessRecipe(new ItemStack(LEAD_INGOT, 9), LEAD_BLOCK);
-			GameRegistry.addShapedRecipe(new ItemStack(SILVER_BLOCK), "III", "III", "III", 'I', SILVER_INGOT);
 			GameRegistry.addShapelessRecipe(new ItemStack(SILVER_INGOT, 9), SILVER_BLOCK);
-			GameRegistry.addShapedRecipe(new ItemStack(ENDER_BLOCK), "III", "III", "III", 'I', ENDER_GEM);
 			GameRegistry.addShapelessRecipe(new ItemStack(ENDER_GEM, 9), ENDER_BLOCK);
-			GameRegistry.addShapedRecipe(new ItemStack(SAPPHIRE_BLOCK), "III", "III", "III", 'I', SAPPHIRE_GEM);
 			GameRegistry.addShapelessRecipe(new ItemStack(SAPPHIRE_GEM, 9), SAPPHIRE_BLOCK);
-			GameRegistry.addShapedRecipe(new ItemStack(RUBY_BLOCK), "III", "III", "III", 'I', RUBY_GEM);
 			GameRegistry.addShapelessRecipe(new ItemStack(RUBY_GEM, 9), RUBY_BLOCK);
+			GameRegistry.addShapedRecipe(new ItemStack(COPPER_BLOCK), "III", "III", "III", 'I', COPPER_INGOT);
+			GameRegistry.addShapedRecipe(new ItemStack(TIN_BLOCK), "III", "III", "III", 'I', TIN_INGOT);
+			GameRegistry.addShapedRecipe(new ItemStack(ALUMINUM_BLOCK), "III", "III", "III", 'I', ALUMINUM_INGOT);
+			GameRegistry.addShapedRecipe(new ItemStack(LEAD_BLOCK), "III", "III", "III", 'I', LEAD_INGOT);
+			GameRegistry.addShapedRecipe(new ItemStack(SILVER_BLOCK), "III", "III", "III", 'I', SILVER_INGOT);
+			GameRegistry.addShapedRecipe(new ItemStack(ENDER_BLOCK), "III", "III", "III", 'I', ENDER_GEM);
+			GameRegistry.addShapedRecipe(new ItemStack(SAPPHIRE_BLOCK), "III", "III", "III", 'I', SAPPHIRE_GEM);
+			GameRegistry.addShapedRecipe(new ItemStack(RUBY_BLOCK), "III", "III", "III", 'I', RUBY_GEM);
 			GameRegistry.registerWorldGenerator(new OreGeneration(), 100);
 			CONFIGURATION_HANDLER.refreshAll();
 		}
@@ -188,6 +203,11 @@ public class MetalExtras
 				RUBY_ORE.setModel(new ResourceLocation("metalextras:block/ruby_ore"));
 				SAPPHIRE_ORE.setModelType(ModelType.EMERALD);
 				RUBY_ORE.setModelType(ModelType.EMERALD);
+				ModelLoader.setCustomModelResourceLocation(COPPER_NUGGET, 0, new ModelResourceLocation("metalextras:copper_nugget", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(TIN_NUGGET, 0, new ModelResourceLocation("metalextras:tin_nugget", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(ALUMINUM_NUGGET, 0, new ModelResourceLocation("metalextras:aluminum_nugget", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(LEAD_NUGGET, 0, new ModelResourceLocation("metalextras:lead_nugget", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(SILVER_NUGGET, 0, new ModelResourceLocation("metalextras:silver_nugget", "inventory"));
 				ModelLoader.setCustomModelResourceLocation(COPPER_INGOT, 0, new ModelResourceLocation("metalextras:copper_ingot", "inventory"));
 				ModelLoader.setCustomModelResourceLocation(TIN_INGOT, 0, new ModelResourceLocation("metalextras:tin_ingot", "inventory"));
 				ModelLoader.setCustomModelResourceLocation(ALUMINUM_INGOT, 0, new ModelResourceLocation("metalextras:aluminum_ingot", "inventory"));
@@ -328,6 +348,17 @@ public class MetalExtras
 	@GameRegistry.ObjectHolder("metalextras:ruby_gem")
 	public static final Item RUBY_GEM = null;
 	
+	@GameRegistry.ObjectHolder("metalextras:copper_nugget")
+	public static final Item COPPER_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:tin_nugget")
+	public static final Item TIN_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:aluminum_nugget")
+	public static final Item ALUMINUM_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:lead_nugget")
+	public static final Item LEAD_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:silver_nugget")
+	public static final Item SILVER_NUGGET = null;
+	
 	public static final SimpleNetworkWrapper LANDING_PARTICLE_WRAPPER = NetworkRegistry.INSTANCE.newSimpleChannel("metalextras:landing_particles");
 	
 	public MetalExtras()
@@ -383,6 +414,11 @@ public class MetalExtras
 	public static void onItemsRegister(RegistryEvent.Register<Item> event)
 	{
 		event.getRegistry().register(new ItemOre().setCreativeTab(METALLURGIC_EXTRAS).setRegistryName("ore"));
+		event.getRegistry().register(ObjectHolder.newItem(new Item(), "copper_nugget", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newItem(new Item(), "tin_nugget", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newItem(new Item(), "aluminum_nugget", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newItem(new Item(), "lead_nugget", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newItem(new Item(), "silver_nugget", METALLURGIC_EXTRAS));
 		event.getRegistry().register(ObjectHolder.newItem(new Item(), "copper_ingot", METALLURGIC_EXTRAS));
 		event.getRegistry().register(ObjectHolder.newItem(new Item(), "tin_ingot", METALLURGIC_EXTRAS));
 		event.getRegistry().register(ObjectHolder.newItem(new Item(), "aluminum_ingot", METALLURGIC_EXTRAS));

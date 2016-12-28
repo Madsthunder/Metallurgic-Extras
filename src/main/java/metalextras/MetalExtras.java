@@ -258,14 +258,15 @@ public class MetalExtras
 	public static final Characteristic OTD_NETHER = Characteristic.byDimension(DimensionType.NETHER);
 	public static final Characteristic OTD_END = Characteristic.byDimension(DimensionType.THE_END);
 	
+	@GameRegistry.ItemStackHolder("metalextras:ender_gem")
+	public static final ItemStack METALLURGIC_EXTRAS_ITEM = ItemStack.EMPTY;
+	
 	public static final CreativeTabs METALLURGIC_EXTRAS = new CreativeTabs("metalextras:metallurgic_extras")
 	{
-		private final ItemStack stack = new ItemStack(ENDER_GEM);
-		
 		@Override
 		public ItemStack getTabIconItem()
 		{
-			return this.stack;
+			return METALLURGIC_EXTRAS_ITEM;
 		}
 	};
 	

@@ -29,6 +29,7 @@ import metalextras.ores.properties.ConfigurationOreProperties;
 import metalextras.packets.OreLandingParticleMessageHandler;
 import metalextras.world.gen.OreGeneration;
 import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -401,14 +402,22 @@ public class MetalExtras
 	@SubscribeEvent
 	public static void onBlocksRegister(RegistryEvent.Register<Block> event)
 	{
-		event.getRegistry().register(ObjectHolder.newBlock(new Block(Material.IRON), "copper_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new Block(Material.IRON), "tin_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new Block(Material.IRON), "aluminum_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new Block(Material.IRON), "lead_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new Block(Material.IRON), "silver_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new Block(Material.IRON), "ender_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new Block(Material.IRON), "sapphire_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new Block(Material.IRON), "ruby_block", METALLURGIC_EXTRAS));
+		class BlockComprressed extends Block
+		{
+			public BlockComprressed(Material material, int harvestLevel)
+			{
+				super(material);
+				this.setSoundType(SoundType.METAL).setHardness(3F).setResistance(10F);
+			}
+		}
+		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 1), "copper_block", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 1), "tin_block", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 1), "aluminum_block", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 2), "lead_block", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 2), "silver_block", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 3), "ender_block", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 3), "sapphire_block", METALLURGIC_EXTRAS));
+		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 3), "ruby_block", METALLURGIC_EXTRAS));
 	}
 	
 	@SubscribeEvent

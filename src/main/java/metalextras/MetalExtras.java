@@ -420,12 +420,13 @@ public class MetalExtras
 		Constructor<BlockCompressed> cons = null;
 		try
 		{
-			cons = BlockCompressed.class.getConstructor(Material.class, Integer.class);
+			cons = BlockCompressed.class.getConstructor(Material.class, int.class);
 		}
 		catch(Exception exception)
 		{
 			throw new IllegalStateException("Failed To Get " + BlockCompressed.class.getName() + " Constructor.", exception);
 		}
+		cons.setAccessible(true);
 		blocks.addAll(ObjectHolder.newBlocks(cons, Lists.newArrayList(Material.IRON, 1), Lists.newArrayList("copper_block", "tin_block", "aluminum_block"), METALLURGIC_EXTRAS));
 		blocks.addAll(ObjectHolder.newBlocks(cons, Lists.newArrayList(Material.IRON, 2), Lists.newArrayList("lead_block", "silver_block"), METALLURGIC_EXTRAS));
 		blocks.addAll(ObjectHolder.newBlocks(cons, Lists.newArrayList(Material.IRON, 3), Lists.newArrayList("ender_block", "sapphire_block", "ruby_block"), METALLURGIC_EXTRAS));

@@ -1,11 +1,15 @@
 package metalextras;
 
+import java.lang.reflect.Constructor;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import api.metalextras.BlockOre;
 import api.metalextras.Characteristic;
@@ -404,49 +408,39 @@ public class MetalExtras
 	@SubscribeEvent
 	public static void onBlocksRegister(RegistryEvent.Register<Block> event)
 	{
-		class BlockComprressed extends Block
+		List<Block> blocks = Lists.newArrayList();
+		class BlockCompressed extends Block
 		{
-			public BlockComprressed(Material material, int harvestLevel)
+			public BlockCompressed(Material material, int harvest_level)
 			{
 				super(material);
-				this.setSoundType(SoundType.METAL).setHardness(3F).setResistance(10F);
+				this.setSoundType(SoundType.METAL).setHardness(3F).setResistance(10F).setHarvestLevel("pickaxe", harvest_level);
 			}
 		}
-		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 1), "copper_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 1), "tin_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 1), "aluminum_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 2), "lead_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 2), "silver_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 3), "ender_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 3), "sapphire_block", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newBlock(new BlockComprressed(Material.IRON, 3), "ruby_block", METALLURGIC_EXTRAS));
+		Constructor<BlockCompressed> cons = null;
+		try
+		{
+			cons = BlockCompressed.class.getConstructor(Material.class, Integer.class);
+		}
+		catch(Exception exception)
+		{
+			throw new IllegalStateException("Failed To Get " + BlockCompressed.class.getName() + " Constructor.", exception);
+		}
+		blocks.addAll(ObjectHolder.newBlocks(cons, Lists.newArrayList(Material.IRON, 1), Lists.newArrayList("copper_block", "tin_block", "aluminum_block"), METALLURGIC_EXTRAS));
+		blocks.addAll(ObjectHolder.newBlocks(cons, Lists.newArrayList(Material.IRON, 2), Lists.newArrayList("lead_block", "silver_block"), METALLURGIC_EXTRAS));
+		blocks.addAll(ObjectHolder.newBlocks(cons, Lists.newArrayList(Material.IRON, 3), Lists.newArrayList("ender_block", "sapphire_block", "ruby_block"), METALLURGIC_EXTRAS));
+		event.getRegistry().registerAll(Iterables.toArray(blocks, Block.class));
 	}
 	
 	@SubscribeEvent
 	public static void onItemsRegister(RegistryEvent.Register<Item> event)
 	{
-		event.getRegistry().register(new ItemOre().setCreativeTab(METALLURGIC_EXTRAS).setRegistryName("ore"));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "copper_nugget", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "tin_nugget", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "aluminum_nugget", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "lead_nugget", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "silver_nugget", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "copper_ingot", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "tin_ingot", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "aluminum_ingot", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "lead_ingot", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "silver_ingot", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "ender_gem", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "sapphire_gem", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItem(new Item(), "ruby_gem", METALLURGIC_EXTRAS));
-		event.getRegistry().register(ObjectHolder.newItemBlock(COPPER_BLOCK));
-		event.getRegistry().register(ObjectHolder.newItemBlock(TIN_BLOCK));
-		event.getRegistry().register(ObjectHolder.newItemBlock(ALUMINUM_BLOCK));
-		event.getRegistry().register(ObjectHolder.newItemBlock(LEAD_BLOCK));
-		event.getRegistry().register(ObjectHolder.newItemBlock(SILVER_BLOCK));
-		event.getRegistry().register(ObjectHolder.newItemBlock(ENDER_BLOCK));
-		event.getRegistry().register(ObjectHolder.newItemBlock(SAPPHIRE_BLOCK));
-		event.getRegistry().register(ObjectHolder.newItemBlock(RUBY_BLOCK));
+		List<Item> items = Lists.newArrayList();
+		items.add(new ItemOre().setCreativeTab(METALLURGIC_EXTRAS).setRegistryName("ore"));
+		items.addAll(ObjectHolder.newItems(Lists.newArrayList("copper_nugget", "tin_nugget", "aluminum_nugget", "lead_nugget", "silver_nugget", "copper_ingot", "tin_ingot", "aluminum_ingot", "lead_ingot", "silver_ingot", "ender_gem", "sapphire_gem", "ruby_gem"), METALLURGIC_EXTRAS));
+		items.addAll(ObjectHolder.newItemBlocks(COPPER_BLOCK, TIN_BLOCK, ALUMINUM_BLOCK, LEAD_BLOCK, SILVER_BLOCK, ENDER_BLOCK, SAPPHIRE_BLOCK, RUBY_BLOCK));
+		event.getRegistry().registerAll(Iterables.toArray(items, Item.class));
+		
 	}
 	
 	@SubscribeEvent

@@ -25,7 +25,10 @@ import continuum.essentials.client.state.StateMapperStatic;
 import continuum.essentials.config.ConfigHandler;
 import continuum.essentials.mod.ObjectHolder;
 import metalextras.client.model.ModelOre;
+import metalextras.enchantments.EnchantmentHotTouch;
+import metalextras.items.ItemEnderTool;
 import metalextras.items.ItemOre;
+import metalextras.items.ItemTool;
 import metalextras.mod.MetalExtras_Callbacks;
 import metalextras.ores.VanillaOreMaterial;
 import metalextras.ores.properties.ConfigurationOreProperties;
@@ -37,18 +40,29 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.gen.ChunkProviderSettings;
 import net.minecraftforge.client.model.IModel;
@@ -58,6 +72,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -66,6 +81,7 @@ import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -209,6 +225,18 @@ public class MetalExtras
 				RUBY_ORE.setModel(new ResourceLocation("metalextras:block/ruby_ore"));
 				SAPPHIRE_ORE.setModelType(ModelType.EMERALD);
 				RUBY_ORE.setModelType(ModelType.EMERALD);
+				ModelLoader.setCustomModelResourceLocation(SILVER_SHOVEL, 0, new ModelResourceLocation("metalextras:silver_shovel", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(SILVER_PICKAXE, 0, new ModelResourceLocation("metalextras:silver_pickaxe", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(SILVER_AXE, 0, new ModelResourceLocation("metalextras:silver_axe", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(ENDER_SHOVEL, 0, new ModelResourceLocation("metalextras:ender_shovel", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(ENDER_PICKAXE, 0, new ModelResourceLocation("metalextras:ender_pickaxe", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(ENDER_AXE, 0, new ModelResourceLocation("metalextras:ender_axe", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(SAPPHIRE_SHOVEL, 0, new ModelResourceLocation("metalextras:sapphire_shovel", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(SAPPHIRE_PICKAXE, 0, new ModelResourceLocation("metalextras:sapphire_pickaxe", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(SAPPHIRE_AXE, 0, new ModelResourceLocation("metalextras:sapphire_axe", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(RUBY_SHOVEL, 0, new ModelResourceLocation("metalextras:ruby_shovel", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(RUBY_PICKAXE, 0, new ModelResourceLocation("metalextras:ruby_pickaxe", "inventory"));
+				ModelLoader.setCustomModelResourceLocation(RUBY_AXE, 0, new ModelResourceLocation("metalextras:ruby_axe", "inventory"));
 				ModelLoader.setCustomModelResourceLocation(COPPER_NUGGET, 0, new ModelResourceLocation("metalextras:copper_nugget", "inventory"));
 				ModelLoader.setCustomModelResourceLocation(TIN_NUGGET, 0, new ModelResourceLocation("metalextras:tin_nugget", "inventory"));
 				ModelLoader.setCustomModelResourceLocation(ALUMINUM_NUGGET, 0, new ModelResourceLocation("metalextras:aluminum_nugget", "inventory"));
@@ -338,6 +366,40 @@ public class MetalExtras
 	@GameRegistry.ObjectHolder("metalextras:ruby_block")
 	public static final Block RUBY_BLOCK = null;
 	
+	@GameRegistry.ObjectHolder("metalextras:silver_shovel")
+	public static final ItemTool SILVER_SHOVEL = null;
+	@GameRegistry.ObjectHolder("metalextras:silver_pickaxe")
+	public static final ItemTool SILVER_PICKAXE = null;
+	@GameRegistry.ObjectHolder("metalextras:silver_axe")
+	public static final ItemTool SILVER_AXE = null;
+	@GameRegistry.ObjectHolder("metalextras:ender_shovel")
+	public static final ItemTool ENDER_SHOVEL = null;
+	@GameRegistry.ObjectHolder("metalextras:ender_pickaxe")
+	public static final ItemEnderTool ENDER_PICKAXE = null;
+	@GameRegistry.ObjectHolder("metalextras:ender_axe")
+	public static final ItemEnderTool ENDER_AXE = null;
+	@GameRegistry.ObjectHolder("metalextras:sapphire_shovel")
+	public static final ItemTool SAPPHIRE_SHOVEL = null;
+	@GameRegistry.ObjectHolder("metalextras:sapphire_pickaxe")
+	public static final ItemTool SAPPHIRE_PICKAXE = null;
+	@GameRegistry.ObjectHolder("metalextras:sapphire_axe")
+	public static final ItemTool SAPPHIRE_AXE = null;
+	@GameRegistry.ObjectHolder("metalextras:ruby_shovel")
+	public static final ItemTool RUBY_SHOVEL = null;
+	@GameRegistry.ObjectHolder("metalextras:ruby_pickaxe")
+	public static final ItemTool RUBY_PICKAXE = null;
+	@GameRegistry.ObjectHolder("metalextras:ruby_axe")
+	public static final ItemTool RUBY_AXE = null;
+	@GameRegistry.ObjectHolder("metalextras:copper_nugget")
+	public static final Item COPPER_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:tin_nugget")
+	public static final Item TIN_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:aluminum_nugget")
+	public static final Item ALUMINUM_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:lead_nugget")
+	public static final Item LEAD_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:silver_nugget")
+	public static final Item SILVER_NUGGET = null;
 	@GameRegistry.ObjectHolder("metalextras:copper_ingot")
 	public static final Item COPPER_INGOT = null;
 	@GameRegistry.ObjectHolder("metalextras:tin_ingot")
@@ -355,16 +417,8 @@ public class MetalExtras
 	@GameRegistry.ObjectHolder("metalextras:ruby_gem")
 	public static final Item RUBY_GEM = null;
 	
-	@GameRegistry.ObjectHolder("metalextras:copper_nugget")
-	public static final Item COPPER_NUGGET = null;
-	@GameRegistry.ObjectHolder("metalextras:tin_nugget")
-	public static final Item TIN_NUGGET = null;
-	@GameRegistry.ObjectHolder("metalextras:aluminum_nugget")
-	public static final Item ALUMINUM_NUGGET = null;
-	@GameRegistry.ObjectHolder("metalextras:lead_nugget")
-	public static final Item LEAD_NUGGET = null;
-	@GameRegistry.ObjectHolder("metalextras:silver_nugget")
-	public static final Item SILVER_NUGGET = null;
+	@GameRegistry.ObjectHolder("metalextras:hot_to_the_touch")
+	public static final EnchantmentHotTouch HOT_TO_THE_TOUCH = null;
 	
 	public static final SimpleNetworkWrapper LANDING_PARTICLE_WRAPPER = NetworkRegistry.INSTANCE.newSimpleChannel("metalextras:landing_particles");
 	
@@ -427,10 +481,70 @@ public class MetalExtras
 	{
 		List<Item> items = Lists.newArrayList();
 		items.add(new ItemOre().setCreativeTab(METALLURGIC_EXTRAS).setRegistryName("ore"));
+		class ItemShovel extends ItemTool
+		{
+			public ItemShovel(int harvest_level, float proper_block_effeciency, int enchantability, String repair_material, float entity_damage, float attack_speed, int max_uses, Object... effective_objects)
+			{
+				super("shovel", harvest_level, proper_block_effeciency, enchantability, repair_material, entity_damage, attack_speed, max_uses, effective_objects);
+			}
+		}
+		class ItemEnderShovel extends ItemEnderTool
+		{
+			public ItemEnderShovel(float entity_damage, float attack_speed, Object... effective_objects)
+			{
+				super("shovel", entity_damage, attack_speed, effective_objects);
+			}
+			
+			@Override
+			public boolean canHarvestBlock(IBlockState state)
+			{
+				Block block = state.getBlock();
+				return block == Blocks.SNOW_LAYER || block == Blocks.SNOW;
+			}
+			
+			@Override
+			public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ)
+			{
+				ItemStack stack = player.getHeldItem(hand);
+				if(!player.canPlayerEdit(pos.offset(side), side, stack))
+					return EnumActionResult.FAIL;
+				else if(side != EnumFacing.DOWN && world.getBlockState(pos.up()).getMaterial() == Material.AIR && world.getBlockState(pos).getBlock() == Blocks.GRASS)
+				{
+					world.playSound(player, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1F, 1F);
+					if(!world.isRemote)
+					{
+						world.setBlockState(pos, Blocks.GRASS_PATH.getDefaultState(), 11);
+						stack.damageItem(1, player);
+					}
+					return EnumActionResult.SUCCESS;
+				}
+				return EnumActionResult.PASS;
+			}
+		}
+		items.add(ObjectHolder.newItem(new ItemShovel(2, 10F, 22, "ingotSilver", 4.5F, -3F, 59), "silver_shovel", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemTool("pickaxe", 2, 10F, 22, "ingotSilver", 4F, -2.8F, 59, Material.IRON, Material.ANVIL, Material.ROCK), "silver_pickaxe", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemTool("axe", 2, 10F, 22, "ingotSilver", 8F, -3F, 59, Material.WOOD, Material.PLANTS, Material.VINE), "silver_axe", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemEnderShovel(4F, -3F), "ender_shovel", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemEnderTool("pickaxe", 3.5F, -2.8F, Material.IRON, Material.ANVIL, Material.ROCK), "ender_pickaxe", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemEnderTool("axe", 8F, -3F, Material.WOOD, Material.PLANTS, Material.VINE), "ender_axe", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemShovel(4, 10F, 18, "gemSapphire", 4.5F, -3F, 2000), "sapphire_shovel", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemTool("pickaxe", 4, 10F, 18, "gemSapphire", 4.5F, 1F, 2000, Material.IRON, Material.ANVIL, Material.ROCK), "sapphire_pickaxe", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemTool("axe", 4, 10F, 18, "gemSapphire", 8F, -3F, 2000, Material.WOOD, Material.PLANTS, Material.VINE), "sapphire_axe", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemShovel(4, 10F, 18, "gemRuby", 4.5F, -3F, 2000), "ruby_shovel", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemTool("pickaxe", 4, 10F, 18, "gemRuby", 4.5F, 1F, 2000, Material.IRON, Material.ANVIL, Material.ROCK), "ruby_pickaxe", METALLURGIC_EXTRAS));
+		items.add(ObjectHolder.newItem(new ItemTool("axe", 4, 10F, 18, "gemRuby", 8F, -3F, 2000, Material.WOOD, Material.PLANTS, Material.VINE), "ruby_axe", METALLURGIC_EXTRAS));
 		items.addAll(ObjectHolder.newItems(Lists.newArrayList("copper_nugget", "tin_nugget", "aluminum_nugget", "lead_nugget", "silver_nugget", "copper_ingot", "tin_ingot", "aluminum_ingot", "lead_ingot", "silver_ingot", "ender_gem", "sapphire_gem", "ruby_gem"), METALLURGIC_EXTRAS));
 		items.addAll(ObjectHolder.newItemBlocks(COPPER_BLOCK, TIN_BLOCK, ALUMINUM_BLOCK, LEAD_BLOCK, SILVER_BLOCK, ENDER_BLOCK, SAPPHIRE_BLOCK, RUBY_BLOCK));
 		event.getRegistry().registerAll(Iterables.toArray(items, Item.class));
 		
+	}
+	
+	@SubscribeEvent
+	public static void onEnchantmentsRegister(RegistryEvent.Register<Enchantment> event)
+	{
+		List<Enchantment> enchantments = Lists.newArrayList();
+		enchantments.add(new EnchantmentHotTouch().setRegistryName("metalextras:hot_to_the_touch"));
+		event.getRegistry().registerAll(Iterables.toArray(enchantments, Enchantment.class));
 	}
 	
 	@SubscribeEvent
@@ -696,5 +810,72 @@ public class MetalExtras
 		SPacketBlockOreLandingParticles message = event.getMessage();
 		Vec3d pos = message.getPosition();
 		LANDING_PARTICLE_WRAPPER.sendToAllAround(message, new TargetPoint(event.getDimension(), pos.xCoord, pos.yCoord, pos.zCoord, 1024));
+	}
+	
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
+	public static void onHarvestBlock(HarvestDropsEvent event)
+	{
+		EntityPlayer player = event.getHarvester();
+		ItemStack stack = player == null ? ItemStack.EMPTY : player.getHeldItemMainhand();
+		if(!stack.isEmpty())
+		{
+			List<ItemStack> drops = event.getDrops();
+			if(EnchantmentHelper.getEnchantmentLevel(HOT_TO_THE_TOUCH, stack) > 0)
+			{
+				boolean fire = false;
+				for(int i = 0; i < drops.size(); i++)
+				{
+					ItemStack stack1 = drops.get(i);
+					if(!stack1.isEmpty())
+					{
+						ItemStack stack2 = FurnaceRecipes.instance().getSmeltingResult(stack1).copy();
+						if(!stack2.isEmpty())
+						{
+							stack2.setCount(stack2.getCount() * stack1.getCount());
+							for(int j = 0; j < drops.size(); j++)
+							{
+								ItemStack stack3 = drops.get(j);
+								int count = stack3.getCount();
+								if(!stack3.isEmpty() && stack3.isItemEqual(stack2) && stack3.isStackable() && 64 > count)
+								{
+									stack3.setCount(Math.min(64 - count, stack2.getCount()));
+									stack2.setCount(stack2.getCount() + stack3.getCount() - count);
+								}
+							}
+							while(stack2.getCount() > 0)
+							{
+								ItemStack stack3 = stack2.copy();
+								int count = Math.min(stack2.getCount(), 64);
+								stack3.setCount(count);
+								drops.add(stack3);
+								stack2.setCount(stack2.getCount() - count);
+							}
+							stack1.setCount(0);
+							fire = true;
+						}
+					}
+				}
+				if(fire)
+				{
+					World world = event.getWorld();
+					BlockPos pos = event.getPos();
+					if(!world.isRemote)
+						((WorldServer)world).spawnParticle(EnumParticleTypes.FLAME, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, 128, 0, 0, 0, .05, new int[0]);
+					world.playSound(null, pos, SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.BLOCKS, 1F, 1F);
+				}
+			}
+			if(stack.getItem() instanceof ItemEnderTool)
+			{
+				boolean teleport = false;
+				for(int i = 0; i < drops.size(); i++)
+				{
+					ItemStack stack1 = drops.get(i);
+					if(!stack1.isEmpty())
+						teleport |= player.inventory.addItemStackToInventory(stack1);
+				}
+				if(teleport)
+					event.getWorld().playSound(null, event.getPos(), SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.BLOCKS, 1F, 1.25F);
+			}
+		}
 	}
 }

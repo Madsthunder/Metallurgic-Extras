@@ -16,6 +16,26 @@ tile.metalextras:ender_block.name=Ender Block
 tile.metalextras:sapphire_block.name=Sapphire Block
 tile.metalextras:ruby_block.name=Ruby Block
 
+item.metalextras:silver_sword.name=Silver Sword
+item.metalextras:silver_shovel.name=Silver Shovel
+item.metalextras:silver_pickaxe.name=Silver Pickaxe
+item.metalextras:silver_axe.name=Silver Axe
+item.metalextras:silver_hoe.name=Silver Hoe
+item.metalextras:ender_sword.name=Ender Sword
+item.metalextras:ender_shovel.name=Ender Shovel
+item.metalextras:ender_pickaxe.name=Ender Pickaxe
+item.metalextras:ender_axe.name=Ender Axe
+item.metalextras:ender_hoe.name=Ender Hoe
+item.metalextras:sapphire_sword.name=Sapphire Sword
+item.metalextras:sapphire_shovel.name=Sapphire Shovel
+item.metalextras:sapphire_pickaxe.name=Sapphire Pickaxe
+item.metalextras:sapphire_axe.name=Sapphire Axe
+item.metalextras:sapphire_hoe.name=Sapphire Hoe
+item.metalextras:ruby_sword.name=Ruby Sword
+item.metalextras:ruby_shovel.name=Ruby Shovel
+item.metalextras:ruby_pickaxe.name=Ruby Pickaxe
+item.metalextras:ruby_axe.name=Ruby Axe
+item.metalextras:ruby_hoe.name=Ruby Hoe
 item.metalextras:copper_ingot.name=Copper Ingot
 item.metalextras:tin_ingot.name=Tin Ingot
 item.metalextras:aluminum_ingot.name=Aluminum Ingot
@@ -29,6 +49,8 @@ item.metalextras:tin_nugget.name=Tin Nugget
 item.metalextras:aluminum_nugget.name=Aluminum Nugget
 item.metalextras:lead_nugget.name=Lead Nugget
 item.metalextras:silver_nugget.name=Silver Nugget
+
+enchantment.metalextras:hot_touch=Hot To The Touch
 
 itemGroup.metalextras:metallurgic_extras=Metallurgic Extras
 

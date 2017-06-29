@@ -1,0 +1,12 @@
+{
+	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
+	"type": "minecraft:crafting_shaped",
+	"key": { "#": { "type": "forge:ore_dict", "ore": "ingotTin" } },
+	"result": { "item": "metalextras:tin_block" },
+	"pattern":
+	[
+		"###",
+		"###",
+		"###"
+	]
+}

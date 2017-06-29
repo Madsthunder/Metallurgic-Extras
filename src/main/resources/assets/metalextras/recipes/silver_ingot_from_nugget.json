@@ -1,0 +1,12 @@
+{
+	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
+	"type": "minecraft:crafting_shaped",
+	"key": { "#": { "type": "forge:ore_dict", "ore": "nuggetSilver" } },
+	"result": { "item": "metalextras:silver_ingot" },
+	"pattern":
+	[
+		"###",
+		"###",
+		"###"
+	]
+}

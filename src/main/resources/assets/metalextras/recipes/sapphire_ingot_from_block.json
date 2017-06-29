@@ -1,0 +1,6 @@
+{
+	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
+	"type": "minecraft:crafting_shapeless",
+	"ingredients": [ { "type": "forge:ore_dict", "ore": "blockSapphire" } ],
+	"result": { "item": "metalextras:sapphire_gem", "count": 9 }
+}

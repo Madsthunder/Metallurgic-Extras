@@ -1,0 +1,6 @@
+{
+	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
+	"type": "minecraft:crafting_shapeless",
+	"ingredients": [ { "type": "forge:ore_dict", "ore": "blockCopper" } ],
+	"result": { "item": "metalextras:copper_ingot", "count": 9 }
+}

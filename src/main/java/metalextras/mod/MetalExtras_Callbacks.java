@@ -19,9 +19,11 @@ import net.minecraft.item.Item;
 import net.minecraft.util.ObjectIntIdentityMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistry.AddCallback;
-import net.minecraftforge.fml.common.registry.IForgeRegistry.CreateCallback;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistry.AddCallback;
+import net.minecraftforge.registries.IForgeRegistry.CreateCallback;
+import net.minecraftforge.registries.IForgeRegistryInternal;
+import net.minecraftforge.registries.RegistryManager;
 
 public class MetalExtras_Callbacks
 {
@@ -31,7 +33,7 @@ public class MetalExtras_Callbacks
 	private static class OreMaterials implements AddCallback<OreMaterial>
 	{
 		@Override
-		public void onAdd(OreMaterial material, int id, Map<ResourceLocation, ?> slaveset)
+		public void onAdd(IForgeRegistryInternal<OreMaterial> registry, RegistryManager manager, int id, OreMaterial material, OreMaterial old)
 		{
 			IForgeRegistry<Block> blocks = GameRegistry.findRegistry(Block.class);
 			IForgeRegistry<Item> items = GameRegistry.findRegistry(Item.class);
@@ -45,15 +47,15 @@ public class MetalExtras_Callbacks
 	private static class OreTypeCollections implements CreateCallback<OreTypes>, AddCallback<OreTypes>
 	{
 		@Override
-		public void onAdd(OreTypes types, int id, Map<ResourceLocation, ?> slaveset)
+		public void onAdd(IForgeRegistryInternal<OreTypes> registry, RegistryManager manager, int id, OreTypes types, OreTypes old)
 		{
 			types.lock();
-			if(slaveset.containsKey(OreUtils.ORETYPE_TO_IBLOCKSTATE))
-				for(OreType type : types)
-					((BiMap<OreType, IBlockState>)slaveset.get(OreUtils.ORETYPE_TO_IBLOCKSTATE)).put(type, type.getState());
-			if(slaveset.containsKey(OreUtils.ORETYPE_TO_ID))
+			BiMap<OreType, IBlockState> typeToState = registry.getSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, BiMap.class);
+            for(OreType type : types)
+                typeToState.put(type, type.getState());
+            ObjectIntIdentityMap<OreType> typeToId = registry.getSlaveMap(OreUtils.ORETYPE_TO_ID, ObjectIntIdentityMap.class);
 				for(int i = 0; i < types.getOreTypes().size(); i++)
-					((ObjectIntIdentityMap<OreType>)slaveset.get(OreUtils.ORETYPE_TO_ID)).put(types.getOreTypes().get(i), (id * 16) + i);
+				    typeToId.put(types.getOreTypes().get(i), (id * 16) + i);
 			IForgeRegistry<Block> blocks = GameRegistry.findRegistry(Block.class);
 			IForgeRegistry<Item> items = GameRegistry.findRegistry(Item.class);
 			IForgeRegistry<OreMaterial> materials = GameRegistry.findRegistry(OreMaterial.class);
@@ -64,11 +66,10 @@ public class MetalExtras_Callbacks
 		}
 		
 		@Override
-		public void onCreate(Map<ResourceLocation, ?> slaveset, BiMap<ResourceLocation, ? extends IForgeRegistry<?>> registries)
+		public void onCreate(IForgeRegistryInternal<OreTypes> registry, RegistryManager manager)
 		{
-			Map<ResourceLocation, Object> slaves = (Map<ResourceLocation, Object>)slaveset;
-			slaves.put(OreUtils.ORETYPE_TO_IBLOCKSTATE, HashBiMap.<OreType, IBlockState> create());
-			slaves.put(OreUtils.ORETYPE_TO_ID, new ObjectIntIdentityMap<OreType>());
+		    registry.setSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, HashBiMap.<OreType, IBlockState> create());
+            registry.setSlaveMap(OreUtils.ORETYPE_TO_ID, new ObjectIntIdentityMap<OreType>());
 		}
 	}
 	

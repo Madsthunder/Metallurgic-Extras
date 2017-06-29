@@ -34,9 +34,9 @@ public class GuiOverview extends GuiConfig
 		}
 
 		@Override
-		public Class<? extends GuiScreen> mainConfigGuiClass()
+		public GuiScreen createConfigGui(GuiScreen parent)
 		{
-			return GuiOverview.class;
+			return new GuiOverview(parent);
 		}
 
 		@Override
@@ -46,21 +46,9 @@ public class GuiOverview extends GuiConfig
 		}
 
 		@Override
-		public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element)
-		{
-			return null;
-		}
-
-		@Override
 		public boolean hasConfigGui()
 		{
 			return true;
-		}
-
-		@Override
-		public GuiScreen createConfigGui(GuiScreen parent)
-		{
-			return new GuiOverview(parent);
 		}
 	}
 }

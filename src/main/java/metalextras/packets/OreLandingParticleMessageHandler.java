@@ -62,12 +62,12 @@ public class OreLandingParticleMessageHandler implements IMessageHandler<SPacket
 					if(entity != null && manager != null)
 					{
 						int i1 = Minecraft.getMinecraft().gameSettings.particleSetting == 1 && world.rand.nextInt(3) == 0 ? 2 : Minecraft.getMinecraft().gameSettings.particleSetting;
-						double d0 = entity.posX - pos.xCoord;
-						double d1 = entity.posY - pos.yCoord;
-						double d2 = entity.posZ - pos.zCoord;
+						double d0 = entity.posX - pos.x;
+						double d1 = entity.posY - pos.y;
+						double d2 = entity.posZ - pos.z;
 						if(d0 * d0 + d1 * d1 + d2 * d2 <= 1024 && i1 <= 1)
 						{
-							Particle particle = new ParticleBlockDust.Factory().createParticle(EnumParticleTypes.BLOCK_DUST.getParticleID(), world, pos.xCoord, pos.yCoord, pos.zCoord, d6, d7, d8, Block.getStateId(material.applyBlockState(type)));
+							Particle particle = new ParticleBlockDust.Factory().createParticle(EnumParticleTypes.BLOCK_DUST.getParticleID(), world, pos.x, pos.y, pos.z, d6, d7, d8, Block.getStateId(material.applyBlockState(type)));
 							particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
 							manager.addEffect(particle);
 						}

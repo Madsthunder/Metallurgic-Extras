@@ -36,11 +36,11 @@ public class ItemOre extends Item
 	
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void getSubItems(Item item, CreativeTabs tab, NonNullList<ItemStack> list)
+	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list)
 	{
 		for(OreMaterial material : OreUtils.getMaterialsRegistry())
 			if(tab == CreativeTabs.SEARCH || material.getCreativeTab() == tab)
-				list.add(new ItemStack(item, 1, OreUtils.getMaterialsRegistry().getValues().indexOf(material)));
+				list.add(new ItemStack(this, 1, OreUtils.getMaterialsRegistry().getValues().indexOf(material)));
 	}
 	
 	@Override

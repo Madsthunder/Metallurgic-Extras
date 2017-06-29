@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -15,7 +15,6 @@ import api.metalextras.OreMaterial;
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
-import continuum.essentials.hooks.ClientHooks;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -39,7 +38,7 @@ import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.fml.common.registry.GameData;
+import net.minecraftforge.registries.GameData;
 
 public class ModelOre implements IModel
 {
@@ -119,7 +118,7 @@ public class ModelOre implements IModel
 						models.add(model.bake(ModelRotation.X90_Y0, this.vertexFormat, this.textureGetter));
 						models.add(model.bake(ModelRotation.X90_Y90, this.vertexFormat, this.textureGetter));
 						models.add(model.bake(ModelRotation.X90_Y270, this.vertexFormat, this.textureGetter));
-						baked_model = ClientHooks.joinModels(state, 0L, this, models);
+						baked_model = joinModels(state, 0L, this, models);
 						BakedModelOre.models.put(state, baked_model);
 						return baked_model.getQuads(state, side, 0L);
 					}
@@ -162,6 +161,21 @@ public class ModelOre implements IModel
 		public ItemOverrideList getOverrides()
 		{
 			return ItemOverridesOre.I;
+		}
+		
+		private static IBakedModel joinModels(IBlockState state, long seed, IBakedModel model, Iterable<IBakedModel> models)
+		{
+	        List<BakedQuad> generalQuads = Lists.newArrayList();
+	        Map<EnumFacing, List<BakedQuad>> faceQuads = Maps.newHashMap();
+	        for(EnumFacing facing : EnumFacing.values())
+	            faceQuads.put(facing, Lists.newArrayList());
+	        for(IBakedModel model1 : models)
+	        {
+	            generalQuads.addAll(model1.getQuads(state, null, seed));
+	            for(EnumFacing facing : EnumFacing.values())
+	                faceQuads.get(facing).addAll(model1.getQuads(state, facing, seed));
+	        }
+	        return new SimpleBakedModel(generalQuads, faceQuads, model.isAmbientOcclusion(), model.isGui3d(), model.getParticleTexture(), model.getItemCameraTransforms(), model.getOverrides());
 		}
 	}
 	

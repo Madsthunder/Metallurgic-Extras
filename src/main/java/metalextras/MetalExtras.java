@@ -62,7 +62,7 @@ public class MetalExtras
 {
 	public static final String MODID = "metalextras";
 	public static final String NAME = "Metallurgic Extras";
-	public static final String VERSION = "2.1.0";
+	public static final String VERSION = "2.2.0";
 	public static final ConfigHandler CONFIGURATION_HANDLER = new ConfigHandler("config\\Metallurgic Extras");
 	
 	public static class Proxy

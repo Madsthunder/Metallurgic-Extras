@@ -2,6 +2,7 @@ package continuum.essentials.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -10,6 +11,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.internal.bind.TypeAdapters;
 
 public class ConfigHandler
 {
@@ -115,7 +117,7 @@ public class ConfigHandler
 	{
 		try
 		{
-			FileUtils.write(directory, JsonHooks.getJson(null, object, 0));
+			FileUtils.write(directory, JsonHooks.getJson(null, object, 0), Charset.defaultCharset());
 		}
 		catch(IOException e)
 		{

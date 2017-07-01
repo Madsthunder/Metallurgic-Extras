@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
@@ -18,8 +17,6 @@ import api.metalextras.OreMaterial;
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
-import continuum.core.mod.CTCore_OH;
-import continuum.essentials.client.state.StateMapperStatic;
 import metalextras.client.model.ModelOre;
 import metalextras.enchantments.EnchantmentHotTouch;
 import metalextras.items.ItemEnderTool;
@@ -33,7 +30,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.IStateMapper;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
@@ -54,14 +55,15 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.gen.ChunkGeneratorSettings;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
-import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.RegistryBuilder;
 
 @ObjectHolder(MetalExtras.MODID)
@@ -480,6 +482,25 @@ public class MetalExtras_Objects
     @SubscribeEvent
     public static void onModelsRegister(ModelRegistryEvent event)
     {
+        ModelLoaderRegistry.registerLoader(new ICustomModelLoader()
+                {
+                    @Override
+                    public void onResourceManagerReload(IResourceManager resourceManager)
+                    {
+                    }
+
+                    @Override
+                    public boolean accepts(ResourceLocation location)
+                    {
+                        return MetalExtras.MODID.equals(location.getResourceDomain()) && "models/block/ore".equals(location.getResourcePath());
+                    }
+
+                    @Override
+                    public IModel loadModel(ResourceLocation location) throws Exception
+                    {
+                        return new ModelOre();
+                    }
+                });
         MetalExtras_Objects.COPPER_ORE.setModel(new ResourceLocation("metalextras:block/copper_ore"));
         MetalExtras_Objects.TIN_ORE.setModel(new ResourceLocation("metalextras:block/tin_ore"));
         MetalExtras_Objects.ALUMINUM_ORE.setModel(new ResourceLocation("metalextras:block/aluminum_ore"));
@@ -523,11 +544,27 @@ public class MetalExtras_Objects
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras_Objects.ENDER_BLOCK), 0, new ModelResourceLocation("metalextras:ender_block", "normal"));
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras_Objects.SAPPHIRE_BLOCK), 0, new ModelResourceLocation("metalextras:sapphire_block", "normal"));
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(MetalExtras_Objects.RUBY_BLOCK), 0, new ModelResourceLocation("metalextras:ruby_block", "normal"));
+        class OreStateMapper extends StateMapperBase implements ItemMeshDefinition
+        {
+
+            @Override
+            public ModelResourceLocation getModelLocation(ItemStack stack)
+            {
+                return new ModelResourceLocation("metalextras:ore#normal");
+            }
+
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(IBlockState state)
+            {
+                return new ModelResourceLocation("metalextras:ore#normal");
+            }
+            
+        }
+        OreStateMapper mapper = new OreStateMapper();
         for(OreMaterial material : OreUtils.getMaterialsRegistry())
         {
             for(BlockOre block : material.getBlocks())
             {
-                StateMapperStatic mapper = StateMapperStatic.create(new ModelResourceLocation(new ResourceLocation("metalextras", "ore"), "normal"));
                 ModelLoader.setCustomStateMapper(block, mapper);
                 Item item = Item.getItemFromBlock(block);
                 for(int i = 0; i < block.getOreTypeProperty().getAllowedValues().size(); i++)

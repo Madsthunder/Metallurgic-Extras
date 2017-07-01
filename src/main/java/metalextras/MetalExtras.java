@@ -2,17 +2,12 @@ package metalextras;
 
 import java.util.List;
 
-import com.google.common.base.Functions;
-
 import api.metalextras.BlockOre;
 import api.metalextras.Characteristic;
 import api.metalextras.OreUtils;
 import api.metalextras.SPacketBlockOreLandingParticles;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
-import continuum.core.client.ModelDirectory;
-import continuum.core.mod.CTCore_OH;
 import continuum.essentials.config.ConfigHandler;
-import metalextras.client.model.ModelOre;
 import metalextras.items.ItemEnderTool;
 import metalextras.packets.OreLandingParticleMessageHandler;
 import metalextras.world.gen.OreGeneration;
@@ -26,14 +21,12 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.world.BlockEvent;
@@ -72,7 +65,6 @@ public class MetalExtras
 		
 		public void constr()
 		{
-	        ModelLoaderRegistry.registerLoader(new ModelDirectory());
 		}
 		
 		public void pre()
@@ -146,12 +138,6 @@ public class MetalExtras
 		@SideOnly(Side.CLIENT)
 		public static class ClientProxy extends Proxy
 		{
-			@Override
-			public void pre()
-			{
-				super.pre();
-				CTCore_OH.models.put(new ResourceLocation("metalextras:models/block/ore"), Functions.constant(new ModelOre()));
-			}
 		}
 		
 		@SideOnly(Side.SERVER)

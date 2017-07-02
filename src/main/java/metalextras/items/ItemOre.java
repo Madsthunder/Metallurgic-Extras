@@ -5,8 +5,8 @@ import java.util.List;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-import api.metalextras.OreMaterial;
 import api.metalextras.OreUtils;
+import metalextras.ores.materials.OreMaterial;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

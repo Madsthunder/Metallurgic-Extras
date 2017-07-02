@@ -7,9 +7,9 @@ import org.apache.logging.log4j.LogManager;
 
 import com.google.common.collect.Lists;
 
-import api.metalextras.OreMaterial;
 import api.metalextras.OreType;
 import api.metalextras.SPacketBlockOreLandingParticles;
+import metalextras.ores.materials.OreMaterial;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;

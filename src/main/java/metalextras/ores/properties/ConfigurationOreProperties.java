@@ -9,12 +9,12 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 
 import api.metalextras.Characteristic;
-import api.metalextras.OreMaterial;
 import api.metalextras.OreProperties;
 import api.metalextras.OreType;
 import api.metalextras.OreUtils;
 import metalextras.MetalExtras;
 import metalextras.config.OreConfigHandler;
+import metalextras.ores.materials.OreMaterial;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;

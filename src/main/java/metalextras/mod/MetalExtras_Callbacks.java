@@ -8,11 +8,11 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import api.metalextras.BlockOre;
-import api.metalextras.OreMaterial;
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
 import metalextras.items.ItemBlockOre;
+import metalextras.ores.materials.OreMaterial;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;

@@ -5,11 +5,11 @@ import java.util.Random;
 
 import com.google.common.collect.Maps;
 
-import api.metalextras.OreMaterial;
 import api.metalextras.OreProperties;
 import api.metalextras.OreUtils;
 import metalextras.MetalExtras;
 import metalextras.MetalExtras_Objects;
+import metalextras.ores.materials.OreMaterial;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;

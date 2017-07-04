@@ -99,6 +99,8 @@ public abstract class OreMaterial extends IForgeRegistryEntry.Impl<OreMaterial>
 		return null;
 	}
 	
+	public abstract ResourceLocation getTexture();
+	
 	@SideOnly(Side.CLIENT)
 	public abstract IModel getModel(OreType type);
 	
@@ -150,6 +152,7 @@ public abstract class OreMaterial extends IForgeRegistryEntry.Impl<OreMaterial>
 		private ModelType modelType = ModelType.IRON;
 		private Collection<GenerateMinable.EventType> overrides = Sets.newHashSet();
 		private CreativeTabs tab = null;
+		private ResourceLocation texture;
 		
 		public SimpleImpl(OreProperties properties)
 		{
@@ -305,5 +308,17 @@ public abstract class OreMaterial extends IForgeRegistryEntry.Impl<OreMaterial>
 		{
 			return this.tab;
 		}
+		
+		public OreMaterial.SimpleImpl setTexture(ResourceLocation texture)
+		{
+		    this.texture = texture;
+		    return this;
+		}
+		
+        @Override
+        public ResourceLocation getTexture()
+        {
+            return this.texture;
+        }
 	}
 }

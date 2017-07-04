@@ -1,6 +1,7 @@
 package api.metalextras;
 
 import java.util.Collection;
+import java.util.Locale;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.BiMap;
@@ -35,7 +36,7 @@ public class Characteristic
 
 	public static Characteristic byName(String name)
 	{
-		name = name.toUpperCase();
+		name = name.toUpperCase(Locale.ENGLISH);
 		Characteristic characteristic = allCharacteristics().get(name);
 		if (characteristic != null)
 			return characteristic;

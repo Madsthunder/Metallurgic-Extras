@@ -49,6 +49,8 @@ public abstract class OreType implements Comparable<OreType>
 	public abstract float getResistance();
 
 	public abstract String getLanguageKey();
+	
+	public abstract ResourceLocation getTexture();
 
 	public OreTypes getTypes()
 	{
@@ -217,5 +219,11 @@ public abstract class OreType implements Comparable<OreType>
 			}
 			return missing;*/
 		}
+
+        @Override
+        public ResourceLocation getTexture()
+        {
+            return this.texture;
+        }
 	}
 }

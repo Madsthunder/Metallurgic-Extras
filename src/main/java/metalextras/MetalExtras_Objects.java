@@ -3,9 +3,13 @@ package metalextras;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
+
+import javax.annotation.Nonnull;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -30,10 +34,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.block.statemap.IStateMapper;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
@@ -51,10 +57,12 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.gen.ChunkGeneratorSettings;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
@@ -298,13 +306,13 @@ public class MetalExtras_Objects
     @SubscribeEvent
     public static void onOreMaterialsRegister(RegistryEvent.Register<OreMaterial> event)
     {
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("copper_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Predicates.alwaysTrue())).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.COPPER_EVT).setLanguageKey("tile.metalextras:copper_ore").setRegistryName("metalextras:copper_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("tin_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Characteristic.notAny(MetalExtras.OTD_END))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.TIN_EVT).setLanguageKey("tile.metalextras:tin_ore").setRegistryName("metalextras:tin_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("aluminum_ore", true, 6, 32, 128, -Float.MAX_VALUE, Float.MAX_VALUE, 5, Characteristic.all(Characteristic.ROCKY))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.ALUMINUM_EVT).setLanguageKey("tile.metalextras:aluminum_ore").setRegistryName("metalextras:aluminum_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("lead_ore", true, 8, 32, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 8, Characteristic.notAny(Characteristic.DIRTY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.LEAD_EVT).setLanguageKey("tile.metalextras:lead_ore").setRegistryName("metalextras:lead_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("silver_ore", true, 8, 0, 32, -Float.MAX_VALUE, Float.MAX_VALUE, 8, Characteristic.notAny(Characteristic.DIRTY, Characteristic.SANDY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.SILVER_EVT).setLanguageKey("tile.metalextras:silver_ore").setRegistryName("metalextras:silver_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("ender_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Characteristic.all(MetalExtras.OTD_END))).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.ENDER_GEM, 0, 3, 7).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.ENDER_EVT).setLanguageKey("tile.metalextras:ender_ore").setRegistryName("metalextras:ender_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("sapphire_ore", true, 20, 0, 64, -Float.MAX_VALUE, 0.2F, 3, Characteristic.notAny(Characteristic.LOOSE, Characteristic.DRY, Characteristic.SANDY, Characteristic.HOT, MetalExtras.OTD_NETHER))).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.SAPPHIRE_GEM, 0, 3, 7).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.SAPPHIRE_EVT).setLanguageKey("tile.metalextras:sapphire_ore").setRegistryName("metalextras:sapphire_ore"));
+        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("copper_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Predicates.alwaysTrue())).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.COPPER_EVT).setLanguageKey("tile.metalextras:copper_ore").setTexture(new ResourceLocation("metalextras:items/copper_ore")).setRegistryName("metalextras:copper_ore"));
+        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("tin_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Characteristic.notAny(MetalExtras.OTD_END))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.TIN_EVT).setLanguageKey("tile.metalextras:tin_ore").setTexture(new ResourceLocation("metalextras:items/tin_ore")).setRegistryName("metalextras:tin_ore"));
+        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("aluminum_ore", true, 6, 32, 128, -Float.MAX_VALUE, Float.MAX_VALUE, 5, Characteristic.all(Characteristic.ROCKY))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.ALUMINUM_EVT).setLanguageKey("tile.metalextras:aluminum_ore").setTexture(new ResourceLocation("metalextras:items/aluminum_ore")).setRegistryName("metalextras:aluminum_ore"));
+        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("lead_ore", true, 8, 32, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 8, Characteristic.notAny(Characteristic.DIRTY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.LEAD_EVT).setLanguageKey("tile.metalextras:lead_ore").setTexture(new ResourceLocation("metalextras:items/lead_ore")).setRegistryName("metalextras:lead_ore"));
+        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("silver_ore", true, 8, 0, 32, -Float.MAX_VALUE, Float.MAX_VALUE, 8, Characteristic.notAny(Characteristic.DIRTY, Characteristic.SANDY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.SILVER_EVT).setLanguageKey("tile.metalextras:silver_ore").setTexture(new ResourceLocation("metalextras:items/silver_ore")).setRegistryName("metalextras:silver_ore"));
+        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("ender_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Characteristic.all(MetalExtras.OTD_END))).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.ENDER_GEM, 0, 3, 7).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.ENDER_EVT).setLanguageKey("tile.metalextras:ender_ore").setTexture(new ResourceLocation("metalextras:items/ender_ore")).setRegistryName("metalextras:ender_ore"));
+        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("sapphire_ore", true, 20, 0, 64, -Float.MAX_VALUE, 0.2F, 3, Characteristic.notAny(Characteristic.LOOSE, Characteristic.DRY, Characteristic.SANDY, Characteristic.HOT, MetalExtras.OTD_NETHER))).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.SAPPHIRE_GEM, 0, 3, 7).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.SAPPHIRE_EVT).setLanguageKey("tile.metalextras:sapphire_ore").setTexture(new ResourceLocation("metalextras:items/sapphire_ore")).setRegistryName("metalextras:sapphire_ore"));
         event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("ruby_ore", true, 20, 0, 64, 1F, Float.MAX_VALUE, 3, new Predicate<Collection<Characteristic>>()
         {
             @Override
@@ -317,7 +325,7 @@ public class MetalExtras_Objects
                         return false;
                 return !characteristics.contains(MetalExtras.OTD_END);
             }
-        })).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.RUBY_GEM, 0, 3, 7).setOverrides(MetalExtras.RUBY_EVT).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setLanguageKey("tile.metalextras:ruby_ore").setModel(new ResourceLocation("metalextras:block/ruby_ore")).setRegistryName("metalextras", "ruby_ore"));
+        })).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.RUBY_GEM, 0, 3, 7).setOverrides(MetalExtras.RUBY_EVT).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setLanguageKey("tile.metalextras:ruby_ore").setTexture(new ResourceLocation("metalextras:items/ruby_ore")).setModel(new ResourceLocation("metalextras:block/ruby_ore")).setRegistryName("metalextras", "ruby_ore"));
         event.getRegistry().register(new VanillaOreMaterial(Blocks.COAL_ORE.getDefaultState(), 0, 2, ModelType.IRON, EventType.COAL)
         {
             @Override
@@ -480,10 +488,98 @@ public class MetalExtras_Objects
     }
     
     @SubscribeEvent
+    public static void onTexturesStitch(TextureStitchEvent.Pre event)
+    {
+        TextureMap map = event.getMap();
+        class Texture extends TextureAtlasSprite
+        {
+            private final ResourceLocation foreground;
+            private final ResourceLocation background;
+            
+            public Texture(ResourceLocation foreground, ResourceLocation background)
+            {
+                super(String.format("%s:ores/%s.%s_%s", foreground.getResourceDomain(), foreground.getResourcePath(), background.getResourceDomain(), background.getResourcePath()));
+                this.foreground = foreground;
+                this.background = background;
+            }
+
+            @Override
+            public boolean hasCustomLoader(@Nonnull IResourceManager manager, @Nonnull ResourceLocation location)
+            {
+                return true;
+            }
+            
+            @Override
+            public Collection<ResourceLocation> getDependencies()
+            {
+                return ImmutableList.of(this.background, this.foreground);
+            }
+
+            @Override
+            public boolean load(IResourceManager manager, ResourceLocation location, Function<ResourceLocation, TextureAtlasSprite> textureGetter)
+            {
+                TextureAtlasSprite foreground = textureGetter.apply(this.foreground);
+                TextureAtlasSprite background = textureGetter.apply(this.background);
+                int[][] foreground_pixels = foreground.getFrameTextureData(0);
+                int[][] background_pixels = background.getFrameTextureData(0);
+                float foreground_pixel_increment;
+                float background_pixel_increment;
+                if(foreground_pixels[0].length >= background_pixels[0].length)
+                {
+                    this.width = foreground.getIconWidth();
+                    this.height = foreground.getIconHeight();
+                    foreground_pixel_increment = 1F;
+                    background_pixel_increment = background.getIconWidth() / this.width;
+                }
+                else
+                {
+                    this.width = background.getIconWidth();
+                    this.height = background.getIconHeight();
+                    foreground_pixel_increment = foreground.getIconWidth() / this.width;
+                    background_pixel_increment = 1F;
+                }
+                float foreground_pixel_x_subindex = 0;
+                float foreground_pixel_y_subindex = 0;
+                float background_pixel_x_subindex = 0;
+                float background_pixel_y_subindex = 0;
+                int[][] pixels = new int[Minecraft.getMinecraft().gameSettings.mipmapLevels + 1][];
+                pixels[0] = new int[this.width * this.height];
+                for (int pixel = 0; pixel < this.width * this.height; pixel++)
+                {
+                    int foreground_pixel = foreground_pixels[0][pixel];
+                    pixels[0][pixel] = foreground_pixel == 0 ? background_pixels[0][pixel] : foreground_pixel;
+                }
+                for(int y = 0; y < this.height; y++)
+                {
+                    for(int x = 0; x < this.width; x++)
+                    {
+                        int foreground_pixel = foreground_pixels[0][MathHelper.floor(foreground_pixel_y_subindex) * this.width + MathHelper.floor(foreground_pixel_x_subindex)];
+                        pixels[0][y * this.width + x] = foreground_pixel == 0 ? background_pixels[0][MathHelper.floor(background_pixel_y_subindex) * this.width + MathHelper.floor(background_pixel_x_subindex)] : foreground_pixel;
+                        foreground_pixel_x_subindex += foreground_pixel_increment; 
+                        background_pixel_x_subindex += background_pixel_increment;
+                    }
+                    foreground_pixel_x_subindex = background_pixel_x_subindex = 0;
+                    foreground_pixel_y_subindex += foreground_pixel_increment; 
+                    background_pixel_y_subindex += background_pixel_increment; 
+                }
+                this.clearFramesTextureData();
+                this.framesTextureData.add(pixels);
+                return false;
+            }
+        }
+        for(OreMaterial material : OreUtils.getMaterialsRegistry())
+            for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
+                for(OreType type : types)
+                    map.setTextureEntry(new Texture(material.getTexture(), type.getTexture()));
+    }
+    
+    @SubscribeEvent
     public static void onModelsRegister(ModelRegistryEvent event)
     {
         ModelLoaderRegistry.registerLoader(new ICustomModelLoader()
                 {
+                    private final ModelOre model = new ModelOre();
+                    
                     @Override
                     public void onResourceManagerReload(IResourceManager resourceManager)
                     {
@@ -498,7 +594,7 @@ public class MetalExtras_Objects
                     @Override
                     public IModel loadModel(ResourceLocation location) throws Exception
                     {
-                        return new ModelOre();
+                        return this.model;
                     }
                 });
         MetalExtras_Objects.COPPER_ORE.setModel(new ResourceLocation("metalextras:block/copper_ore"));

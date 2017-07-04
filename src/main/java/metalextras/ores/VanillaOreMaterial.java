@@ -165,6 +165,12 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 		return new BlockOre.SimpleImpl(this, types);
 	}
 	
+	@Override
+	public ResourceLocation getTexture()
+	{
+	    return new ResourceLocation("metalextras", "items/" + this.getRegistryName().getResourcePath());
+	}
+	
 	private static class BlockPoweredOre extends BlockOre.SimpleImpl implements IBlockOreMulti
 	{
 		private final boolean powered;
@@ -172,7 +178,7 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 		
 		public BlockPoweredOre(VanillaOreMaterial material, OreTypes types, boolean powered)
 		{
-			super(material, types, pair -> pair.getLeft().getRegistryName().toString() + (powered ? "_powered." : ".") + pair.getRight().getRegistryName().toString().replaceFirst(":", "_"));
+			super(material, types, pair -> new ResourceLocation(pair.getLeft().getRegistryName().toString() + (powered ? "_powered." : ".") + pair.getRight().getRegistryName().toString().replaceFirst(":", "_")));
 			this.powered = powered;
 			if(powered)
 			{

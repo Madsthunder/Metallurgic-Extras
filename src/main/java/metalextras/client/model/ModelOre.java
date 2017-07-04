@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -110,7 +113,13 @@ public class ModelOre implements IModel
 					OreType type = ore.getOreType(state);
 					if(type != null)
 					{
-						Set<IBakedModel> models = Sets.newHashSet(type.getModel(ore.getOreMaterial()).bake(this.modelState, this.vertexFormat, this.textureGetter));
+                        ResourceLocation type_name = type.getTexture();
+					    ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreMaterial().getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+					    System.out.println(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
+					    baked_model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()))).bake(this.modelState, this.vertexFormat, this.textureGetter);
+						BakedModelOre.models.put(state, baked_model);
+						return baked_model.getQuads(state, side, 0L);
+					    /*Set<IBakedModel> models = Sets.newHashSet(type.getModel(ore.getOreMaterial()).bake(this.modelState, this.vertexFormat, this.textureGetter));
 						IModel model = ore.getOreMaterial().getModel(type);
 						models.add(model.bake(ModelRotation.X0_Y0, this.vertexFormat, this.textureGetter));
 						models.add(model.bake(ModelRotation.X180_Y0, this.vertexFormat, this.textureGetter));
@@ -120,7 +129,7 @@ public class ModelOre implements IModel
 						models.add(model.bake(ModelRotation.X90_Y270, this.vertexFormat, this.textureGetter));
 						baked_model = joinModels(state, 0L, this, models);
 						BakedModelOre.models.put(state, baked_model);
-						return baked_model.getQuads(state, side, 0L);
+						return baked_model.getQuads(state, side, 0L);*/
 					}
 				}
 			}

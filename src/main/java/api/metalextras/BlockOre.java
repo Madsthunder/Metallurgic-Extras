@@ -35,6 +35,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -58,16 +59,17 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 		this(material, types, getDefaultRegistryNameGetter());
 	}
 	
-	public BlockOre(OreMaterial material, OreTypes types, Function<Pair<OreMaterial, OreTypes>, String> registry_name_getter)
+	public BlockOre(OreMaterial material, OreTypes types, Function<Pair<OreMaterial, OreTypes>, ResourceLocation> registry_name_getter)
 	{
-		String s = registry_name_getter.apply(Pair.of(material, types));
+	    ResourceLocation location = registry_name_getter.apply(Pair.of(material, types));
+		String s = location.toString();
 		if(!s.startsWith(material.getRegistryName().getResourceDomain()))
 			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Begin With CharSequence \"" + material.getRegistryName().getResourceDomain() + "\".");
 		if(!s.contains(material.getRegistryName().getResourcePath()))
 			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + material.getRegistryName().getResourcePath() + "\".");
 		if(!s.contains(types.getRegistryName().toString().replaceFirst(":", "_")))
 			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + types.getRegistryName().toString().replaceFirst(":", "_") + "\".");
-		this.setRegistryName(s);
+		this.setRegistryName(location);
 		this.property = new OreTypeProperty(types, this);
 		this.setDefaultState(this.getBlockState().getBaseState());
 		this.setDefaultState(this.getBlockState().getProperties().isEmpty() ? this.getDefaultState() : this.getDefaultState().withProperty(this.getOreTypeProperty(), this.getOreTypeProperty().getAllowedValues().get(0)));
@@ -412,9 +414,9 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 		return type.getTypes() == this.getOreTypeProperty().getTypes() ? this.getBlockState().getProperties().isEmpty() ? 0 : this.getOreTypeProperty().getTypes().getOreTypes().indexOf(type) : -1;
 	}
 	
-	public static Function<Pair<OreMaterial, OreTypes>, String> getDefaultRegistryNameGetter()
+	public static Function<Pair<OreMaterial, OreTypes>, ResourceLocation> getDefaultRegistryNameGetter()
 	{
-		return pair -> pair.getLeft().getRegistryName().toString() + "." + pair.getRight().getRegistryName().toString().replaceFirst(":", "_");
+		return pair -> new ResourceLocation(pair.getLeft().getRegistryName().toString() + "." + pair.getRight().getRegistryName().toString().replaceFirst(":", "_"));
 	}
 	
 	public static void checkFallable(BlockOre block, World world, BlockPos pos)
@@ -453,7 +455,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 			this.impl = material;
 		}
 		
-		public SimpleImpl(OreMaterial.Impl material, OreTypes types, Function<Pair<OreMaterial, OreTypes>, String> registry_name_getter)
+		public SimpleImpl(OreMaterial.Impl material, OreTypes types, Function<Pair<OreMaterial, OreTypes>, ResourceLocation> registry_name_getter)
 		{
 			super(material, types, registry_name_getter);
 			this.impl = material;

@@ -178,7 +178,7 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 		
 		public BlockPoweredOre(VanillaOreMaterial material, OreTypes types, boolean powered)
 		{
-			super(material, types, pair -> new ResourceLocation(pair.getLeft().getRegistryName().toString() + (powered ? "_powered." : ".") + pair.getRight().getRegistryName().toString().replaceFirst(":", "_")));
+			super(material, types, pair -> new ResourceLocation(pair.getLeft().registry_name.toString() + (powered ? "_powered." : ".") + pair.getRight().getRegistryName().toString().replaceFirst(":", "_")));
 			this.powered = powered;
 			if(powered)
 			{
@@ -337,13 +337,5 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 			else
 				return random.nextInt(spawnParams[1] - spawnParams[0]) + spawnParams[0];
 		}
-	}
-	
-	public static enum OreModelType
-	{
-		IRON,
-		LAPIS,
-		EMERALD;
-		// TODO Add some model methods
 	}
 }

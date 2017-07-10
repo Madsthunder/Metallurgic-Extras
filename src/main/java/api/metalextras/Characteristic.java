@@ -26,7 +26,6 @@ public class Characteristic
 
 	private Characteristic(String name)
 	{
-		characteristics.put(name, this);
 	}
 
 	public String getName()
@@ -37,10 +36,7 @@ public class Characteristic
 	public static Characteristic byName(String name)
 	{
 		name = name.toUpperCase(Locale.ENGLISH);
-		Characteristic characteristic = allCharacteristics().get(name);
-		if (characteristic != null)
-			return characteristic;
-		return new Characteristic(name);
+		return characteristics.computeIfAbsent(name, (name1) -> new Characteristic(name1));
 	}
 
 	public static Characteristic byDimension(DimensionType dimension)

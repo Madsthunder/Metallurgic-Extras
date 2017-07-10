@@ -1,6 +1,7 @@
 package api.metalextras;
 
 import io.netty.buffer.ByteBuf;
+import metalextras.newores.NewOreType;
 import metalextras.ores.materials.OreMaterial;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
@@ -10,7 +11,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 
 public class SPacketBlockOreLandingParticles implements IMessage
 {
-	private OreMaterial material;
+	private NewOreType newtype;
 	private OreType type;
 	private Vec3d pos;
 	private int particles;
@@ -20,9 +21,9 @@ public class SPacketBlockOreLandingParticles implements IMessage
 		
 	}
 	
-	public SPacketBlockOreLandingParticles(OreMaterial material, OreType type, Vec3d pos, int particles)
+	public SPacketBlockOreLandingParticles(NewOreType newtype, OreType type, Vec3d pos, int particles)
 	{
-		this.material = material;
+		this.newtype = newtype;
 		this.type = type;
 		this.pos = pos;
 		this.particles = particles;
@@ -31,7 +32,7 @@ public class SPacketBlockOreLandingParticles implements IMessage
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
-		this.material = OreUtils.getMaterialsRegistry().getValue(new ResourceLocation(ByteBufUtils.readUTF8String(buffer)));
+		this.newtype = OreUtils.getTypesRegistry().getTypeByName(new ResourceLocation(ByteBufUtils.readUTF8String(buffer)));
 		this.type = OreUtils.findOreType(new ResourceLocation(ByteBufUtils.readUTF8String(buffer)));
 		this.pos = new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
 		this.particles = buffer.readInt();
@@ -40,7 +41,7 @@ public class SPacketBlockOreLandingParticles implements IMessage
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		ByteBufUtils.writeUTF8String(buffer, this.material.getRegistryName().toString());
+		ByteBufUtils.writeUTF8String(buffer, this.newtype.registry_name.toString());
 		ByteBufUtils.writeUTF8String(buffer, this.type.getRegistryName().toString());
 		buffer.writeDouble(this.pos.x);
 		buffer.writeDouble(this.pos.y);
@@ -48,9 +49,9 @@ public class SPacketBlockOreLandingParticles implements IMessage
 		buffer.writeInt(this.particles);
 	}
 	
-	public OreMaterial getOreMaterial()
+	public NewOreType getOreMaterial()
 	{
-		return this.material;
+		return this.newtype;
 	}
 	
 	public OreType getOreType()

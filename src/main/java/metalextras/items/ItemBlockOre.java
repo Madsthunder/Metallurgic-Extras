@@ -1,17 +1,21 @@
 package metalextras.items;
 
+import api.metalextras.BlockOre;
 import api.metalextras.OreTypeProperty;
-import net.minecraft.block.Block;
+import metalextras.newores.NewOreType;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemBlock;
 
 public class ItemBlockOre extends ItemBlock
 {
 	private final OreTypeProperty property;
+	public final NewOreType type;
 	
-	public ItemBlockOre(Block block, OreTypeProperty property)
+	public ItemBlockOre(BlockOre block, OreTypeProperty property)
 	{
 		super(block);
 		this.property = property;
+		this.type = block.getOreType();
 	}
 	
 	@Override
@@ -20,5 +24,11 @@ public class ItemBlockOre extends ItemBlock
 		if(meta >= this.property.getAllowedValues().size())
 			return 0;
 		return meta;
+	}
+	
+	@Override
+	public CreativeTabs[] getCreativeTabs()
+	{
+	    return this.type.block.getCreativeTabs();
 	}
 }

@@ -1,5 +1,11 @@
 package metalextras;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -7,11 +13,15 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.FilenameUtils;
+
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.gson.internal.bind.TypeAdapters;
 
 import api.metalextras.BlockOre;
 import api.metalextras.Characteristic;
@@ -22,10 +32,12 @@ import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
 import metalextras.client.model.ModelOre;
 import metalextras.enchantments.EnchantmentHotTouch;
+import metalextras.items.ItemBlockOre;
 import metalextras.items.ItemEnderTool;
 import metalextras.items.ItemOre;
 import metalextras.items.ItemTool;
 import metalextras.mod.MetalExtras_Callbacks;
+import metalextras.newores.NewOreType;
 import metalextras.ores.VanillaOreMaterial;
 import metalextras.ores.materials.OreMaterial;
 import metalextras.ores.properties.ConfigurationOreProperties;
@@ -67,12 +79,21 @@ import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraftforge.registries.RegistryManager;
 
 @ObjectHolder(MetalExtras.MODID)
 @EventBusSubscriber(modid = MetalExtras.MODID)
@@ -262,11 +283,11 @@ public class MetalExtras_Objects
         rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(0), Characteristic.ROCKY, Characteristic.DENSE)
         {
             @Override
-            public IModel getModel(OreMaterial material)
+            public IModel getModel(ModelType model_type)
             {
-                if(material.getModelType() == ModelType.EMERALD)
+                if(model_type == ModelType.EMERALD)
                     return OreType.Impl.getModelFromTexture(new ResourceLocation("metalextras:blocks/emerald_stone"));
-                return super.getModel(material);
+                return super.getModel(model_type);
             }
         }.setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone")).setRegistryName("minecraft:stone"));
         rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getStateFromMeta(1), Characteristic.ROCKY, Characteristic.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_granite")).setRegistryName("minecraft:granite"));
@@ -301,6 +322,58 @@ public class MetalExtras_Objects
             }
         }.setHardness(.5F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/soul_sand")).setRegistryName("minecraft:soul_sand"));
         event.getRegistry().register(dirts);
+        OreUtils.getTypesRegistry().clear();
+        ModContainer previous_active_mod = Loader.instance().activeModContainer();
+        for(ModContainer container : Loader.instance().getActiveModList())
+        {
+            FileSystem file_system = null;
+            try
+            {
+                File source = container.getSource();
+                Path root = source.isFile() ? (file_system = FileSystems.newFileSystem(source.toPath(), null)).getPath(String.format("/assets/%s/ores/types"), container.getModId()) : source.toPath().resolve(String.format("assets/%s/ores/types",container.getModId()) );
+                if(Files.exists(root))
+                {
+                    Loader.instance().setActiveModContainer(container);
+                    Files.walk(root).forEach((path) ->
+                    {
+                        String relative_name = root.relativize(path).toString();
+                        if("json".equals(FilenameUtils.getExtension(relative_name)))
+                        {
+                            BufferedReader reader = null;
+                            try
+                            {
+                                NewOreType type = new NewOreType.JsonOreType(new ResourceLocation(container.getModId(), FilenameUtils.removeExtension(relative_name).replaceAll("\\\\", "/")), TypeAdapters.JSON_ELEMENT.fromJson(reader = Files.newBufferedReader(path)));
+                                OreUtils.getTypesRegistry().register(type);
+                                for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
+                                    for(BlockOre block : type.getBlocksToRegister(types))
+                                    {
+                                        ForgeRegistries.BLOCKS.register(block);
+                                        ForgeRegistries.ITEMS.register(new ItemBlockOre(block, block.getOreTypeProperty()).setRegistryName(block.getRegistryName()));
+                                    }
+                                MetalExtras_ModContainer.performChecks(type);
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                            finally
+                            {
+                                IOUtils.closeQuietly(reader);
+                            }
+                        }
+                    });
+                }
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+            finally
+            {
+                IOUtils.closeQuietly(file_system);
+            }
+        }
+        Loader.instance().setActiveModContainer(previous_active_mod);
     }
     
     @SubscribeEvent
@@ -487,6 +560,7 @@ public class MetalExtras_Objects
         }.setRegistryName("metalextras:diamond_ore"));
     }
     
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public static void onTexturesStitch(TextureStitchEvent.Pre event)
     {
@@ -567,12 +641,13 @@ public class MetalExtras_Objects
                 return false;
             }
         }
-        for(OreMaterial material : OreUtils.getMaterialsRegistry())
+        for(NewOreType material : OreUtils.getTypesRegistry())
             for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
                 for(OreType type : types)
-                    map.setTextureEntry(new Texture(material.getTexture(), type.getTexture()));
+                    map.setTextureEntry(new Texture(material.model.getTexture(), type.getTexture()));
     }
     
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public static void onModelsRegister(ModelRegistryEvent event)
     {
@@ -657,7 +732,7 @@ public class MetalExtras_Objects
             
         }
         OreStateMapper mapper = new OreStateMapper();
-        for(OreMaterial material : OreUtils.getMaterialsRegistry())
+        for(NewOreType material : OreUtils.getTypesRegistry())
         {
             for(BlockOre block : material.getBlocks())
             {
@@ -675,7 +750,7 @@ public class MetalExtras_Objects
                                 ModelLoader.setCustomModelResourceLocation(item, i, mapper.getModelLocation(new ItemStack(item, 1, i)));
                     }
             }
-            ModelLoader.setCustomModelResourceLocation(OreMaterial.ORE, OreUtils.getMaterialsRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.getRegistryName().getResourcePath() + "_item"), "inventory"));
+            ModelLoader.setCustomModelResourceLocation(OreMaterial.ORE, OreUtils.getTypesRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.registry_name.getResourcePath() + "_item"), "inventory"));
         }
     }
 }

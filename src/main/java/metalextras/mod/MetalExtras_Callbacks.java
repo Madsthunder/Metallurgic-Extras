@@ -1,7 +1,5 @@
 package metalextras.mod;
 
-import java.util.Map;
-
 import javax.annotation.Nonnull;
 
 import com.google.common.collect.BiMap;
@@ -17,10 +15,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;
 import net.minecraft.util.ObjectIntIdentityMap;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistry.AddCallback;
+import net.minecraftforge.registries.IForgeRegistry.ClearCallback;
 import net.minecraftforge.registries.IForgeRegistry.CreateCallback;
 import net.minecraftforge.registries.IForgeRegistryInternal;
 import net.minecraftforge.registries.RegistryManager;
@@ -38,13 +36,13 @@ public class MetalExtras_Callbacks
 			IForgeRegistry<Block> blocks = GameRegistry.findRegistry(Block.class);
 			IForgeRegistry<Item> items = GameRegistry.findRegistry(Item.class);
 			IForgeRegistry<OreTypes> typeCollections = GameRegistry.findRegistry(OreTypes.class);
-			if(blocks != null && items != null && typeCollections != null)
+			if(false && blocks != null && items != null && typeCollections != null)
 				for(OreTypes types : typeCollections)
 					tryRegister(material, types, blocks, items);
 		}
 	}
 	
-	private static class OreTypeCollections implements CreateCallback<OreTypes>, AddCallback<OreTypes>
+	private static class OreTypeCollections implements ClearCallback<OreTypes>, CreateCallback<OreTypes>, AddCallback<OreTypes>
 	{
 		@Override
 		public void onAdd(IForgeRegistryInternal<OreTypes> registry, RegistryManager manager, int id, OreTypes types, OreTypes old)
@@ -59,7 +57,7 @@ public class MetalExtras_Callbacks
 			IForgeRegistry<Block> blocks = GameRegistry.findRegistry(Block.class);
 			IForgeRegistry<Item> items = GameRegistry.findRegistry(Item.class);
 			IForgeRegistry<OreMaterial> materials = GameRegistry.findRegistry(OreMaterial.class);
-			if(blocks != null && items != null && materials != null)
+			if(false && blocks != null && items != null && materials != null)
 				for(OreMaterial material : materials)
 					tryRegister(material, types, blocks, items);
 			types.update();
@@ -71,6 +69,12 @@ public class MetalExtras_Callbacks
 		    registry.setSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, HashBiMap.<OreType, IBlockState> create());
             registry.setSlaveMap(OreUtils.ORETYPE_TO_ID, new ObjectIntIdentityMap<OreType>());
 		}
+
+        @Override
+        public void onClear(IForgeRegistryInternal<OreTypes> registry, RegistryManager manager)
+        {
+            registry.getSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, BiMap.class).clear();
+        }
 	}
 	
 	private static void tryRegister(OreMaterial material, OreTypes types, @Nonnull IForgeRegistry<Block> blocks, @Nonnull IForgeRegistry<Item> items)

@@ -1,16 +1,24 @@
 package api.metalextras;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
+import joptsimple.internal.Strings;
+import metalextras.newores.NewOreType;
 import metalextras.ores.materials.OreMaterial;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.ObjectIntIdentityMap;
@@ -30,12 +38,12 @@ public class OreUtils
 	public static final ResourceLocation ORETYPE_TO_ID = new ResourceLocation("metalextras", "oretype_to_id");
 	private static BiMap<OreType, IBlockState> ORETYPE_TO_IBLOCKSTATE_MAP;
 	private static ObjectIntIdentityMap<OreType> ORETYPE_TO_ID_MAP;
-	private static IForgeRegistry<OreMaterial> materials;
+	private static final OreTypeRegistry TYPES = new OreTypeRegistry() ;
 	private static IForgeRegistry<OreTypes> typeCollections;
 	
-	public static IForgeRegistry<OreMaterial> getMaterialsRegistry()
+	public static OreTypeRegistry getTypesRegistry()
 	{
-		return materials == null ? materials = GameRegistry.findRegistry(OreMaterial.class) : materials;
+		return TYPES;
 	}
 	
 	public static IForgeRegistry<OreTypes> getTypeCollectionsRegistry()
@@ -88,7 +96,7 @@ public class OreUtils
 		return map == null ? new ObjectIntIdentityMap() : (ORETYPE_TO_ID_MAP = map);
 	}
 	
-	public static void registerMaterialSmeltingRecipe(OreMaterial material, ItemStack ingot, float xp, boolean registerItem)
+	public static void registerMaterialSmeltingRecipe(NewOreType material, ItemStack ingot, float xp, boolean registerItem)
 	{
 		for(BlockOre block : material.getBlocks())
 			FurnaceRecipes.instance().addSmeltingRecipeForBlock(block, ingot, xp);
@@ -100,7 +108,7 @@ public class OreUtils
 		}
 	}
 	
-	public static void addMaterialToOreDictionary(OreMaterial material, String name, boolean registerItem)
+	public static void addMaterialToOreDictionary(NewOreType material, String name, boolean registerItem)
 	{
 		for(BlockOre block : material.getBlocks())
 			OreDictionary.registerOre(name, block);
@@ -113,19 +121,21 @@ public class OreUtils
 	}
 	
 	@Nullable
-	public static ItemStack getItemStackForMaterial(OreMaterial material)
+	public static ItemStack getItemStackForMaterial(NewOreType material)
 	{
 		if(OreMaterial.ORE != null)
 		{
-			int index = getMaterialsRegistry().getValues().indexOf(material);
+			int index = TYPES.getIdFor(material);
 			if(index >= 0)
 				return new ItemStack(OreMaterial.ORE, 1, index);
 		}
-		return null;
+		return ItemStack.EMPTY;
 	}
 	
 	public static GenerateMinable.EventType getEventType(String name)
 	{
+	    if(Strings.isNullOrEmpty(name))
+	        return null;
 		name = name.toUpperCase();
 		for(GenerateMinable.EventType type : GenerateMinable.EventType.values())
 			if(type.name().equals(name))
@@ -133,7 +143,34 @@ public class OreUtils
 		return EnumHelper.addEnum(GenerateMinable.EventType.class, name, new Class[0]);
 	}
 	
-	public static boolean generateOres(World world, BlockPos pos, Random random, int blocks, OreProperties properties)
+	private static final Map<String, CreativeTabs[]> NAME_TO_CREATIVE_TABS = Maps.newHashMap();
+	public static CreativeTabs[] getCreativeTabs(String name)
+	{
+	    if(Strings.isNullOrEmpty(name))
+	        return new CreativeTabs[0];
+	    if(NAME_TO_CREATIVE_TABS.containsKey(name))
+	        return NAME_TO_CREATIVE_TABS.get(name);
+	    try
+	    {
+	        List<CreativeTabs> tabs = Lists.newArrayList();
+	        Field label_field = CreativeTabs.class.getDeclaredField("tabLabel");
+	        label_field.setAccessible(true);
+	        for(CreativeTabs tab : CreativeTabs.CREATIVE_TAB_ARRAY)
+	            if(name.equals((String)label_field.get(tab)))
+	                tabs.add(tab);
+	        if(tabs.isEmpty())
+	            return new CreativeTabs[0];
+	        CreativeTabs[] tab_array = Iterables.toArray(tabs, CreativeTabs.class);
+	        NAME_TO_CREATIVE_TABS.put(name, tab_array);
+	        return tab_array;
+	    }
+	    catch(Exception e)
+	    {
+	        return new CreativeTabs[0];
+	    }
+	}
+	
+	public static boolean generateOres(World world, BlockPos pos, Random random, int blocks, NewOreType properties)
 	{
 		float f = random.nextFloat() * (float)Math.PI;
 		double d0 = pos.getX() + 8 + MathHelper.sin(f) * blocks / 8.0F;
@@ -178,11 +215,16 @@ public class OreUtils
 								if(d12 * d12 + d13 * d13 + d14 * d14 < 1.0D)
 								{
 									BlockPos blockpos = new BlockPos(l1, i2, j2);
-									
+									float temperature = world.getBiome(blockpos).getTemperature();
+									if(properties.generation.getMinTemperature() > temperature || properties.generation.getMaxTemperature() < temperature)
+									    continue;
 									IBlockState state = world.getBlockState(blockpos);
-									if(properties.canSpawnAtCoords(world, blockpos) && state.getBlock().isReplaceableOreGen(state, world, blockpos, properties))
+									//TODO filters?
+									if(state.getBlock().isReplaceableOreGen(state, world, blockpos, Predicates.alwaysTrue()))
 									{
-										world.setBlockState(blockpos, properties.getOre(state, world, blockpos), 2);
+									    OreType type = getOreType(state);
+									    if(type != null)
+									        world.setBlockState(blockpos, properties.applyBlockState(type), 2);
 									}
 								}
 							}

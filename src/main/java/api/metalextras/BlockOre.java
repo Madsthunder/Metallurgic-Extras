@@ -8,9 +8,10 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
+import metalextras.newores.NewOreType;
+import metalextras.newores.NewOreType.Block.Drop;
 import metalextras.ores.materials.OreMaterial;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
@@ -18,11 +19,10 @@ import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleDigging;
 import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -31,6 +31,7 @@ import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
@@ -44,41 +45,40 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class BlockOre extends net.minecraft.block.BlockOre
+public class BlockOre extends net.minecraft.block.BlockOre
 {
 	private final OreTypeProperty property;
-	private final OreMaterial material;
+	private final NewOreType type;
 	
-	public BlockOre(OreMaterial material, OreTypes types)
+	public BlockOre(NewOreType type, OreTypes types)
 	{
-		this(material, types, getDefaultRegistryNameGetter());
+		this(type, types, getDefaultRegistryNameGetter());
 	}
 	
-	public BlockOre(OreMaterial material, OreTypes types, Function<Pair<OreMaterial, OreTypes>, ResourceLocation> registry_name_getter)
+	public BlockOre(NewOreType type, OreTypes types, Function<Pair<NewOreType, OreTypes>, ResourceLocation> registry_name_getter)
 	{
-	    ResourceLocation location = registry_name_getter.apply(Pair.of(material, types));
+	    ResourceLocation location = registry_name_getter.apply(Pair.of(type, types));
 		String s = location.toString();
-		if(!s.startsWith(material.getRegistryName().getResourceDomain()))
-			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Begin With CharSequence \"" + material.getRegistryName().getResourceDomain() + "\".");
-		if(!s.contains(material.getRegistryName().getResourcePath()))
-			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + material.getRegistryName().getResourcePath() + "\".");
+		if(!s.startsWith(type.registry_name.getResourceDomain()))
+			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Begin With CharSequence \"" + type.registry_name.getResourceDomain() + "\".");
+		if(!s.contains(type.registry_name.getResourcePath()))
+			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + type.registry_name.getResourcePath() + "\".");
 		if(!s.contains(types.getRegistryName().toString().replaceFirst(":", "_")))
 			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + types.getRegistryName().toString().replaceFirst(":", "_") + "\".");
 		this.setRegistryName(location);
 		this.property = new OreTypeProperty(types, this);
 		this.setDefaultState(this.getBlockState().getBaseState());
 		this.setDefaultState(this.getBlockState().getProperties().isEmpty() ? this.getDefaultState() : this.getDefaultState().withProperty(this.getOreTypeProperty(), this.getOreTypeProperty().getAllowedValues().get(0)));
-		this.material = material;
+		this.type = type;
 	}
 	
-	public final OreMaterial getOreMaterial()
+	public final NewOreType getOreType()
 	{
-		return this.material;
+		return this.type;
 	}
 	
 	@Override
@@ -116,15 +116,33 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	}
 	
 	@Override
-	public List<ItemStack> getDrops(IBlockAccess access, BlockPos pos, IBlockState state, int fortune)
+	public void getDrops(NonNullList<ItemStack> stacks, IBlockAccess access, BlockPos pos, IBlockState state, int fortune)
 	{
-		Random random = access instanceof World ? ((World)access).rand : RANDOM;
-		List<ItemStack> list = super.getDrops(access, pos, state, fortune);
-		IBlockState typeState = this.getOreType(state).getState();
-		Block typeBlock = typeState.getBlock();
-		list.add(new ItemStack(typeBlock.getItemDropped(typeState, random, 0), typeBlock.quantityDropped(random), typeBlock.damageDropped(typeState)));
-		return list;
+		Random random = new Random((access instanceof World ? ((World)access).rand : RANDOM).nextLong());
+		for(Drop drop : this.type.block.getDrops())
+		    if(random.nextFloat() >= (1F - drop.getChance(fortune)))
+		    {
+                int min_count = drop.getMinCount(fortune);
+                int max_count = drop.getMaxCount(fortune);
+                int count = Math.max(0, min_count >= max_count ? max_count : random.nextInt(max_count - min_count + 1) + min_count);
+                if(count > 0)
+                {
+                    NBTTagCompound compound = drop.getNbt();
+                    compound.setString("id", drop.getItem().getRegistryName().toString());
+                    compound.setInteger("Count", count);
+                    compound.setInteger("Damage", drop.getMetadata());
+                    stacks.add(new ItemStack(drop.getNbt()));
+                }
+	        }
 	}
+    
+    @Override
+    public int getExpDrop(IBlockState state, IBlockAccess access, BlockPos pos, int fortune)
+    {
+        int min_xp = this.type.block.getMinXp();
+        int max_xp = this.type.block.getMaxXp();
+        return Math.max(0, min_xp >= max_xp ? max_xp : (access instanceof World ? ((World)access).rand : Block.RANDOM).nextInt(max_xp - min_xp + 1) + min_xp);
+    }
 	
 	@Override
 	public void addInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag advanced)
@@ -135,7 +153,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	@Override
 	public int getHarvestLevel(IBlockState state)
 	{
-		int materialHarvest = this.getOreMaterial().getHarvestLevel();
+		int materialHarvest = this.getOreType().block.getHarvestLevel();
 		int typeHarvest = this.getOreType(state).getHarvestLevel();
 		return materialHarvest == -1 || typeHarvest == -1 ? -1 : Math.max(materialHarvest, typeHarvest);
 	}
@@ -232,19 +250,10 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	@SideOnly(Side.CLIENT)
 	public boolean addDestroyEffects(World world, BlockPos pos, ParticleManager manager)
 	{
-		IBlockState state = world.getBlockState(pos).getActualState(world, pos);
-		List<TextureAtlasSprite> textures = Lists.newArrayList();
-		{
-			OreType type = this.getOreType(state);
-			TextureAtlasSprite texture = this.getOreMaterial().getModel(type).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-			if(texture != null)
-				textures.add(texture);
-			texture = type.getModel(this.getOreMaterial()).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-			if(texture != null)
-				textures.add(texture);
-		}
-		if(textures.isEmpty())
-			return super.addDestroyEffects(world, pos, manager);
+	    IBlockState state = world.getBlockState(pos).getActualState(world, pos);
+        ResourceLocation type_name = this.getOreType(state).getTexture();
+        ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.model.getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+        TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 		int i = 4;
 		for(int j = 0; j < 4; j++)
 			for(int k = 0; k < 4; k++)
@@ -255,7 +264,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 					double z = pos.getZ() + (l + .5) / 4;
 					ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().createParticle(0, world, x, y, z, x - pos.getX() - .5, y - pos.getY() - .5, z - pos.getZ() - .5, Block.getStateId(state));
 					particle.setBlockPos(pos);
-					particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
+					particle.setParticleTexture(texture);
 					manager.addEffect(particle);
 				}
 			
@@ -266,18 +275,9 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	@SideOnly(Side.CLIENT)
 	public boolean addHitEffects(IBlockState state, World world, RayTraceResult result, ParticleManager manager)
 	{
-		List<TextureAtlasSprite> textures = Lists.newArrayList();
-		{
-			OreType type = this.getOreType(state);
-			TextureAtlasSprite texture = this.getOreMaterial().getModel(type).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-			if(texture != null)
-				textures.add(texture);
-			texture = type.getModel(this.getOreMaterial()).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-			if(texture != null)
-				textures.add(texture);
-		}
-		if(textures.isEmpty())
-			return super.addHitEffects(state, world, result, manager);
+        ResourceLocation type_name = this.getOreType(state).getTexture();
+        ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.model.getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+	    TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 		BlockPos pos = result.getBlockPos();
 		EnumFacing side = result.sideHit;
 		int i = pos.getX();
@@ -330,7 +330,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 		particle.setBlockPos(pos);
 		particle.multiplyVelocity(0.2F);
 		particle.multipleParticleScaleBy(0.6F);
-		particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
+		particle.setParticleTexture(texture);
 		manager.addEffect(particle);
 		return true;
 	}
@@ -338,14 +338,8 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	@Override
 	public boolean addLandingEffects(IBlockState state, WorldServer world, BlockPos pos, IBlockState useless, EntityLivingBase entity, int particles)
 	{
-		MinecraftForge.EVENT_BUS.post(new SendLandingParticlesEvent(world.provider.getDimension(), new SPacketBlockOreLandingParticles(this.getOreMaterial(), this.getOreType(state), new Vec3d(entity.posX, entity.posY, entity.posZ), particles)));
+		MinecraftForge.EVENT_BUS.post(new SendLandingParticlesEvent(world.provider.getDimension(), new SPacketBlockOreLandingParticles(this.getOreType(), this.getOreType(state), new Vec3d(entity.posX, entity.posY, entity.posZ), particles)));
 		return true;
-	}
-	
-	@Override
-	public CreativeTabs getCreativeTabToDisplayOn()
-	{
-		return this.getOreMaterial().getCreativeTab();
 	}
 	
 	public OreTypeProperty getOreTypeProperty()
@@ -372,8 +366,8 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	@Override
 	public String getUnlocalizedName()
 	{
-		String langKey = this.getOreMaterial().getLanguageKey();
-		return langKey == null ? this.getOreMaterial().getRegistryName().getResourcePath() : this.getOreMaterial().getLanguageKey();
+		String langKey = this.getOreType().getName();
+		return langKey == null ? this.getOreType().registry_name.getResourcePath() : this.getOreType().getName();
 	}
 	
 	@Override
@@ -414,9 +408,9 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 		return type.getTypes() == this.getOreTypeProperty().getTypes() ? this.getBlockState().getProperties().isEmpty() ? 0 : this.getOreTypeProperty().getTypes().getOreTypes().indexOf(type) : -1;
 	}
 	
-	public static Function<Pair<OreMaterial, OreTypes>, ResourceLocation> getDefaultRegistryNameGetter()
+	public static Function<Pair<NewOreType, OreTypes>, ResourceLocation> getDefaultRegistryNameGetter()
 	{
-		return pair -> new ResourceLocation(pair.getLeft().getRegistryName().toString() + "." + pair.getRight().getRegistryName().toString().replaceFirst(":", "_"));
+		return pair -> new ResourceLocation(pair.getLeft().registry_name.toString() + "." + pair.getRight().getRegistryName().toString().replaceFirst(":", "_"));
 	}
 	
 	public static void checkFallable(BlockOre block, World world, BlockPos pos)
@@ -442,54 +436,6 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 				if(pos1.getY() > 0)
 					world.setBlockState(pos1.up(), state);
 			}
-		}
-	}
-	
-	public static class SimpleImpl extends BlockOre
-	{
-		private final OreMaterial.Impl impl;
-		
-		public SimpleImpl(OreMaterial.Impl material, OreTypes types)
-		{
-			super(material, types);
-			this.impl = material;
-		}
-		
-		public SimpleImpl(OreMaterial.Impl material, OreTypes types, Function<Pair<OreMaterial, OreTypes>, ResourceLocation> registry_name_getter)
-		{
-			super(material, types, registry_name_getter);
-			this.impl = material;
-		}
-		
-		@Override
-		public Item getItemDropped(IBlockState state, Random random, int fortune)
-		{
-			return this.impl.getDrop();
-		}
-		
-		@Override
-		public int quantityDropped(Random random)
-		{
-			return this.impl.getDropCount(random);
-		}
-		
-		@Override
-		public int quantityDroppedWithBonus(int fortune, Random random)
-		{
-			return this.impl.getDropCountWithFortune(fortune, random);
-		}
-		
-		@Override
-		public int damageDropped(IBlockState state)
-		{
-			int meta = this.impl.getDropMeta();
-			return meta == -1 ? OreUtils.getItemStackForMaterial(this.impl).getMetadata() : meta;
-		}
-		
-		@Override
-		public int getExpDrop(IBlockState state, IBlockAccess access, BlockPos pos, int fortune)
-		{
-			return this.impl.getDropXP(access instanceof World ? ((World)access).rand : Block.RANDOM);
 		}
 	}
 }

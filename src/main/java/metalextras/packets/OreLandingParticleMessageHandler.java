@@ -9,8 +9,9 @@ import com.google.common.collect.Lists;
 
 import api.metalextras.OreType;
 import api.metalextras.SPacketBlockOreLandingParticles;
-import metalextras.ores.materials.OreMaterial;
+import metalextras.newores.NewOreType;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.particle.Particle;
@@ -21,38 +22,36 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class OreLandingParticleMessageHandler implements IMessageHandler<SPacketBlockOreLandingParticles, SPacketBlockOreLandingParticles>
 {
 	private static final Random R = new Random();
 	private static final double SPEED = 0.15000000596046448D;
 	
+	@SideOnly(Side.CLIENT)
 	@Override
 	public SPacketBlockOreLandingParticles onMessage(SPacketBlockOreLandingParticles message, MessageContext context)
 	{
 		Minecraft.getMinecraft().addScheduledTask(() ->
 		{
-			OreMaterial material = message.getOreMaterial();
+			NewOreType material = message.getOreMaterial();
 			OreType type = message.getOreType();
+	        ResourceLocation type_name = type.getTexture();
+	        ResourceLocation name = new ResourceLocation(String.format("%s.%s", material.model.getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+	        TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 			Vec3d pos = message.getPosition();
 			WorldClient world = Minecraft.getMinecraft().world;
 			ParticleManager manager = Minecraft.getMinecraft().effectRenderer;
 			Entity entity = Minecraft.getMinecraft().getRenderViewEntity();
 			for(int i = 0; i < message.getParticles(); i++)
 			{
-				List<TextureAtlasSprite> textures = Lists.newArrayList();
-				{
-					TextureAtlasSprite texture = material.getModel(type).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-					if(texture != null)
-						textures.add(texture);
-					texture = type.getModel(material).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-					if(texture != null)
-						textures.add(texture);
-				}
 				double d6 = R.nextGaussian() * SPEED;
 				double d7 = R.nextGaussian() * SPEED;
 				double d8 = R.nextGaussian() * SPEED;
@@ -68,19 +67,10 @@ public class OreLandingParticleMessageHandler implements IMessageHandler<SPacket
 						if(d0 * d0 + d1 * d1 + d2 * d2 <= 1024 && i1 <= 1)
 						{
 							Particle particle = new ParticleBlockDust.Factory().createParticle(EnumParticleTypes.BLOCK_DUST.getParticleID(), world, pos.x, pos.y, pos.z, d6, d7, d8, Block.getStateId(material.applyBlockState(type)));
-							particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
+							particle.setParticleTexture(texture);
 							manager.addEffect(particle);
 						}
 					}
-					
-					/**
-					 * for(IWorldEventListener listener :
-					 * Minecraft.getMinecraft().world.listen)
-					 * Minecraft.getMinecraft().world.spawnParticle(EnumParticleTypes.BLOCK_DUST,
-					 * false, this.pos.xCoord, this.pos.yCoord, this.pos.zCoord,
-					 * d6, d7, d8,
-					 * Block.getStateId(this.material.applyBlockState(this.type)));
-					 */
 				}
 				catch(Throwable var16)
 				{

@@ -100,7 +100,7 @@ public abstract class OreType implements Comparable<OreType>
 	}
 
 	@SideOnly(Side.CLIENT)
-	public abstract IModel getModel(OreMaterial material);
+	public abstract IModel getModel(ModelType model_type);
 
 	public final OreType setRegistryName(String modid, String name)
 	{
@@ -200,7 +200,7 @@ public abstract class OreType implements Comparable<OreType>
 
 		@Override
 		@SideOnly(Side.CLIENT)
-		public IModel getModel(OreMaterial material)
+		public IModel getModel(ModelType model_type)
 		{
 			return getModelFromTexture(this.texture);
 		}

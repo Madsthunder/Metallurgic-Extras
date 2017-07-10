@@ -1,26 +1,50 @@
 package metalextras;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.gson.internal.bind.TypeAdapters;
 
 import api.metalextras.BlockOre;
 import api.metalextras.Characteristic;
+import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
 import api.metalextras.SPacketBlockOreLandingParticles;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import continuum.essentials.config.ConfigHandler;
+import metalextras.items.ItemBlockOre;
 import metalextras.items.ItemEnderTool;
+import metalextras.newores.FilterManager;
+import metalextras.newores.NewOreType;
+import metalextras.newores.VariableManager;
 import metalextras.packets.OreLandingParticleMessageHandler;
 import metalextras.world.gen.OreGeneration;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -32,22 +56,32 @@ import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.NetworkCheckHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.GameData;
+import net.minecraftforge.registries.RegistryManager;
 
 @EventBusSubscriber
 @Mod(modid = MetalExtras.MODID, name = MetalExtras.NAME, version = MetalExtras.VERSION, guiFactory = "metalextras.client.gui.config.GuiOverview$Factory")
@@ -55,8 +89,9 @@ public class MetalExtras
 {
 	public static final String MODID = "metalextras";
 	public static final String NAME = "Metallurgic Extras";
-	public static final String VERSION = "2.2.0";
+	public static final String VERSION = "3.0.0";
 	public static final ConfigHandler CONFIGURATION_HANDLER = new ConfigHandler("config\\Metallurgic Extras");
+	public static final Logger LOGGER = LogManager.getLogger("Metallurgic Extras");
 	
 	public static class Proxy
 	{
@@ -65,17 +100,32 @@ public class MetalExtras
 		
 		public void constr()
 		{
+		    
 		}
 		
 		public void pre()
 		{
+		    VariableManager.register(new ResourceLocation("oresapi:id"), (world, pos) -> OreUtils.getTypesRegistry().nextId());
+            FilterManager.register(new ResourceLocation("oresapi:include"), (materials, params) -> 
+            {
+                Predicate<Collection<Characteristic>> filter = Characteristic.all(Iterables.toArray(Iterables.transform(params, (param) -> Characteristic.byName(param)), Characteristic.class));
+                Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics()));
+            });
+		    FilterManager.register(new ResourceLocation("oresapi:exclude"), (materials, params) -> 
+		    {
+		        Predicate<Collection<Characteristic>> filter = Characteristic.notAny(Iterables.toArray(Iterables.transform(params, (param) -> Characteristic.byName(param)), Characteristic.class));
+		        Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics()));
+		    });
 			LANDING_PARTICLE_WRAPPER.registerMessage(OreLandingParticleMessageHandler.class, SPacketBlockOreLandingParticles.class, 0, Side.CLIENT);
 			CONFIGURATION_HANDLER.refreshAll();
 		}
 		
 		public void init()
 		{
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.COAL_ORE, "oreCoal", true);
+		    for(NewOreType type : OreUtils.getTypesRegistry())
+		        for(String name : type.getOreDictionary())
+		            OreUtils.addMaterialToOreDictionary(type, name, true);
+            /**OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.COAL_ORE, "oreCoal", true);
             OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.IRON_ORE, "oreIron", true);
             OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.LAPIS_ORE, "oreLapis", true);
             OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.GOLD_ORE, "oreGold", true);
@@ -89,7 +139,7 @@ public class MetalExtras
             OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.SILVER_ORE, "oreSilver", true);
             OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.ENDER_ORE, "oreEnder", true);
             OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.SAPPHIRE_ORE, "oreSapphire", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.RUBY_ORE, "oreRuby", true);
+            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.RUBY_ORE, "oreRuby", true);*/
             OreDictionary.registerOre("blockCopper", MetalExtras_Objects.COPPER_BLOCK);
             OreDictionary.registerOre("blockTin", MetalExtras_Objects.TIN_BLOCK);
             OreDictionary.registerOre("blockAluminum", MetalExtras_Objects.ALUMINUM_BLOCK);
@@ -111,7 +161,8 @@ public class MetalExtras
             OreDictionary.registerOre("nuggetAluminum", MetalExtras_Objects.ALUMINUM_NUGGET);
             OreDictionary.registerOre("nuggetLead", MetalExtras_Objects.LEAD_NUGGET);
             OreDictionary.registerOre("nuggetSilver", MetalExtras_Objects.SILVER_NUGGET);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.COAL_ORE, new ItemStack(Items.COAL), .1F, true);
+            //TODO Add smelting recipes
+			/**OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.COAL_ORE, new ItemStack(Items.COAL), .1F, true);
 			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.IRON_ORE, new ItemStack(Items.IRON_INGOT), .7F, true);
 			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.LAPIS_ORE, new ItemStack(Items.DYE, 1, EnumDyeColor.BLUE.getDyeDamage()), .2F, true);
 			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.GOLD_ORE, new ItemStack(Items.GOLD_INGOT), 1F, true);
@@ -125,7 +176,7 @@ public class MetalExtras
 			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.SILVER_ORE, new ItemStack(MetalExtras_Objects.SILVER_INGOT), 0.9F, true);
 			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.ENDER_ORE, new ItemStack(MetalExtras_Objects.ENDER_GEM), 1F, true);
 			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.SAPPHIRE_ORE, new ItemStack(MetalExtras_Objects.SAPPHIRE_GEM), 1.5F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.RUBY_ORE, new ItemStack(MetalExtras_Objects.RUBY_GEM), 1.5F, true);
+			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.RUBY_ORE, new ItemStack(MetalExtras_Objects.RUBY_GEM), 1.5F, true);*/
 			GameRegistry.registerWorldGenerator(new OreGeneration(), 100);
 			CONFIGURATION_HANDLER.refreshAll();
 		}
@@ -153,7 +204,7 @@ public class MetalExtras
 	@GameRegistry.ItemStackHolder("metalextras:ender_gem")
 	public static final ItemStack METALLURGIC_EXTRAS_ITEM = ItemStack.EMPTY;
 	
-	public static final CreativeTabs METALLURGIC_EXTRAS = new CreativeTabs("metalextras:metallurgic_extras")
+	public static final CreativeTabs METALLURGIC_EXTRAS = new CreativeTabs("metalextras:ores")
 	{
 		@Override
 		public ItemStack getTabIconItem()
@@ -202,8 +253,36 @@ public class MetalExtras
 		Proxy.I.post();
 	}
 	
+	private static MinecraftServer server = null;
 	
+    @Mod.EventHandler
+    public void serverStarting(FMLServerStartingEvent event)
+    {
+        server = event.getServer();
+    }
+
+    @Mod.EventHandler
+    public void serverStopping(FMLServerStoppingEvent event)
+    {
+        server = null;
+    }
 	
+    public static boolean isServerActive()
+    {
+        return server != null;
+    }
+    
+    public static MinecraftServer getActiveServer()
+    {
+        return server;
+    }
+    
+    @NetworkCheckHandler
+    public boolean check(Map<String, String> remoteVersions, Side side)
+    {
+        System.out.println("Checking for mods" + ", " + side);
+        return true;
+    }
 	@SubscribeEvent
 	public static void onConfigChanged(OnConfigChangedEvent event)
 	{

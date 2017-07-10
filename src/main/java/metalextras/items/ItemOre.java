@@ -1,12 +1,9 @@
 package metalextras.items;
 
-import java.util.List;
-
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.util.Arrays;
 
 import api.metalextras.OreUtils;
-import metalextras.ores.materials.OreMaterial;
+import metalextras.newores.NewOreType;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -24,8 +21,8 @@ public class ItemOre extends Item
 	@Override
 	public String getUnlocalizedName(ItemStack stack)
 	{
-		OreMaterial material = OreUtils.getMaterialsRegistry().getValues().get(stack.getMetadata());
-		return material == null ? "tile.metalextras:unknown" : material.getLanguageKey();
+		NewOreType material = OreUtils.getTypesRegistry().getById(stack.getMetadata());
+		return material == null ? NewOreType.DEFAULT_NAME : material.getName();
 	}
 	
 	@Override
@@ -38,22 +35,37 @@ public class ItemOre extends Item
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list)
 	{
-		for(OreMaterial material : OreUtils.getMaterialsRegistry())
-			if(tab == CreativeTabs.SEARCH || material.getCreativeTab() == tab)
-				list.add(new ItemStack(this, 1, OreUtils.getMaterialsRegistry().getValues().indexOf(material)));
+	    if(tab == CreativeTabs.SEARCH)
+	        OreUtils.getTypesRegistry().forEach((type) -> list.add(OreUtils.getItemStackForMaterial(type)));
+	    
+		for(NewOreType material : OreUtils.getTypesRegistry())
+		    for(CreativeTabs type_tab : material.getItemCreativeTabs())
+		        if(tab == type_tab)
+		        {
+		            list.add(OreUtils.getItemStackForMaterial(material));
+		            break;
+		        }
 	}
 	
 	@Override
 	public CreativeTabs[] getCreativeTabs()
 	{
-		List<CreativeTabs> tabs = Lists.newArrayList();
-		for(OreMaterial material : OreUtils.getMaterialsRegistry())
-		{
-			CreativeTabs tab = material.getCreativeTab();
-			if(tab != null && !tabs.contains(tab))
-				tabs.add(tab);
-		}
-		return Iterables.toArray(tabs, CreativeTabs.class);
+	    int creative_tabs_size = 0;
+	    CreativeTabs[] creative_tab_array = new CreativeTabs[CreativeTabs.CREATIVE_TAB_ARRAY.length];
+		for(NewOreType material : OreUtils.getTypesRegistry())
+		    for(CreativeTabs tab : material.getItemCreativeTabs())
+		        for(int i = 0; i <= creative_tabs_size; i++)
+		        {
+		            CreativeTabs tab1 = creative_tab_array[i];
+		            if(tab == tab1)
+		                break;
+		            if(tab == null)
+		            {
+		                creative_tab_array[i] = tab;
+		                creative_tabs_size++;
+		            }
+		        }
+		return Arrays.copyOfRange(creative_tab_array , 0, creative_tabs_size);
 	}
 	
 }

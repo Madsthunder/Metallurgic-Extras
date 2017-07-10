@@ -6,18 +6,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import api.metalextras.BlockOre;
+import api.metalextras.ModelType;
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
-import metalextras.ores.materials.OreMaterial;
+import metalextras.newores.NewOreType;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -48,28 +47,30 @@ public class ModelOre implements IModel
 	@Override
 	public Collection<ResourceLocation> getDependencies()
 	{
-		List<ResourceLocation> dependencies = Lists.newArrayList();
-		for(OreMaterial material : OreUtils.getMaterialsRegistry())
+		Set<ResourceLocation> dependencies = Sets.newHashSet();
+		for(ModelType material : ModelType.values())
+		{
+		    dependencies.add(material.model_location);
+            IModel model = ModelLoaderRegistry.getModelOrMissing(material.model_location);
+            if(model != ModelLoaderRegistry.getMissingModel())
+                dependencies.addAll(model.getDependencies());
 			for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
 				for(OreType type : types)
-				{
-					dependencies.addAll(material.getModel(type).getDependencies());
 					dependencies.addAll(type.getModel(material).getDependencies());
-				}
+		}
 		return dependencies;
 	}
 	
 	@Override
 	public Collection<ResourceLocation> getTextures()
 	{
-		List<ResourceLocation> textures = Lists.newArrayList();
-		for(OreMaterial material : OreUtils.getMaterialsRegistry())
+		Set<ResourceLocation> textures = Sets.newHashSet();
+		for(ModelType material : ModelType.values())
 			for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
 				for(OreType type : types)
-				{
-					textures.addAll(material.getModel(type).getTextures());
 					textures.addAll(type.getModel(material).getTextures());
-				}
+		for(NewOreType type : OreUtils.getTypesRegistry())
+		    textures.add(type.model.getTexture());
 		return textures;
 	}
 	
@@ -114,7 +115,7 @@ public class ModelOre implements IModel
 					if(type != null)
 					{
                         ResourceLocation type_name = type.getTexture();
-					    ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreMaterial().getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+					    ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreType().model.getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 					    System.out.println(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 					    baked_model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()))).bake(this.modelState, this.vertexFormat, this.textureGetter);
 						BakedModelOre.models.put(state, baked_model);
@@ -220,7 +221,7 @@ public class ModelOre implements IModel
 				Map<EnumFacing, List<BakedQuad>> faceQuads = Maps.newHashMap();
 				for(EnumFacing facing : EnumFacing.values())
 					faceQuads.put(facing, original.getQuads(state, facing, 0L));
-				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreMaterial());
+				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreType().model.getModelType());
 				IBakedModel model = new SimpleBakedModel(generalQuads, faceQuads, original.isAmbientOcclusion(), original.isGui3d(), original.getParticleTexture(), typeModel.bake(typeModel.getDefaultState(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getItemCameraTransforms(), ItemOverrideList.NONE);
 				this.models.get(stack.getItem()).addKey(stack.getMetadata(), model);
 				return model;

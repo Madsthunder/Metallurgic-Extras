@@ -6,7 +6,7 @@ tile.metalextras:silver_ore.name=Silver Ore
 tile.metalextras:ender_ore.name=Mystery Ore
 tile.metalextras:sapphire_ore.name=Sapphire Ore
 tile.metalextras:ruby_ore.name=Ruby Ore
-tile.metalextras:unknown.name=Unknown Ore
+tile.metalextras:unnamed.name=Unnamed Ore
 tile.metalextras:copper_block.name=Copper Block
 tile.metalextras:tin_block.name=Tin Block
 tile.metalextras:aluminum_block.name=Aluminum Block
@@ -52,7 +52,7 @@ item.metalextras:silver_nugget.name=Silver Nugget
 
 enchantment.metalextras:hot_touch=Hot To The Touch
 
-itemGroup.metalextras:metallurgic_extras=Metallurgic Extras
+itemGroup.metalextras:ores=Metallurgic Extras: Ores
 
 config.metalextras:category.ore_generation.name=Ore Generation
 config.metalextras:category.ore_generation.tooltip=Options For Ore Generation.

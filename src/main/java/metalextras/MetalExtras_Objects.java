@@ -350,7 +350,6 @@ public class MetalExtras_Objects
                                         ForgeRegistries.BLOCKS.register(block);
                                         ForgeRegistries.ITEMS.register(new ItemBlockOre(block, block.getOreTypeProperty()).setRegistryName(block.getRegistryName()));
                                     }
-                                MetalExtras_ModContainer.performChecks(type);
                             }
                             catch (Exception e)
                             {

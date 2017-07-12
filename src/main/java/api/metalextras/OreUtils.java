@@ -96,16 +96,13 @@ public class OreUtils
 		return map == null ? new ObjectIntIdentityMap() : (ORETYPE_TO_ID_MAP = map);
 	}
 	
-	public static void registerMaterialSmeltingRecipe(NewOreType material, ItemStack ingot, float xp, boolean registerItem)
+	public static void registerMaterialSmeltingRecipe(NewOreType material, ItemStack ingot, float xp)
 	{
 		for(BlockOre block : material.getBlocks())
 			FurnaceRecipes.instance().addSmeltingRecipeForBlock(block, ingot, xp);
-		if(registerItem)
-		{
-			ItemStack item = getItemStackForMaterial(material);
-			if(item != null)
-				FurnaceRecipes.instance().addSmeltingRecipe(item, ingot, xp);
-		}
+        ItemStack item = getItemStackForMaterial(material);
+        if(item != null)
+            FurnaceRecipes.instance().addSmeltingRecipe(item, ingot, xp);
 	}
 	
 	public static void addMaterialToOreDictionary(NewOreType material, String name, boolean registerItem)

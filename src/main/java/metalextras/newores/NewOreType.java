@@ -32,6 +32,7 @@ import metalextras.newores.NewOreType.Block.Drop;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
@@ -333,6 +334,68 @@ public class NewOreType
             return generation;
         }
         
+        public static Smelting parseSmelting(ResourceLocation registry_name, JsonObject object)
+        {
+            Smelting smelting = new Smelting();
+            JsonObject smelting_object = JsonUtils.getJsonObject(object, "smelting", new JsonObject());
+            JsonElement result_element = smelting_object.get("result");
+            if(result_element.isJsonPrimitive() && result_element.getAsJsonPrimitive().isString())
+            {
+                //TODO Variables
+            }
+            else if(result_element.isJsonObject())
+            {
+                Item result_item = null;
+                int count = 1;
+                int meta = 0;
+                NBTTagCompound nbt = new NBTTagCompound();
+                JsonObject result_object = result_element.getAsJsonObject();
+                JsonElement result_item_element = result_object.get("item");
+                if(result_item_element == null)
+                    result_item = null;
+                if(result_item_element.isJsonPrimitive() && result_item_element.getAsJsonPrimitive().isString())
+                {
+                    String result_item_string = result_item_element.getAsString();
+                    if(result_item_string.startsWith("#"))
+                    {
+                        //TODO variables
+                    }
+                    else
+                        result_item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(result_item_string));
+                }
+                else
+                {
+                    //TODO throw exception
+                }
+                JsonElement result_count_element = result_object.get("count");
+                if(result_count_element == null)
+                    count = 1;
+                else if(result_count_element.isJsonPrimitive())
+                {
+                    JsonPrimitive result_count_primitive = result_count_element.getAsJsonPrimitive();
+                    if(result_count_primitive.isString())
+                    {
+                        //TODO variables
+                    }
+                    else if(result_count_primitive.isNumber())
+                        count = result_count_primitive.getAsInt();
+                    else
+                    {
+                        //TODO throw an exception
+                    }
+                }
+                else
+                {
+                    //TODO throw exception
+                }
+            }
+            else if(result_element != null)
+            {
+                //TODO throw exception
+            }
+            return smelting;
+        }
+        
         public static Model parseModel(ResourceLocation registry_name, JsonObject object)
         {
             Model model = new Model();
@@ -487,6 +550,22 @@ public class NewOreType
         public NewOreType getParent()
         {
             return this.parent;
+        }
+    }
+    
+    public static class Smelting
+    {
+        protected float xp;
+        protected ItemStack result = ItemStack.EMPTY;
+        
+        public float getSmeltingXp()
+        {
+            return this.xp;
+        }
+        
+        public ItemStack getSmeltingResult()
+        {
+            return this.result;
         }
     }
     

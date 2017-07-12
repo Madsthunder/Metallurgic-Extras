@@ -16,7 +16,6 @@ import api.metalextras.OreProperties;
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
-import api.metalextras.BlockOre.SimpleImpl;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
@@ -108,6 +107,11 @@ public abstract class OreMaterial extends IForgeRegistryEntry.Impl<OreMaterial>
 	public ModelType getModelType()
 	{
 		return ModelType.IRON;
+	}
+	
+	public boolean isVanillaOre()
+	{
+	    return false;
 	}
 	
 	@Override

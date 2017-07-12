@@ -1,9 +1,5 @@
 /**
- * 
- */
-/**
  * @author Madsthunder
- *
  */
 @API(owner = "metalextras", provides = "api_metalextras", apiVersion = "1.0")
 @ParametersAreNonnullByDefault

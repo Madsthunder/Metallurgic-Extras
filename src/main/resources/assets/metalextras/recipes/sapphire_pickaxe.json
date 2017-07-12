@@ -1,0 +1,12 @@
+{
+	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
+	"type": "minecraft:crafting_shaped",
+	"key": { "I": { "type": "forge:ore_dict", "ore": "gemSapphire" }, "S": { "type": "forge:ore_dict", "ore": "stickWood" } },
+	"result": { "item": "metalextras:sapphire_pickaxe" },
+	"pattern":
+	[
+		"III",
+		" S ",
+		" S "
+	]
+}

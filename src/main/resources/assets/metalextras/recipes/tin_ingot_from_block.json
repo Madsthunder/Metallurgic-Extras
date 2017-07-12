@@ -1,6 +1,7 @@
 {
 	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
 	"type": "minecraft:crafting_shapeless",
+	"group": "metalextras:tin_ingot",
 	"ingredients": [ { "type": "forge:ore_dict", "ore": "blockTin" } ],
 	"result": { "item": "metalextras:tin_ingot", "count": 9 }
 }

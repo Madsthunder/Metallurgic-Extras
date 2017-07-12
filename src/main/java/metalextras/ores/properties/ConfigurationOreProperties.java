@@ -72,8 +72,12 @@ public class ConfigurationOreProperties extends OreProperties
 	@Override
 	public boolean canSpawnAtCoords(World world, BlockPos pos)
 	{
+	    float min_temp = this.handler.minTemperature.getCurrentValue();
+	    float max_temp = this.handler.maxTemperature.getCurrentValue();
+	    if(min_temp == -Float.MAX_VALUE && max_temp == Float.MAX_VALUE)
+	        return true;
 		float temperature = world.getBiome(pos).getTemperature();
-		return this.handler.minTemperature.getCurrentValue() <= temperature && this.handler.maxTemperature.getCurrentValue() >= temperature;
+		return min_temp <= temperature && max_temp >= temperature;
 	}
 	
 	@Override

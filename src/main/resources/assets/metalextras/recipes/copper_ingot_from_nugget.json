@@ -1,6 +1,7 @@
 {
 	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
 	"type": "minecraft:crafting_shaped",
+	"group": "metalextras:copper_ingot",
 	"key": { "#": { "type": "forge:ore_dict", "ore": "nuggetCopper" } },
 	"result": { "item": "metalextras:copper_ingot" },
 	"pattern":

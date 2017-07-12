@@ -1,6 +1,7 @@
 {
 	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
 	"type": "minecraft:crafting_shaped",
+	"group": "metalextras:tin_ingot",
 	"key": { "#": { "type": "forge:ore_dict", "ore": "nuggetTin" } },
 	"result": { "item": "metalextras:tin_ingot" },
 	"pattern":

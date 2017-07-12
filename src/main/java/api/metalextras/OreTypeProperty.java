@@ -1,8 +1,10 @@
 package api.metalextras;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Maps;
 
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockStateContainer;
@@ -11,17 +13,11 @@ import net.minecraft.block.state.BlockStateContainer.Builder;
 public class OreTypeProperty implements IProperty<OreType>
 {
 	private final OreTypes types;
-	private final BlockOre block;
-	private final BlockStateContainer container;
+	private final Map<BlockOre, BlockStateContainer> containers = Maps.newHashMap();
 	
-	public OreTypeProperty(OreTypes types, BlockOre block)
+	public OreTypeProperty(OreTypes types)
 	{
 		this.types = types;
-		this.block = block;
-		if(this.types.getOreTypes().size() > 1)
-			this.container = new Builder(this.block).add(this).build();
-		else
-			this.container = new Builder(this.block).build();
 	}
 	
 	@Override
@@ -62,8 +58,13 @@ public class OreTypeProperty implements IProperty<OreType>
 		return this.types;
 	}
 	
-	public final BlockStateContainer getBlockState()
+	public final BlockStateContainer getBlockState(BlockOre ore)
 	{
-		return this.container;
+		return this.containers.get(ore);
+	}
+	
+	public final void addListener(BlockOre ore)
+	{
+	    this.containers.put(ore, this.types.getOreTypes().size() > 1 ? new Builder(ore).add(this).build() : new Builder(ore).build());
 	}
 }

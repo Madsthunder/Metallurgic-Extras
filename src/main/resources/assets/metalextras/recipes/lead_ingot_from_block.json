@@ -1,6 +1,7 @@
 {
 	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
 	"type": "minecraft:crafting_shapeless",
+	"group": "metalextras:lead_ingot",
 	"ingredients": [ { "type": "forge:ore_dict", "ore": "blockLead" } ],
 	"result": { "item": "metalextras:lead_ingot", "count": 9 }
 }

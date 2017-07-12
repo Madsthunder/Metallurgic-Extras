@@ -11,7 +11,6 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.internal.bind.TypeAdapters;
 
 public class ConfigHandler
 {

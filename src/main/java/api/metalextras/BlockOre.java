@@ -2,13 +2,11 @@ package api.metalextras;
 
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import metalextras.ores.materials.OreMaterial;
@@ -18,11 +16,10 @@ import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleDigging;
 import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.client.renderer.block.model.ModelRotation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -44,15 +41,14 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class BlockOre extends net.minecraft.block.BlockOre
+public class BlockOre extends net.minecraft.block.BlockOre
 {
-	private final OreTypeProperty property;
 	private final OreMaterial material;
+	private final OreTypes types;
 	
 	public BlockOre(OreMaterial material, OreTypes types)
 	{
@@ -63,17 +59,13 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	{
 	    ResourceLocation location = registry_name_getter.apply(Pair.of(material, types));
 		String s = location.toString();
-		if(!s.startsWith(material.getRegistryName().getResourceDomain()))
-			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Begin With CharSequence \"" + material.getRegistryName().getResourceDomain() + "\".");
-		if(!s.contains(material.getRegistryName().getResourcePath()))
-			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + material.getRegistryName().getResourcePath() + "\".");
-		if(!s.contains(types.getRegistryName().toString().replaceFirst(":", "_")))
-			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + types.getRegistryName().toString().replaceFirst(":", "_") + "\".");
 		this.setRegistryName(location);
-		this.property = new OreTypeProperty(types, this);
+		this.material = material;
+        this.types = types;
+        this.getOreTypeProperty().addListener(this);
 		this.setDefaultState(this.getBlockState().getBaseState());
 		this.setDefaultState(this.getBlockState().getProperties().isEmpty() ? this.getDefaultState() : this.getDefaultState().withProperty(this.getOreTypeProperty(), this.getOreTypeProperty().getAllowedValues().get(0)));
-		this.material = material;
+
 	}
 	
 	public final OreMaterial getOreMaterial()
@@ -116,14 +108,13 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	}
 	
 	@Override
-	public List<ItemStack> getDrops(IBlockAccess access, BlockPos pos, IBlockState state, int fortune)
+	public void getDrops(NonNullList<ItemStack> stacks, IBlockAccess access, BlockPos pos, IBlockState state, int fortune)
 	{
+        super.getDrops(stacks, access, pos, state, fortune);
 		Random random = access instanceof World ? ((World)access).rand : RANDOM;
-		List<ItemStack> list = super.getDrops(access, pos, state, fortune);
 		IBlockState typeState = this.getOreType(state).getState();
 		Block typeBlock = typeState.getBlock();
-		list.add(new ItemStack(typeBlock.getItemDropped(typeState, random, 0), typeBlock.quantityDropped(random), typeBlock.damageDropped(typeState)));
-		return list;
+		stacks.add(new ItemStack(typeBlock.getItemDropped(typeState, random, 0), typeBlock.quantityDropped(random), typeBlock.damageDropped(typeState)));
 	}
 	
 	@Override
@@ -233,19 +224,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	public boolean addDestroyEffects(World world, BlockPos pos, ParticleManager manager)
 	{
 		IBlockState state = world.getBlockState(pos).getActualState(world, pos);
-		List<TextureAtlasSprite> textures = Lists.newArrayList();
-		{
-			OreType type = this.getOreType(state);
-			TextureAtlasSprite texture = this.getOreMaterial().getModel(type).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-			if(texture != null)
-				textures.add(texture);
-			texture = type.getModel(this.getOreMaterial()).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-			if(texture != null)
-				textures.add(texture);
-		}
-		if(textures.isEmpty())
-			return super.addDestroyEffects(world, pos, manager);
-		int i = 4;
+		TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(OreUtils.getTextureName(state).toString());
 		for(int j = 0; j < 4; j++)
 			for(int k = 0; k < 4; k++)
 				for(int l = 0; l < 4; l++)
@@ -255,7 +234,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 					double z = pos.getZ() + (l + .5) / 4;
 					ParticleDigging particle = (ParticleDigging)new ParticleDigging.Factory().createParticle(0, world, x, y, z, x - pos.getX() - .5, y - pos.getY() - .5, z - pos.getZ() - .5, Block.getStateId(state));
 					particle.setBlockPos(pos);
-					particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
+					particle.setParticleTexture(texture);
 					manager.addEffect(particle);
 				}
 			
@@ -266,24 +245,12 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	@SideOnly(Side.CLIENT)
 	public boolean addHitEffects(IBlockState state, World world, RayTraceResult result, ParticleManager manager)
 	{
-		List<TextureAtlasSprite> textures = Lists.newArrayList();
-		{
-			OreType type = this.getOreType(state);
-			TextureAtlasSprite texture = this.getOreMaterial().getModel(type).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-			if(texture != null)
-				textures.add(texture);
-			texture = type.getModel(this.getOreMaterial()).bake(ModelRotation.X0_Y0, DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getParticleTexture();
-			if(texture != null)
-				textures.add(texture);
-		}
-		if(textures.isEmpty())
-			return super.addHitEffects(state, world, result, manager);
+	    TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(OreUtils.getTextureName(state).toString());
 		BlockPos pos = result.getBlockPos();
 		EnumFacing side = result.sideHit;
 		int i = pos.getX();
 		int j = pos.getY();
 		int k = pos.getZ();
-		float f = 0.1F;
 		AxisAlignedBB axisalignedbb = state.getBoundingBox(world, pos);
 		double d0 = i + world.rand.nextDouble() * (axisalignedbb.maxX - axisalignedbb.minX - 0.20000000298023224D) + 0.10000000149011612D + axisalignedbb.minX;
 		double d1 = j + world.rand.nextDouble() * (axisalignedbb.maxY - axisalignedbb.minY - 0.20000000298023224D) + 0.10000000149011612D + axisalignedbb.minY;
@@ -330,7 +297,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 		particle.setBlockPos(pos);
 		particle.multiplyVelocity(0.2F);
 		particle.multipleParticleScaleBy(0.6F);
-		particle.setParticleTexture(textures.get(world.rand.nextInt(textures.size())));
+		particle.setParticleTexture(texture);
 		manager.addEffect(particle);
 		return true;
 	}
@@ -350,7 +317,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	
 	public OreTypeProperty getOreTypeProperty()
 	{
-		return this.property;
+		return this.types.getProperty();
 	}
 	
 	public boolean hasOreType(OreType type)
@@ -391,7 +358,7 @@ public abstract class BlockOre extends net.minecraft.block.BlockOre
 	@Override
 	public final BlockStateContainer getBlockState()
 	{
-		return this.getOreTypeProperty().getBlockState();
+		return this.getOreTypeProperty().getBlockState(this);
 	}
 	
 	public final OreType getOreType(IBlockState state)

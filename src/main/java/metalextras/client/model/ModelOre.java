@@ -3,15 +3,11 @@ package metalextras.client.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import api.metalextras.BlockOre;
 import api.metalextras.OreType;
@@ -102,38 +98,7 @@ public class ModelOre implements IModel
 		@Override
 		public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand)
 		{
-			if(state != null)
-			{
-				IBakedModel baked_model = models.get(state);
-				if(baked_model != null)
-					return baked_model.getQuads(state, side, 0L);
-				if(state.getBlock() instanceof BlockOre)
-				{
-					BlockOre ore = (BlockOre)state.getBlock();
-					OreType type = ore.getOreType(state);
-					if(type != null)
-					{
-                        ResourceLocation type_name = type.getTexture();
-					    ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreMaterial().getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
-					    System.out.println(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
-					    baked_model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()))).bake(this.modelState, this.vertexFormat, this.textureGetter);
-						BakedModelOre.models.put(state, baked_model);
-						return baked_model.getQuads(state, side, 0L);
-					    /*Set<IBakedModel> models = Sets.newHashSet(type.getModel(ore.getOreMaterial()).bake(this.modelState, this.vertexFormat, this.textureGetter));
-						IModel model = ore.getOreMaterial().getModel(type);
-						models.add(model.bake(ModelRotation.X0_Y0, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X180_Y0, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X90_Y180, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X90_Y0, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X90_Y90, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X90_Y270, this.vertexFormat, this.textureGetter));
-						baked_model = joinModels(state, 0L, this, models);
-						BakedModelOre.models.put(state, baked_model);
-						return baked_model.getQuads(state, side, 0L);*/
-					}
-				}
-			}
-			return Lists.newArrayList();
+		    return state != null && state.getBlock() instanceof BlockOre ? models.computeIfAbsent(state, (state1) -> ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", OreUtils.getTextureName(state1).toString())).bake(this.modelState, this.vertexFormat, this.textureGetter)).getQuads(state, side, 0L) : Lists.newArrayList();
 		}
 		
 		@Override

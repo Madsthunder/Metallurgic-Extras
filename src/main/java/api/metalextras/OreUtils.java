@@ -193,4 +193,20 @@ public class OreUtils
 		}
 		return true;
 	}
+	
+	public static ResourceLocation getTextureName(IBlockState state)
+	{
+	    BlockOre ore = (BlockOre)state.getBlock();
+	    return getTextureName(ore.getOreMaterial(), ore.getOreType(state));
+	}
+    
+    public static ResourceLocation getTextureName(OreMaterial material, OreType type)
+    {
+        return getTextureName(material.getTexture(), type.getTexture());
+    }
+    
+    public static ResourceLocation getTextureName(ResourceLocation material_texture, ResourceLocation type_texture)
+    {
+        return new ResourceLocation(material_texture.getResourceDomain(), String.format("ores/%s.%s_%s", material_texture.getResourcePath(), type_texture.getResourceDomain(), type_texture.getResourcePath()));
+    }
 }

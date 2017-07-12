@@ -1,6 +1,7 @@
 {
 	"conditions": [ { "type": "forge:mod_loaded", "modid": "metalextras" } ],
 	"type": "minecraft:crafting_shaped",
+	"group": "metalextras:aluminum_ingot",
 	"key": { "#": { "type": "forge:ore_dict", "ore": "nuggetAluminum" } },
 	"result": { "item": "metalextras:aluminum_ingot" },
 	"pattern":

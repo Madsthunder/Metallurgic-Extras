@@ -8,6 +8,7 @@ import api.metalextras.OreUtils;
 import api.metalextras.SPacketBlockOreLandingParticles;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import continuum.essentials.config.ConfigHandler;
+import metalextras.items.ItemEnderHoe;
 import metalextras.items.ItemEnderTool;
 import metalextras.packets.OreLandingParticleMessageHandler;
 import metalextras.world.gen.OreGeneration;
@@ -39,6 +40,7 @@ import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -55,7 +57,7 @@ public class MetalExtras
 {
 	public static final String MODID = "metalextras";
 	public static final String NAME = "Metallurgic Extras";
-	public static final String VERSION = "2.2.0";
+	public static final String VERSION = "2.3.0";
 	public static final ConfigHandler CONFIGURATION_HANDLER = new ConfigHandler("config\\Metallurgic Extras");
 	
 	public static class Proxy
@@ -202,6 +204,10 @@ public class MetalExtras
 		Proxy.I.post();
 	}
 	
+    @Mod.EventHandler
+    public void serverStarted(FMLServerStartingEvent event)
+    {
+    }
 	
 	
 	@SubscribeEvent
@@ -289,7 +295,7 @@ public class MetalExtras
 					world.playSound(null, pos, SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.BLOCKS, 1F, 1F);
 				}
 			}
-			if(stack.getItem() instanceof ItemEnderTool)
+			if(stack.getItem() instanceof ItemEnderTool || stack.getItem() instanceof ItemEnderHoe)
 			{
 				boolean teleport = false;
 				for(int i = 0; i < drops.size(); i++)

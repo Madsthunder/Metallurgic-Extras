@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.client.config.ConfigGuiType;

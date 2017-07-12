@@ -3,6 +3,9 @@ package metalextras.ores;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -33,11 +36,21 @@ import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public abstract class VanillaOreMaterial extends OreMaterial.Impl
 {
+    private static final Function<Pair<OreMaterial, OreTypes>, ResourceLocation> REGISTRY_NAME_GETTER = new Function<Pair<OreMaterial, OreTypes>, ResourceLocation>()
+    {
+        @Override
+        public ResourceLocation apply(Pair<OreMaterial, OreTypes> pair)
+        {
+            return new ResourceLocation("minecraft", pair.getLeft().getRegistryName().getResourcePath());
+        }
+    };
 	private final IBlockState state;
 	private final Properties properties = new Properties();
 	private final int xpMin;
@@ -141,6 +154,12 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 	}
 	
 	@Override
+	public boolean isVanillaOre()
+	{
+	    return true;
+	}
+	
+	@Override
 	public Iterable<BlockOre> getBlocksToRegister(OreTypes types)
 	{
 		if(this.poweredVariant)
@@ -154,6 +173,7 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 	@Override
 	public BlockOre createBlock(OreTypes types)
 	{
+        Loader.instance().setActiveModContainer(null);
 		if(this.poweredVariant)
 		{
 			BlockPoweredOre unpowered = new BlockPoweredOre(this, types, false);
@@ -162,7 +182,8 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 			powered.other = unpowered;
 			return unpowered;
 		}
-		return new BlockOre.SimpleImpl(this, types);
+		BlockOre ore = new BlockOre.SimpleImpl(this, types, REGISTRY_NAME_GETTER);
+		return ore;
 	}
 	
 	@Override
@@ -178,7 +199,7 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 		
 		public BlockPoweredOre(VanillaOreMaterial material, OreTypes types, boolean powered)
 		{
-			super(material, types, pair -> new ResourceLocation(pair.getLeft().getRegistryName().toString() + (powered ? "_powered." : ".") + pair.getRight().getRegistryName().toString().replaceFirst(":", "_")));
+			super(material, types, pair -> new ResourceLocation("minecraft", powered ? "redstone_ore" : "lit_redstone_ore"));
 			this.powered = powered;
 			if(powered)
 			{
@@ -337,13 +358,5 @@ public abstract class VanillaOreMaterial extends OreMaterial.Impl
 			else
 				return random.nextInt(spawnParams[1] - spawnParams[0]) + spawnParams[0];
 		}
-	}
-	
-	public static enum OreModelType
-	{
-		IRON,
-		LAPIS,
-		EMERALD;
-		// TODO Add some model methods
 	}
 }

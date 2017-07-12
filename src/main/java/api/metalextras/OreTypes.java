@@ -11,8 +11,14 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 public class OreTypes implements IForgeRegistryEntry<OreTypes>, Iterable<OreType>
 {
 	private final List<OreType> types = Lists.newArrayList();
+	private final OreTypeProperty property;
 	private boolean locked = false;
 	private ResourceLocation registryName;
+	
+	public OreTypes()
+	{
+	    this.property = new OreTypeProperty(this);
+	}
 	
 	public boolean addOreType(OreType type)
 	{
@@ -46,6 +52,11 @@ public class OreTypes implements IForgeRegistryEntry<OreTypes>, Iterable<OreType
 	{
 		for(OreType type : this)
 			type.update();
+	}
+	
+	public OreTypeProperty getProperty()
+	{
+	    return this.property;
 	}
 	
 	public final OreTypes setRegistryName(String modid, String name)

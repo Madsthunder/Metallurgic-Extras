@@ -29,6 +29,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityFallingBlock;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -119,19 +120,29 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	public void getDrops(NonNullList<ItemStack> stacks, IBlockAccess access, BlockPos pos, IBlockState state, int fortune)
 	{
 		Random random = new Random((access instanceof World ? ((World)access).rand : RANDOM).nextLong());
+		{
+	        IBlockState type_state = this.getOreType(state).getState();
+            int count = type_state.getBlock().quantityDropped(type_state, fortune, random);
+            for(int i = 0; i < count; i++)
+            {
+                Item item = type_state.getBlock().getItemDropped(type_state, random, fortune);
+                if(item != Items.AIR)
+                    stacks.add(new ItemStack(item, 1, type_state.getBlock().damageDropped(type_state)));
+            }
+		}
 		for(Drop drop : this.type.block.getDrops())
 		    if(random.nextFloat() >= (1F - drop.getChance(fortune)))
 		    {
                 int min_count = drop.getMinCount(fortune);
                 int max_count = drop.getMaxCount(fortune);
                 int count = Math.max(0, min_count >= max_count ? max_count : random.nextInt(max_count - min_count + 1) + min_count);
-                if(count > 0)
+                for(int i = 0; i < count; i++)
                 {
                     NBTTagCompound compound = drop.getNbt();
                     compound.setString("id", drop.getItem().getRegistryName().toString());
-                    compound.setInteger("Count", count);
+                    compound.setByte("Count", (byte)1);
                     compound.setInteger("Damage", drop.getMetadata());
-                    stacks.add(new ItemStack(drop.getNbt()));
+                    stacks.add(new ItemStack(compound));
                 }
 	        }
 	}

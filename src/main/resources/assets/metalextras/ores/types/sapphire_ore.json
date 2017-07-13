@@ -1,0 +1,9 @@
+{
+	"name": "tile.metalextras:sapphire_ore",
+	"model": { "texture": "metalextras:items/sapphire_ore" },
+	"ore_dictionary": [ "sapphire_ore" ],
+	"block": { "harvest_level": 3, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:sapphire_gem" } ], "xp": { "min": 3, "max": 7 } },
+	"item": { "creative_tabs": [ "misc" ] },
+	"smelting": { "item": "metalextras:sapphire_gem", "xp": 1.5 },
+	"generation": { "tries": 20, "height": 64, "size": 3, "temperature": { "max": 0.2 }, "event": "SAPPHIRE", "filters": [ { "type": "oresapi:exclude", "params": [ "LOOSE", "DRY", "SANDY", "HOT", "THE_NETHER" ] } ] }
+}

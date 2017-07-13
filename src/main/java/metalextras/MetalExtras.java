@@ -1,47 +1,38 @@
 package metalextras;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.compress.utils.IOUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.gson.internal.bind.TypeAdapters;
+import com.google.common.collect.Sets;
 
 import api.metalextras.BlockOre;
 import api.metalextras.Characteristic;
-import api.metalextras.OreTypes;
+import api.metalextras.OreType;
 import api.metalextras.OreUtils;
 import api.metalextras.SPacketBlockOreLandingParticles;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import continuum.essentials.config.ConfigHandler;
-import metalextras.items.ItemBlockOre;
 import metalextras.items.ItemEnderTool;
 import metalextras.newores.FilterManager;
 import metalextras.newores.NewOreType;
 import metalextras.newores.VariableManager;
 import metalextras.packets.OreLandingParticleMessageHandler;
 import metalextras.world.gen.OreGeneration;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
@@ -56,16 +47,13 @@ import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -74,14 +62,10 @@ import net.minecraftforge.fml.common.network.NetworkCheckHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.registries.ForgeRegistry;
-import net.minecraftforge.registries.GameData;
-import net.minecraftforge.registries.RegistryManager;
 
 @EventBusSubscriber
 @Mod(modid = MetalExtras.MODID, name = MetalExtras.NAME, version = MetalExtras.VERSION, guiFactory = "metalextras.client.gui.config.GuiOverview$Factory")
@@ -105,16 +89,20 @@ public class MetalExtras
 		
 		public void pre()
 		{
-		    VariableManager.register(new ResourceLocation("oresapi:id"), (world, pos) -> OreUtils.getTypesRegistry().nextId());
+		    VariableManager.registerConstant(new ResourceLocation("oresapi:id"), () -> OreUtils.getTypesRegistry().nextId());
             FilterManager.register(new ResourceLocation("oresapi:include"), (materials, params) -> 
             {
                 Predicate<Collection<Characteristic>> filter = Characteristic.all(Iterables.toArray(Iterables.transform(params, (param) -> Characteristic.byName(param)), Characteristic.class));
-                Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics()));
+                Set<OreType> material_set = Sets.newHashSet(Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics())));
+                materials.clear();
+                materials.addAll(material_set);
             });
 		    FilterManager.register(new ResourceLocation("oresapi:exclude"), (materials, params) -> 
 		    {
 		        Predicate<Collection<Characteristic>> filter = Characteristic.notAny(Iterables.toArray(Iterables.transform(params, (param) -> Characteristic.byName(param)), Characteristic.class));
-		        Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics()));
+		        Set<OreType> material_set = Sets.newHashSet(Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics())));
+		        materials.clear();
+		        materials.addAll(material_set);
 		    });
 			LANDING_PARTICLE_WRAPPER.registerMessage(OreLandingParticleMessageHandler.class, SPacketBlockOreLandingParticles.class, 0, Side.CLIENT);
 			CONFIGURATION_HANDLER.refreshAll();
@@ -123,8 +111,19 @@ public class MetalExtras
 		public void init()
 		{
 		    for(NewOreType type : OreUtils.getTypesRegistry())
+		    {
 		        for(String name : type.getOreDictionary())
 		            OreUtils.addMaterialToOreDictionary(type, name, true);
+		        NBTTagCompound nbt = type.smelting.getNbt();
+		        System.out.println(type.smelting.getItem().getRegistryName().toString());
+		        nbt.setString("id", type.smelting.getItem().getRegistryName().toString());
+		        nbt.setByte("Count", (byte)type.smelting.getCount());
+                nbt.setInteger("Damage", type.smelting.getMetadata());
+                ItemStack stack = new ItemStack(nbt);
+                System.out.println(stack);
+                if(!stack.isEmpty())
+                    OreUtils.registerMaterialSmeltingRecipe(type, stack, type.smelting.getXp());
+		    }
             /**OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.COAL_ORE, "oreCoal", true);
             OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.IRON_ORE, "oreIron", true);
             OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.LAPIS_ORE, "oreLapis", true);

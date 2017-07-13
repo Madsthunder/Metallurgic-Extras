@@ -217,7 +217,7 @@ public class OreUtils
 									    continue;
 									IBlockState state = world.getBlockState(blockpos);
 									//TODO filters?
-									if(state.getBlock().isReplaceableOreGen(state, world, blockpos, Predicates.alwaysTrue()))
+									if(state.getBlock().isReplaceableOreGen(state, world, blockpos, properties.generation))
 									{
 									    OreType type = getOreType(state);
 									    if(type != null)

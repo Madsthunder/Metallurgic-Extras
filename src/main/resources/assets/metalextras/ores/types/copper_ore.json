@@ -1,8 +1,9 @@
 {
-	"name": "tile.metalextras:copper_ore.name",
-	"ore_dictionary": [ "copper_ore" ],
+	"name": "tile.metalextras:copper_ore",
 	"model": { "texture": "metalextras:items/copper_ore" },
+	"ore_dictionary": [ "copper_ore" ],
 	"block": { "harvest_level": 1, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ore", "data": "#oresapi:id" } ] },
 	"item": { "creative_tabs": [ "misc" ] },
+	"smelting": { "item": "metalextras:copper_ingot", "xp": 0.7 },
 	"generation": { "tries": 20, "height": 64, "size": 9, "event": "COPPER" }
 }

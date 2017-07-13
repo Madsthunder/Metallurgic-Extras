@@ -36,17 +36,17 @@ public class OreGeneration implements IWorldGenerator
 	{
 	    NewOreType.Generation generation = material.generation;
 	    if(generation.canGenerate())
+	    {
+	        World world = chunk.getWorld();
+	        WorldGenerator generator = generation.getGenerator();
 	        for(int i = 0; i < generation.getSpawnTries(); i++)
-	        {
-	            BlockPos pos = new BlockPos(random.nextInt(16) + (chunk.x * 16), random.nextInt(generation.getMaxHeight() - generation.getMinHeight()) + generation.getMinHeight(), random.nextInt(16) + (chunk.z * 16));
-	            OreUtils.generateOres(chunk.getWorld(), pos, random, random.nextInt(generation.getVeinSize()) + 1, material);
-	        }
+	            generator.generate(world, random, new BlockPos(random.nextInt(16) + (chunk.x * 16), random.nextInt(generation.getMaxHeight() - generation.getMinHeight()) + generation.getMinHeight(), random.nextInt(16) + (chunk.z * 16)));
+	    }
 	}
 	
 	@Override
 	public void generate(Random random, int x, int z, World world, IChunkGenerator generator, IChunkProvider provider)
 	{
-		DimensionType type = world.provider.getDimensionType();
 		for(NewOreType material : OreUtils.getTypesRegistry())
 			if(material.generation.event == null)
 				spawnOresInChunk(world.getChunkFromChunkCoords(x, z), random, material);
@@ -73,7 +73,7 @@ public class OreGeneration implements IWorldGenerator
 		World world = event.getWorld();
 		BlockPos pos = event.getPos();
 		WorldGenerator generator = material.generation.getGenerator();
-		if(generator != null && MinecraftForge.ORE_GEN_BUS.post(new GenerateMinable(world, event.getRand(), generator, pos, type)))
+		if(MinecraftForge.ORE_GEN_BUS.post(new GenerateMinable(world, event.getRand(), generator, pos, type)))
 			OreGeneration.spawnOresInChunk(world.getChunkFromBlockCoords(pos), event.getRand(), material);
 	}
 	

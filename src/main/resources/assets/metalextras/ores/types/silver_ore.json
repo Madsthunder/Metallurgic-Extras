@@ -1,0 +1,9 @@
+{
+	"name": "tile.metalextras:silver_ore",
+	"model": { "texture": "metalextras:items/silver_ore" },
+	"ore_dictionary": [ "silver_ore" ],
+	"block": { "harvest_level": 2, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ore", "data": "#oresapi:id" } ] },
+	"item": { "creative_tabs": [ "misc" ] },
+	"smelting": { "item": "metalextras:silver_ingot", "xp": 0.9 },
+	"generation": { "tries": 8, "height": 32, "size": 8, "event": "SILVER", "filters": [ { "type": "oresapi:exclude", "params": [ "DIRTY", "SANDY", "THE_END" ] } ] }
+}

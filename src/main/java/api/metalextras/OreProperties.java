@@ -1,6 +1,7 @@
 package api.metalextras;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Random;
 
 import com.google.common.base.Predicate;

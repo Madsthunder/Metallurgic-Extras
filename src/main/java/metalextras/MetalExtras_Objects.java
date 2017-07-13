@@ -9,9 +9,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Function;
-
-import javax.annotation.Nonnull;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -21,6 +20,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.internal.bind.TypeAdapters;
 
 import api.metalextras.BlockOre;
@@ -33,7 +33,9 @@ import api.metalextras.OreUtils;
 import metalextras.client.model.ModelOre;
 import metalextras.enchantments.EnchantmentHotTouch;
 import metalextras.items.ItemBlockOre;
+import metalextras.items.ItemEnderHoe;
 import metalextras.items.ItemEnderTool;
+import metalextras.items.ItemHoe;
 import metalextras.items.ItemOre;
 import metalextras.items.ItemTool;
 import metalextras.mod.MetalExtras_Callbacks;
@@ -48,6 +50,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemMeshDefinition;
+import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -79,21 +82,17 @@ import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.registries.ForgeRegistry;
-import net.minecraftforge.registries.GameData;
 import net.minecraftforge.registries.RegistryBuilder;
-import net.minecraftforge.registries.RegistryManager;
 
 @ObjectHolder(MetalExtras.MODID)
 @EventBusSubscriber(modid = MetalExtras.MODID)
@@ -134,16 +133,18 @@ public class MetalExtras_Objects
     public static final ItemTool SILVER_SHOVEL = null;
     public static final ItemTool SILVER_PICKAXE = null;
     public static final ItemTool SILVER_AXE = null;
-    public static final ItemTool ENDER_SHOVEL = null;
+    public static final ItemEnderTool ENDER_SHOVEL = null;
     public static final ItemEnderTool ENDER_PICKAXE = null;
     public static final ItemEnderTool ENDER_AXE = null;
+    public static final ItemEnderHoe ENDER_HOE = null;
     public static final ItemTool SAPPHIRE_SHOVEL = null;
     public static final ItemTool SAPPHIRE_PICKAXE = null;
     public static final ItemTool SAPPHIRE_AXE = null;
+    public static final ItemHoe SAPPHIRE_HOE = null;
     public static final ItemTool RUBY_SHOVEL = null;
     public static final ItemTool RUBY_PICKAXE = null;
     public static final ItemTool RUBY_AXE = null;
-    
+    public static final ItemHoe RUBY_HOE = null;
     public static final Item COPPER_NUGGET = null;
     public static final Item TIN_NUGGET = null;
     public static final Item ALUMINUM_NUGGET = null;
@@ -198,6 +199,25 @@ public class MetalExtras_Objects
             {
                 super("shovel", harvest_level, proper_block_effeciency, enchantability, repair_material, entity_damage, attack_speed, max_uses, effective_objects);
             }
+            
+            @Override
+            public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ)
+            {
+                ItemStack stack = player.getHeldItem(hand);
+                if(!player.canPlayerEdit(pos.offset(side), side, stack))
+                    return EnumActionResult.FAIL;
+                else if(side != EnumFacing.DOWN && world.getBlockState(pos.up()).getMaterial() == Material.AIR && world.getBlockState(pos).getBlock() == Blocks.GRASS)
+                {
+                    world.playSound(player, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1F, 1F);
+                    if(!world.isRemote)
+                    {
+                        world.setBlockState(pos, Blocks.GRASS_PATH.getDefaultState(), 11);
+                        stack.damageItem(1, player);
+                    }
+                    return EnumActionResult.SUCCESS;
+                }
+                return EnumActionResult.PASS;
+            }
         }
         class ItemEnderShovel extends ItemEnderTool
         {
@@ -232,18 +252,25 @@ public class MetalExtras_Objects
                 return EnumActionResult.PASS;
             }
         }
-        event.getRegistry().register(new ItemShovel(2, 10F, 22, "ingotSilver", 4.5F, -3F, 59).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:silver_shovel").setRegistryName("metalextras:silver_shovel"));
-        event.getRegistry().register(new ItemTool("pickaxe", 2, 10F, 22, "ingotSilver", 4F, -2.8F, 59, Material.IRON, Material.ANVIL, Material.ROCK).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:silver_pickaxe").setRegistryName("metalextras:silver_pickaxe"));
-        event.getRegistry().register(new ItemTool("axe", 2, 10F, 22, "ingotSilver", 8F, -3F, 59, Material.WOOD, Material.PLANTS, Material.VINE).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:silver_axe").setRegistryName("metalextras:silver_axe"));
+        if(false)
+        {
+            event.getRegistry().register(new ItemShovel(2, 10F, 22, "ingotSilver", 4.5F, -3F, 59).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:silver_shovel").setRegistryName("metalextras:silver_shovel"));
+            event.getRegistry().register(new ItemTool("pickaxe", 2, 10F, 22, "ingotSilver", 4F, -2.8F, 59, Material.IRON, Material.ANVIL, Material.ROCK).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:silver_pickaxe").setRegistryName("metalextras:silver_pickaxe"));
+            event.getRegistry().register(new ItemTool("axe", 2, 10F, 22, "ingotSilver", 8F, -3F, 59, Material.WOOD, Material.PLANTS, Material.VINE).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:silver_axe").setRegistryName("metalextras:silver_axe"));
+            event.getRegistry().register(new ItemHoe("ingotSilver", true, 4.5F, 59).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:silver_hoe").setRegistryName("metalextras:silver_hoe"));
+        }
         event.getRegistry().register(new ItemEnderShovel(4F, -3F).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:ender_shovel").setRegistryName("metalextras:ender_shovel"));
         event.getRegistry().register(new ItemEnderTool("pickaxe", 3.5F, -2.8F, Material.IRON, Material.ANVIL, Material.ROCK).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:ender_pickaxe").setRegistryName("metalextras:ender_pickaxe"));
         event.getRegistry().register(new ItemEnderTool("axe", 8F, -3F, Material.WOOD, Material.PLANTS, Material.VINE).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:ender_axe").setRegistryName("metalextras:ender_axe"));
+        event.getRegistry().register(new ItemEnderHoe().setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:ender_hoe").setRegistryName("metalextras:ender_hoe"));
         event.getRegistry().register(new ItemShovel(4, 10F, 18, "gemSapphire", 4.5F, -3F, 2000).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:sapphire_shovel").setRegistryName("metalextras:sapphire_shovel"));
         event.getRegistry().register(new ItemTool("pickaxe", 4, 10F, 18, "gemSapphire", 4.5F, 1F, 2000, Material.IRON, Material.ANVIL, Material.ROCK).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:sapphire_pickaxe").setRegistryName("metalextras:sapphire_pickaxe"));
         event.getRegistry().register(new ItemTool("axe", 4, 10F, 18, "gemSapphire", 8F, -3F, 2000, Material.WOOD, Material.PLANTS, Material.VINE).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:sapphire_axe").setRegistryName("metalextras:sapphire_axe"));
+        event.getRegistry().register(new ItemHoe("gemSapphire", true, 4.5F, 2000).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:sapphire_hoe").setRegistryName("metalextras:sapphire_hoe"));
         event.getRegistry().register(new ItemShovel(4, 10F, 18, "gemRuby", 4.5F, -3F, 2000).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:ruby_shovel").setRegistryName("metalextras:ruby_shovel"));
         event.getRegistry().register(new ItemTool("pickaxe", 4, 10F, 18, "gemRuby", 4.5F, 1F, 2000, Material.IRON, Material.ANVIL, Material.ROCK).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:ruby_pickaxe").setRegistryName("metalextras:ruby_pickaxe"));
         event.getRegistry().register(new ItemTool("axe", 4, 10F, 18, "gemRuby", 8F, -3F, 2000, Material.WOOD, Material.PLANTS, Material.VINE).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:ruby_axe").setRegistryName("metalextras:ruby_axe"));
+        event.getRegistry().register(new ItemHoe("gemRuby", true, 4.5F, 2000).setCreativeTab(CreativeTabs.TOOLS).setUnlocalizedName("metalextras:ruby_hoe").setRegistryName("metalextras:ruby_hoe"));
         event.getRegistry().register(new Item().setCreativeTab(CreativeTabs.MATERIALS).setUnlocalizedName("metalextras:copper_nugget").setRegistryName("metalextras:copper_nugget"));
         event.getRegistry().register(new Item().setCreativeTab(CreativeTabs.MATERIALS).setUnlocalizedName("metalextras:tin_nugget").setRegistryName("metalextras:tin_nugget"));
         event.getRegistry().register(new Item().setCreativeTab(CreativeTabs.MATERIALS).setUnlocalizedName("metalextras:aluminum_nugget").setRegistryName("metalextras:aluminum_nugget"));
@@ -564,12 +591,12 @@ public class MetalExtras_Objects
     public static void onTexturesStitch(TextureStitchEvent.Pre event)
     {
         TextureMap map = event.getMap();
-        class Texture extends TextureAtlasSprite
+        class OreTexture extends TextureAtlasSprite
         {
             private final ResourceLocation foreground;
             private final ResourceLocation background;
             
-            public Texture(ResourceLocation foreground, ResourceLocation background)
+            public OreTexture(ResourceLocation foreground, ResourceLocation background)
             {
                 super(String.format("%s:ores/%s.%s_%s", foreground.getResourceDomain(), foreground.getResourcePath(), background.getResourceDomain(), background.getResourcePath()));
                 this.foreground = foreground;
@@ -577,7 +604,7 @@ public class MetalExtras_Objects
             }
 
             @Override
-            public boolean hasCustomLoader(@Nonnull IResourceManager manager, @Nonnull ResourceLocation location)
+            public boolean hasCustomLoader(IResourceManager manager, ResourceLocation location)
             {
                 return true;
             }
@@ -643,7 +670,7 @@ public class MetalExtras_Objects
         for(NewOreType material : OreUtils.getTypesRegistry())
             for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
                 for(OreType type : types)
-                    map.setTextureEntry(new Texture(material.model.getTexture(), type.getTexture()));
+                    map.setTextureEntry(new OreTexture(material.model.getTexture(), type.getTexture()));
     }
     
     @SideOnly(Side.CLIENT)
@@ -681,18 +708,24 @@ public class MetalExtras_Objects
         MetalExtras_Objects.RUBY_ORE.setModel(new ResourceLocation("metalextras:block/ruby_ore"));
         MetalExtras_Objects.SAPPHIRE_ORE.setModelType(ModelType.EMERALD);
         MetalExtras_Objects.RUBY_ORE.setModelType(ModelType.EMERALD);
-        ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SILVER_SHOVEL, 0, new ModelResourceLocation("metalextras:silver_shovel", "inventory"));
-        ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SILVER_PICKAXE, 0, new ModelResourceLocation("metalextras:silver_pickaxe", "inventory"));
-        ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SILVER_AXE, 0, new ModelResourceLocation("metalextras:silver_axe", "inventory"));
+        if(false)
+        {
+            ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SILVER_SHOVEL, 0, new ModelResourceLocation("metalextras:silver_shovel", "inventory"));
+            ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SILVER_PICKAXE, 0, new ModelResourceLocation("metalextras:silver_pickaxe", "inventory"));
+            ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SILVER_AXE, 0, new ModelResourceLocation("metalextras:silver_axe", "inventory"));
+        }
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.ENDER_SHOVEL, 0, new ModelResourceLocation("metalextras:ender_shovel", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.ENDER_PICKAXE, 0, new ModelResourceLocation("metalextras:ender_pickaxe", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.ENDER_AXE, 0, new ModelResourceLocation("metalextras:ender_axe", "inventory"));
+        ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.ENDER_HOE, 0, new ModelResourceLocation("metalextras:ender_hoe", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SAPPHIRE_SHOVEL, 0, new ModelResourceLocation("metalextras:sapphire_shovel", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SAPPHIRE_PICKAXE, 0, new ModelResourceLocation("metalextras:sapphire_pickaxe", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SAPPHIRE_AXE, 0, new ModelResourceLocation("metalextras:sapphire_axe", "inventory"));
+        ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SAPPHIRE_HOE, 0, new ModelResourceLocation("metalextras:sapphire_hoe", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.RUBY_SHOVEL, 0, new ModelResourceLocation("metalextras:ruby_shovel", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.RUBY_PICKAXE, 0, new ModelResourceLocation("metalextras:ruby_pickaxe", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.RUBY_AXE, 0, new ModelResourceLocation("metalextras:ruby_axe", "inventory"));
+        ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.RUBY_HOE, 0, new ModelResourceLocation("metalextras:ruby_hoe", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.COPPER_NUGGET, 0, new ModelResourceLocation("metalextras:copper_nugget", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.TIN_NUGGET, 0, new ModelResourceLocation("metalextras:tin_nugget", "inventory"));
         ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.ALUMINUM_NUGGET, 0, new ModelResourceLocation("metalextras:aluminum_nugget", "inventory"));

@@ -19,6 +19,7 @@ import api.metalextras.OreUtils;
 import api.metalextras.SPacketBlockOreLandingParticles;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import continuum.essentials.config.ConfigHandler;
+import metalextras.items.ItemEnderHoe;
 import metalextras.items.ItemEnderTool;
 import metalextras.newores.FilterManager;
 import metalextras.newores.NewOreType;
@@ -367,7 +368,7 @@ public class MetalExtras
 					world.playSound(null, pos, SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.BLOCKS, 1F, 1F);
 				}
 			}
-			if(stack.getItem() instanceof ItemEnderTool)
+			if(stack.getItem() instanceof ItemEnderTool || stack.getItem() instanceof ItemEnderHoe)
 			{
 				boolean teleport = false;
 				for(int i = 0; i < drops.size(); i++)

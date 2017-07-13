@@ -9,18 +9,14 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gson.internal.bind.TypeAdapters;
 
 import api.metalextras.BlockOre;
@@ -42,7 +38,6 @@ import metalextras.mod.MetalExtras_Callbacks;
 import metalextras.newores.NewOreType;
 import metalextras.ores.VanillaOreMaterial;
 import metalextras.ores.materials.OreMaterial;
-import metalextras.ores.properties.ConfigurationOreProperties;
 import metalextras.world.gen.OreGeneration;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -50,7 +45,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemMeshDefinition;
-import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -405,26 +399,6 @@ public class MetalExtras_Objects
     @SubscribeEvent
     public static void onOreMaterialsRegister(RegistryEvent.Register<OreMaterial> event)
     {
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("copper_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Predicates.alwaysTrue())).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.COPPER_EVT).setLanguageKey("tile.metalextras:copper_ore").setTexture(new ResourceLocation("metalextras:items/copper_ore")).setRegistryName("metalextras:copper_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("tin_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Characteristic.notAny(MetalExtras.OTD_END))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.TIN_EVT).setLanguageKey("tile.metalextras:tin_ore").setTexture(new ResourceLocation("metalextras:items/tin_ore")).setRegistryName("metalextras:tin_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("aluminum_ore", true, 6, 32, 128, -Float.MAX_VALUE, Float.MAX_VALUE, 5, Characteristic.all(Characteristic.ROCKY))).setHarvestLevel(1).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.ALUMINUM_EVT).setLanguageKey("tile.metalextras:aluminum_ore").setTexture(new ResourceLocation("metalextras:items/aluminum_ore")).setRegistryName("metalextras:aluminum_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("lead_ore", true, 8, 32, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 8, Characteristic.notAny(Characteristic.DIRTY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.LEAD_EVT).setLanguageKey("tile.metalextras:lead_ore").setTexture(new ResourceLocation("metalextras:items/lead_ore")).setRegistryName("metalextras:lead_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("silver_ore", true, 8, 0, 32, -Float.MAX_VALUE, Float.MAX_VALUE, 8, Characteristic.notAny(Characteristic.DIRTY, Characteristic.SANDY, MetalExtras.OTD_END))).setHarvestLevel(2).setItemDroppedAsOre().setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.SILVER_EVT).setLanguageKey("tile.metalextras:silver_ore").setTexture(new ResourceLocation("metalextras:items/silver_ore")).setRegistryName("metalextras:silver_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("ender_ore", true, 20, 0, 64, -Float.MAX_VALUE, Float.MAX_VALUE, 9, Characteristic.all(MetalExtras.OTD_END))).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.ENDER_GEM, 0, 3, 7).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.ENDER_EVT).setLanguageKey("tile.metalextras:ender_ore").setTexture(new ResourceLocation("metalextras:items/ender_ore")).setRegistryName("metalextras:ender_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("sapphire_ore", true, 20, 0, 64, -Float.MAX_VALUE, 0.2F, 3, Characteristic.notAny(Characteristic.LOOSE, Characteristic.DRY, Characteristic.SANDY, Characteristic.HOT, MetalExtras.OTD_NETHER))).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.SAPPHIRE_GEM, 0, 3, 7).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setOverrides(MetalExtras.SAPPHIRE_EVT).setLanguageKey("tile.metalextras:sapphire_ore").setTexture(new ResourceLocation("metalextras:items/sapphire_ore")).setRegistryName("metalextras:sapphire_ore"));
-        event.getRegistry().register(new OreMaterial.SimpleImpl(ConfigurationOreProperties.func("ruby_ore", true, 20, 0, 64, 1F, Float.MAX_VALUE, 3, new Predicate<Collection<Characteristic>>()
-        {
-            @Override
-            public boolean apply(Collection<Characteristic> characteristics)
-            {
-                if((characteristics.contains(Characteristic.DIRTY)))
-                    if(characteristics.contains(Characteristic.LOOSE))
-                        return characteristics.contains(Characteristic.SANDY) && characteristics.contains(Characteristic.DRY);
-                    else if(characteristics.contains(Characteristic.SANDY) || characteristics.contains(Characteristic.WET))
-                        return false;
-                return !characteristics.contains(MetalExtras.OTD_END);
-            }
-        })).setHarvestLevel(3).setItemDropped(MetalExtras_Objects.RUBY_GEM, 0, 3, 7).setOverrides(MetalExtras.RUBY_EVT).setCreativeTab(MetalExtras.METALLURGIC_EXTRAS).setLanguageKey("tile.metalextras:ruby_ore").setTexture(new ResourceLocation("metalextras:items/ruby_ore")).setModel(new ResourceLocation("metalextras:block/ruby_ore")).setRegistryName("metalextras", "ruby_ore"));
         event.getRegistry().register(new VanillaOreMaterial(Blocks.COAL_ORE.getDefaultState(), 0, 2, ModelType.IRON, EventType.COAL)
         {
             @Override

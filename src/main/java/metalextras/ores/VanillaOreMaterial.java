@@ -10,7 +10,6 @@ import com.google.common.collect.Sets;
 import api.metalextras.BlockOre;
 import api.metalextras.IBlockOreMulti;
 import api.metalextras.ModelType;
-import api.metalextras.OreProperties;
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;

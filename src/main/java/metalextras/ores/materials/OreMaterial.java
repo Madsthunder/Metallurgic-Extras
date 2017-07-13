@@ -12,11 +12,9 @@ import com.google.common.collect.Sets;
 
 import api.metalextras.BlockOre;
 import api.metalextras.ModelType;
-import api.metalextras.OreProperties;
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
-import api.metalextras.BlockOre.SimpleImpl;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;

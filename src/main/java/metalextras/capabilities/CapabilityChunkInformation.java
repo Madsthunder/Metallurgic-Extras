@@ -16,11 +16,11 @@ import com.google.common.collect.Queues;
 import api.metalextras.OreUtils;
 import metalextras.MetalExtras;
 import metalextras.newores.NewOreType;
-import metalextras.ores.materials.OreMaterial;
 import metalextras.world.gen.OreGeneration;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
@@ -81,7 +81,8 @@ public class CapabilityChunkInformation implements ICapabilityProvider, Iterable
     @SubscribeEvent
     public static void onChunkDataLoad(ChunkDataEvent.Load event)
     {
-        CapabilityChunkInformation chunk_info = event.getWorld().getCapability(CHUNK_INFORMATION, null);
+    	World world = event.getWorld();
+        CapabilityChunkInformation chunk_info = world.getCapability(CHUNK_INFORMATION, null);
         if(chunk_info != null)
         {
             List<NewOreType> types = OreUtils.getTypesRegistry().getValues();
@@ -99,7 +100,7 @@ public class CapabilityChunkInformation implements ICapabilityProvider, Iterable
             }
             else
                 for(int i = 0; i < types.size(); i++)
-                    array[i] = types.get(i).generation.canGenerate();
+                    array[i] = types.get(i).generation.getProperties(world, new BlockPos(chunk.x * 16, 0, chunk.z * 16)).canGenerate();
             chunk_info.map.put(chunk, array);
         }
     }
@@ -179,7 +180,7 @@ public class CapabilityChunkInformation implements ICapabilityProvider, Iterable
                 for(int j = 0; j < array.length; j++)
                     if(!array[j])
                     {
-                        OreGeneration.spawnOresInChunk(chunk, random, types.get(j));
+                        OreGeneration.spawnOresInChunk(chunk, random, types.get(j).generation.getProperties(world, new BlockPos(chunk.x * 16, 0, chunk.z * 16)));
                         array[j] = true;
                     }
             }

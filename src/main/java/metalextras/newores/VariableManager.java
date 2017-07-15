@@ -3,11 +3,14 @@ package metalextras.newores;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.google.common.collect.Maps;
 
 import metalextras.MetalExtras;
+import metalextras.newores.NewOreType.Generation;
+import metalextras.newores.NewOreType.Generation.Properties.GenerationPropertiesParser;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -21,6 +24,9 @@ public class VariableManager
     private static final Map<ResourceLocation, Supplier<Object>> OBJECT_CONSTANTS = Maps.newHashMap();
     
     private static final Map<ResourceLocation, BiFunction<World, BlockPos, Object>> VARIABLES = Maps.newHashMap();
+    
+    private static final Map<ResourceLocation, Function<Generation, BiFunction<World, BlockPos, Generation.Properties>>> GENERATION_PROPERTIES = Maps.newHashMap();
+    private static final Map<ResourceLocation, GenerationPropertiesParser> PROPERTIES_PARSERS = Maps.newHashMap();
     
     public static void register(ResourceLocation name, BiFunction<World, BlockPos, Object> getter)
     {
@@ -48,11 +54,31 @@ public class VariableManager
     public static void registerConstant(ResourceLocation name, Supplier<Object> constant) { OBJECT_CONSTANTS.put(name, constant); }
     public static <V> Optional<V> getConstant(ResourceLocation name, Class<V> clasz) { return Optional.ofNullable(Optional.ofNullable(Optional.ofNullable(OBJECT_CONSTANTS.get(name)).orElse(EMPTY).get()).filter((object) -> clasz.isInstance(object))); }
     
+    public static void registerConstantGenerationProperties(ResourceLocation name, Function<Generation, BiFunction<World, BlockPos, Generation.Properties>> getter)
+    {
+    	GENERATION_PROPERTIES.put(name, getter);
+    }
+    
+    public static Optional<BiFunction<World, BlockPos, Generation.Properties>> getConstantGenerationProperties(ResourceLocation name, Generation generation)
+    {
+    	return Optional.ofNullable(GENERATION_PROPERTIES.getOrDefault(name, (generation1) -> null).apply(generation));
+    }
+    
+    public static void registerGenerationPropertiesParser(ResourceLocation name, GenerationPropertiesParser parser)
+    {
+    	PROPERTIES_PARSERS.put(name, parser);
+    }
+    
+    public static Optional<GenerationPropertiesParser> getGenerationPropertiesParser(ResourceLocation name)
+    {
+    	return Optional.ofNullable(PROPERTIES_PARSERS.get(name));
+    }
+    
     public static <V> V warnIfAbsent(Optional<V> optional, V defaultt, String format, Object... params)
     {
         if(optional.isPresent())
             return optional.get();
-        MetalExtras.LOGGER.warn(format, params);
+        MetalExtras.LOGGER.warn(String.format(format, params));
         return defaultt;
     }
 }

@@ -1,9 +1,9 @@
 {
 	"name": "tile.metalextras:lead_ore",
 	"model": { "texture": "metalextras:items/lead_ore" },
-	"ore_dictionary": [ "lead_ore" ],
+	"ore_dictionary": [ "oreLead" ],
 	"block": { "harvest_level": 2, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ore", "data": "#oresapi:id" } ] },
 	"item": { "creative_tabs": [ "misc" ] },
 	"smelting": { "item": "metalextras:lead_ingot", "xp": 0.9 },
-	"generation": { "tries": 8, "height": { "min": 32, "max": 64 }, "size": 8, "event": "LEAD", "filters": [ { "type": "oresapi:exclude", "params": [ "DIRTY", "THE_END" ] } ] }
+	"generation": { "event": "LEAD", "filters": [ { "type": "oresapi:exclude", "params": [ "DIRTY", "THE_END" ] } ], "properties": { "tries": 8, "height": { "min": 32, "max": 64 }, "size": 8 } }
 }

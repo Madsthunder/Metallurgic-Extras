@@ -1,0 +1,10 @@
+{
+	"name": "tile.oreDiamond",
+	"model": { "texture": "metalextras:items/diamond_ore" },
+	"ore_dictionary": [ "oreDiamond" ],
+	"block": { "drops": [ { "item": "minecraft:diamond" } ], "xp": { "min": 3, "max": 7 }, "name_overrides": { "minecraft:rocks": "minecraft:diamond_ore" } },
+	"item": { "creative_tabs": [ "misc" ] },
+	"smelting": { "item": "minecraft:diamond", "xp": 1 },
+	"generation": { "properties": "#minecraft:diamond_ore", "event": { "name": "DIAMOND", "post": false } },
+	"vanilla": true
+}

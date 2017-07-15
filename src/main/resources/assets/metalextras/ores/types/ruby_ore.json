@@ -1,9 +1,9 @@
 {
 	"name": "tile.metalextras:ruby_ore",
 	"model": { "texture": "metalextras:items/ruby_ore" },
-	"ore_dictionary": [ "ruby_ore" ],
+	"ore_dictionary": [ "oreRuby" ],
 	"block": { "harvest_level": 3, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ruby_gem" } ], "xp": { "min": 3, "max": 7 } },
 	"item": { "creative_tabs": [ "misc" ] },
 	"smelting": { "item": "metalextras:ruby_gem", "xp": 1.5 },
-	"generation": { "tries": 20, "height": 64, "size": 3, "temperature": { "min": 1 }, "event": "RUBY", "filters": [ { "type": "oresapi:exclude", "params": [ "THE_END", "WET" ] } ] }
+	"generation": { "event": "RUBY", "filters": [ { "type": "oresapi:exclude", "params": [ "THE_END", "WET" ] } ], "properties": { "tries": 20, "height": 64, "size": 3, "temperature": { "min": 1 } } }
 }

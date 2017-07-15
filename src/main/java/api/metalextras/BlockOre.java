@@ -12,7 +12,6 @@ import com.google.common.base.Function;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import metalextras.newores.NewOreType;
 import metalextras.newores.NewOreType.Block.Drop;
-import metalextras.ores.materials.OreMaterial;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.SoundType;
@@ -62,15 +61,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	
 	public BlockOre(NewOreType type, OreTypes types, Function<Pair<NewOreType, OreTypes>, ResourceLocation> registry_name_getter)
 	{
-	    ResourceLocation location = registry_name_getter.apply(Pair.of(type, types));
-		String s = location.toString();
-		if(!s.startsWith(type.registry_name.getResourceDomain()))
-			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Begin With CharSequence \"" + type.registry_name.getResourceDomain() + "\".");
-		if(!s.contains(type.registry_name.getResourcePath()))
-			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + type.registry_name.getResourcePath() + "\".");
-		if(!s.contains(types.getRegistryName().toString().replaceFirst(":", "_")))
-			throw new IllegalStateException("String \"" + s + "\" (From Function \"" + registry_name_getter + "\") Doesn't Contain CharSequence \"" + types.getRegistryName().toString().replaceFirst(":", "_") + "\".");
-		this.setRegistryName(location);
+		this.setRegistryName(registry_name_getter.apply(Pair.of(type, types)));
 		this.property = new OreTypeProperty(types, this);
 		this.setDefaultState(this.getBlockState().getBaseState());
 		this.setDefaultState(this.getBlockState().getProperties().isEmpty() ? this.getDefaultState() : this.getDefaultState().withProperty(this.getOreTypeProperty(), this.getOreTypeProperty().getAllowedValues().get(0)));
@@ -421,7 +412,12 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	
 	public static Function<Pair<NewOreType, OreTypes>, ResourceLocation> getDefaultRegistryNameGetter()
 	{
-		return pair -> new ResourceLocation(pair.getLeft().registry_name.toString() + "." + pair.getRight().getRegistryName().toString().replaceFirst(":", "_"));
+		return pair -> getDefaultRegistryName(pair);
+	}
+	
+	public static ResourceLocation getDefaultRegistryName(Pair<NewOreType, OreTypes> pair)
+	{
+		return new ResourceLocation(String.format("%s/%s", pair.getLeft().registry_name, pair.getRight().getRegistryName().toString().replaceFirst(":", "/")));
 	}
 	
 	public static void checkFallable(BlockOre block, World world, BlockPos pos)

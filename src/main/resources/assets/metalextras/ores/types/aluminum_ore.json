@@ -1,9 +1,9 @@
 {
 	"name": "tile.metalextras:aluminum_ore",
 	"model": { "texture": "metalextras:items/aluminum_ore" },
-	"ore_dictionary": [ "aluminum_ore" ],
+	"ore_dictionary": [ "oreAluminum" ],
 	"block": { "harvest_level": 1, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ore", "data": "#oresapi:id" } ] },
 	"item": { "creative_tabs": [ "misc" ] },
 	"smelting": { "item": "metalextras:aluminum_ingot", "xp": 0.5 },
-	"generation": { "tries": 6, "height": { "min": 32, "max": 128 }, "size": 5, "event": "ALUMINUM", "filters": [ { "type": "oresapi:include", "params": [ "ROCKY" ] } ] }
+	"generation": { "event": "ALUMINUM", "filters": [ { "type": "oresapi:include", "params": [ "ROCKY" ] } ], "properties": { "tries": 6, "height": { "min": 32, "max": 128 }, "size": 5 } }
 }

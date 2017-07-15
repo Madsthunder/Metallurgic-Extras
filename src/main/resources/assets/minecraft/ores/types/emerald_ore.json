@@ -1,0 +1,10 @@
+{
+	"name": "tile.oreEmerald",
+	"model": { "texture": "metalextras:items/emerald_ore" },
+	"ore_dictionary": [ "oreEmerald" ],
+	"block": { "drops": [ { "item": "minecraft:emerald" } ], "xp": { "min": 3, "max": 7 }, "name_overrides": { "minecraft:rocks": "minecraft:emerald_ore" } },
+	"item": { "creative_tabs": [ "misc" ] },
+	"smelting": { "item": "minecraft:emerald", "xp": 1 },
+	"generation": { "properties": "#minecraft:emerald_ore", "event": { "name": "EMERALD", "post": false } },
+	"vanilla": true
+}

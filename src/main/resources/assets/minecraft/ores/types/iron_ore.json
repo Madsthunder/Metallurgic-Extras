@@ -1,0 +1,10 @@
+{
+	"name": "tile.oreIron",
+	"model": { "texture": "metalextras:items/iron_ore" },
+	"ore_dictionary": [ "oreIron" ],
+	"block": { "drops": [ { "item": "metalextras:ore", "data": "#oresapi:id" } ], "name_overrides": { "minecraft:rocks": "minecraft:iron_ore" } },
+	"item": { "creative_tabs": [ "misc" ] },
+	"smelting": { "item": "minecraft:iron_ingot", "xp": 0.7 },
+	"generation": { "properties": "#minecraft:iron_ore", "event": { "name": "IRON", "post": false } },
+	"vanilla": true
+}

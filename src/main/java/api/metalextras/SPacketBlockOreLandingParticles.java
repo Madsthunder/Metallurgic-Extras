@@ -2,7 +2,6 @@ package api.metalextras;
 
 import io.netty.buffer.ByteBuf;
 import metalextras.newores.NewOreType;
-import metalextras.ores.materials.OreMaterial;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.eventhandler.Event;

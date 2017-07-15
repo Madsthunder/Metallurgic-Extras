@@ -1,9 +1,9 @@
 {
 	"name": "tile.metalextras:tin_ore",
 	"model": { "texture": "metalextras:items/tin_ore" },
-	"ore_dictionary": [ "tin_ore" ],
+	"ore_dictionary": [ "oreTin" ],
 	"block": { "harvest_level": 1, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ore", "data": "#oresapi:id" } ] },
 	"item": { "creative_tabs": [ "misc" ] },
 	"smelting": { "item": "metalextras:tin_ingot", "xp": 0.7 },
-	"generation": { "tries": 20, "height": 64, "size": 9, "event": "TIN", "filters": [ { "type": "#oresapi:exclude", "params": [ "THE_END" ] } ] }
+	"generation": { "event": "TIN", "filters": [ { "type": "oresapi:exclude", "params": [ "THE_END" ] } ], "properties": { "tries": 20, "height": 64, "size": 9 } }
 }

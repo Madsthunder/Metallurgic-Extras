@@ -1,0 +1,11 @@
+{
+	"name": "tile.oreGold",
+	"model": { "texture": "metalextras:items/gold_ore" },
+	"ore_dictionary": [ "oreGold" ],
+	"block": { "drops": [ { "item": "metalextras:ore", "data": "#oresapi:id" } ], "name_overrides": { "minecraft:rocks": "minecraft:gold_ore" } },
+	"item": { "creative_tabs": [ "misc" ] },
+	"smelting": { "item": "minecraft:gold_ingot", "xp": 1 },
+	"generation": { "properties": "#minecraft:gold_ore", "event": { "name": "GOLD", "post": false } },
+	"post_generation": { "properties": "#minecraft:mesa_gold_ore", "event": { "name": "GOLD", "post": false } },
+	"vanilla": true
+}

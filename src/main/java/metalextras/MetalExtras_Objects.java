@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Function;
 
 import org.apache.commons.compress.utils.IOUtils;
@@ -36,9 +35,6 @@ import metalextras.items.ItemOre;
 import metalextras.items.ItemTool;
 import metalextras.mod.MetalExtras_Callbacks;
 import metalextras.newores.NewOreType;
-import metalextras.ores.VanillaOreMaterial;
-import metalextras.ores.materials.OreMaterial;
-import metalextras.world.gen.OreGeneration;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -68,8 +64,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeDecorator;
-import net.minecraft.world.gen.ChunkGeneratorSettings;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ICustomModelLoader;
@@ -77,7 +71,6 @@ import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.ModContainer;
@@ -92,24 +85,6 @@ import net.minecraftforge.registries.RegistryBuilder;
 @EventBusSubscriber(modid = MetalExtras.MODID)
 public class MetalExtras_Objects
 {
-
-    public static final VanillaOreMaterial COAL_ORE = null;
-    public static final VanillaOreMaterial IRON_ORE = null;
-    public static final VanillaOreMaterial LAPIS_ORE = null;
-    public static final VanillaOreMaterial GOLD_ORE = null;
-    public static final VanillaOreMaterial REDSTONE_ORE = null;
-    public static final VanillaOreMaterial EMERALD_ORE = null;
-    public static final VanillaOreMaterial DIAMOND_ORE = null;
-    
-    public static final OreMaterial.SimpleImpl COPPER_ORE = null;
-    public static final OreMaterial.SimpleImpl TIN_ORE = null;
-    public static final OreMaterial.SimpleImpl ALUMINUM_ORE = null;
-    public static final OreMaterial.SimpleImpl LEAD_ORE = null;
-    public static final OreMaterial.SimpleImpl SILVER_ORE = null;
-    public static final OreMaterial.SimpleImpl ENDER_ORE = null;
-    public static final OreMaterial.SimpleImpl SAPPHIRE_ORE = null;
-    public static final OreMaterial.SimpleImpl RUBY_ORE = null;
-    
     @ObjectHolder("minecraft:rocks")
     public static final OreTypes ROCKS = null;
     @ObjectHolder("minecraft:dirts")
@@ -159,7 +134,6 @@ public class MetalExtras_Objects
     public static void onRegistriesCreate(RegistryEvent.NewRegistry event)
     {
         new RegistryBuilder().setType(OreTypes.class).setIDRange(0, Integer.MAX_VALUE >> 5).setName(new ResourceLocation("metalextras", "ore_type_collections")).addCallback(MetalExtras_Callbacks.ORE_TYPES).create();
-        new RegistryBuilder().setType(OreMaterial.class).setIDRange(0, Integer.MAX_VALUE >> 5).setName(new ResourceLocation("metalextras", "ore_materials")).addCallback(MetalExtras_Callbacks.ORE_MATERIALS).create();
     }
     
     @SubscribeEvent
@@ -345,220 +319,64 @@ public class MetalExtras_Objects
         event.getRegistry().register(dirts);
         OreUtils.getTypesRegistry().clear();
         ModContainer previous_active_mod = Loader.instance().activeModContainer();
+        Loader.instance().setActiveModContainer(null);
         for(ModContainer container : Loader.instance().getActiveModList())
-        {
-            FileSystem file_system = null;
-            try
-            {
-                File source = container.getSource();
-                Path root = source.isFile() ? (file_system = FileSystems.newFileSystem(source.toPath(), null)).getPath(String.format("/assets/%s/ores/types"), container.getModId()) : source.toPath().resolve(String.format("assets/%s/ores/types",container.getModId()) );
-                if(Files.exists(root))
-                {
-                    Loader.instance().setActiveModContainer(container);
-                    Files.walk(root).forEach((path) ->
-                    {
-                        String relative_name = root.relativize(path).toString();
-                        if("json".equals(FilenameUtils.getExtension(relative_name)))
-                        {
-                            BufferedReader reader = null;
-                            try
-                            {
-                                NewOreType type = new NewOreType.JsonOreType(new ResourceLocation(container.getModId(), FilenameUtils.removeExtension(relative_name).replaceAll("\\\\", "/")), TypeAdapters.JSON_ELEMENT.fromJson(reader = Files.newBufferedReader(path)));
-                                OreUtils.getTypesRegistry().register(type);
-                                for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
-                                    for(BlockOre block : type.getBlocksToRegister(types))
-                                    {
-                                        ForgeRegistries.BLOCKS.register(block);
-                                        ForgeRegistries.ITEMS.register(new ItemBlockOre(block, block.getOreTypeProperty()).setRegistryName(block.getRegistryName()));
-                                    }
-                            }
-                            catch (Exception e)
-                            {
-                                e.printStackTrace();
-                            }
-                            finally
-                            {
-                                IOUtils.closeQuietly(reader);
-                            }
-                        }
-                    });
-                }
-            }
-            catch(Exception e)
-            {
-                e.printStackTrace();
-            }
-            finally
-            {
-                IOUtils.closeQuietly(file_system);
-            }
-        }
+    		addTypesFromMod(container);
         Loader.instance().setActiveModContainer(previous_active_mod);
     }
     
-    @SubscribeEvent
-    public static void onOreMaterialsRegister(RegistryEvent.Register<OreMaterial> event)
+    public static void addTypesFromMod(ModContainer container)
     {
-        event.getRegistry().register(new VanillaOreMaterial(Blocks.COAL_ORE.getDefaultState(), 0, 2, ModelType.IRON, EventType.COAL)
+		FileSystem file_system = null;
+        try
         {
-            @Override
-            public int getSpawnTries(World world, Random random)
+            File source = ("minecraft".equals(container.getModId()) ? Loader.instance().getIndexedModList().get("metalextras") : container).getSource();
+            Path root = source.isFile() ? (file_system = FileSystems.newFileSystem(source.toPath(), null)).getPath(String.format("/assets/%s/ores/types"), container.getModId()) : source.toPath().resolve(String.format("assets/%s/ores/types",container.getModId()) );
+            if(Files.exists(root))
             {
-                return OreGeneration.getChunkProviderSettings(world).coalCount;
+                Files.walk(root).forEach((path) ->
+                {
+                    String relative_name = root.relativize(path).toString();
+                    if("json".equals(FilenameUtils.getExtension(relative_name)))
+                    {
+                        BufferedReader reader = null;
+                        try
+                        {
+                            NewOreType type = new NewOreType.JsonOreType(new ResourceLocation(container.getModId(), FilenameUtils.removeExtension(relative_name).replaceAll("\\\\", "/")), TypeAdapters.JSON_ELEMENT.fromJson(reader = Files.newBufferedReader(path)));
+                            OreUtils.getTypesRegistry().register(type);
+                            for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
+                                for(BlockOre block : type.getBlocksToRegister(types))
+                                {
+                                    ModContainer previous_mod = Loader.instance().activeModContainer();
+                                	Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(type.registry_name.getResourceDomain()));
+                                	Item item = new ItemBlockOre(block, block.getOreTypeProperty()).setRegistryName(block.getRegistryName());
+                                    Loader.instance().setActiveModContainer("minecraft".equals(container.getModId()) ? Loader.instance().getIndexedModList().get("metalextras") : container);
+                                    ForgeRegistries.BLOCKS.register(block);
+                                    ForgeRegistries.ITEMS.register(item);
+                                    Loader.instance().setActiveModContainer(previous_mod);
+                                }
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                        finally
+                        {
+                            IOUtils.closeQuietly(reader);
+                        }
+                    }
+                });
             }
-            
-            @Override
-            public int[] getSpawnParams(World world)
-            {
-                ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-                return new int[] { settings.coalMinHeight, settings.coalMaxHeight };
-            }
-            
-            @Override
-            public int getVeinSize(BiomeDecorator decorator)
-            {
-                return OreGeneration.getChunkProviderSettings(decorator).coalSize;
-            }
-        }.setRegistryName("metalextras:coal_ore"));
-        event.getRegistry().register(new VanillaOreMaterial(Blocks.IRON_ORE.getDefaultState(), 0, 0, ModelType.IRON, EventType.IRON)
+        }
+        catch(Exception e)
         {
-            @Override
-            public int getSpawnTries(World world, Random random)
-            {
-                return OreGeneration.getChunkProviderSettings(world).ironCount;
-            }
-            
-            @Override
-            public int[] getSpawnParams(World world)
-            {
-                ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-                return new int[] { settings.ironMinHeight, settings.ironMaxHeight };
-            }
-            
-            @Override
-            public int getVeinSize(BiomeDecorator decorator)
-            {
-                return (decorator.chunkProviderSettings == null ? OreGeneration.defaultSettings : decorator.chunkProviderSettings).ironSize;
-            }
-        }.setRegistryName("metalextras:iron_ore"));
-        event.getRegistry().register(new VanillaOreMaterial(Blocks.LAPIS_ORE.getDefaultState(), 2, 5, ModelType.LAPIS, EventType.LAPIS)
+            e.printStackTrace();
+        }
+        finally
         {
-            @Override
-            public int getSpawnTries(World world, Random random)
-            {
-                return OreGeneration.getChunkProviderSettings(world).lapisCount;
-            }
-            
-            @Override
-            public int[] getSpawnParams(World world)
-            {
-                ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-                return new int[] { settings.lapisCenterHeight, settings.lapisSpread };
-            }
-            
-            @Override
-            public GenerateType getGenerateType()
-            {
-                return GenerateType.ORE2;
-            }
-            
-            @Override
-            public int getVeinSize(BiomeDecorator decorator)
-            {
-                return OreGeneration.getChunkProviderSettings(decorator).lapisSize;
-            }
-        }.setRegistryName("metalextras:lapis_ore"));
-        event.getRegistry().register(new VanillaOreMaterial(Blocks.GOLD_ORE.getDefaultState(), 0, 0, ModelType.IRON, EventType.GOLD)
-        {
-            @Override
-            public int getSpawnTries(World world, Random random)
-            {
-                return OreGeneration.getChunkProviderSettings(world).goldCount;
-            }
-            
-            @Override
-            public int[] getSpawnParams(World world)
-            {
-                ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-                return new int[] { settings.goldMinHeight, settings.goldMaxHeight };
-            }
-            
-            @Override
-            public int getVeinSize(BiomeDecorator decorator)
-            {
-                return OreGeneration.getChunkProviderSettings(decorator).goldSize;
-            }
-        }.setRegistryName("metalextras:gold_ore"));
-        event.getRegistry().register(new VanillaOreMaterial(Blocks.REDSTONE_ORE.getDefaultState(), 0, 0, ModelType.IRON, EventType.REDSTONE, true)
-        {
-            @Override
-            public int getSpawnTries(World world, Random random)
-            {
-                return OreGeneration.getChunkProviderSettings(world).redstoneCount;
-            }
-            
-            @Override
-            public int[] getSpawnParams(World world)
-            {
-                ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-                return new int[] { settings.redstoneMinHeight, settings.redstoneMaxHeight };
-            }
-            
-            @Override
-            public int getVeinSize(BiomeDecorator decorator)
-            {
-                return OreGeneration.getChunkProviderSettings(decorator).redstoneSize;
-            }
-        }.setRegistryName("metalextras:redstone_ore"));
-        event.getRegistry().register(new VanillaOreMaterial(Blocks.EMERALD_ORE.getDefaultState(), 3, 7, ModelType.EMERALD, EventType.EMERALD)
-        {
-            @Override
-            public int getSpawnTries(World world, Random random)
-            {
-                return 3 + random.nextInt(6);
-            }
-            
-            @Override
-            public int[] getSpawnParams(World world)
-            {
-                ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-                return new int[] { 28, 4 };
-            }
-            
-            @Override
-            public GenerateType getGenerateType()
-            {
-                return GenerateType.ORE3;
-            }
-            
-            @Override
-            public int getVeinSize(BiomeDecorator decorator)
-            {
-                return 1;
-            }
-        }.setRegistryName("metalextras:emerald_ore"));
-        event.getRegistry().register(new VanillaOreMaterial(Blocks.DIAMOND_ORE.getDefaultState(), 3, 7, ModelType.IRON, EventType.DIAMOND)
-        {
-            @Override
-            public int getSpawnTries(World world, Random random)
-            {
-                return OreGeneration.getChunkProviderSettings(world).diamondCount;
-            }
-            
-            @Override
-            public int[] getSpawnParams(World world)
-            {
-                ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-                return new int[] { settings.diamondMinHeight, settings.diamondMaxHeight };
-            }
-            
-            @Override
-            public int getVeinSize(BiomeDecorator decorator)
-            {
-                return OreGeneration.getChunkProviderSettings(decorator).diamondSize;
-            }
-        }.setRegistryName("metalextras:diamond_ore"));
-    }
+            IOUtils.closeQuietly(file_system);
+        }
+	}
     
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
@@ -672,16 +490,6 @@ public class MetalExtras_Objects
                         return this.model;
                     }
                 });
-        MetalExtras_Objects.COPPER_ORE.setModel(new ResourceLocation("metalextras:block/copper_ore"));
-        MetalExtras_Objects.TIN_ORE.setModel(new ResourceLocation("metalextras:block/tin_ore"));
-        MetalExtras_Objects.ALUMINUM_ORE.setModel(new ResourceLocation("metalextras:block/aluminum_ore"));
-        MetalExtras_Objects.LEAD_ORE.setModel(new ResourceLocation("metalextras:block/lead_ore"));
-        MetalExtras_Objects.SILVER_ORE.setModel(new ResourceLocation("metalextras:block/silver_ore"));
-        MetalExtras_Objects.ENDER_ORE.setModel(new ResourceLocation("metalextras:block/ender_ore"));
-        MetalExtras_Objects.SAPPHIRE_ORE.setModel(new ResourceLocation("metalextras:block/sapphire_ore"));
-        MetalExtras_Objects.RUBY_ORE.setModel(new ResourceLocation("metalextras:block/ruby_ore"));
-        MetalExtras_Objects.SAPPHIRE_ORE.setModelType(ModelType.EMERALD);
-        MetalExtras_Objects.RUBY_ORE.setModelType(ModelType.EMERALD);
         if(false)
         {
             ModelLoader.setCustomModelResourceLocation(MetalExtras_Objects.SILVER_SHOVEL, 0, new ModelResourceLocation("metalextras:silver_shovel", "inventory"));
@@ -756,7 +564,7 @@ public class MetalExtras_Objects
                                 ModelLoader.setCustomModelResourceLocation(item, i, mapper.getModelLocation(new ItemStack(item, 1, i)));
                     }
             }
-            ModelLoader.setCustomModelResourceLocation(OreMaterial.ORE, OreUtils.getTypesRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.registry_name.getResourcePath() + "_item"), "inventory"));
+            ModelLoader.setCustomModelResourceLocation(OreUtils.ORE, OreUtils.getTypesRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.registry_name.getResourcePath() + "_item"), "inventory"));
         }
     }
 }

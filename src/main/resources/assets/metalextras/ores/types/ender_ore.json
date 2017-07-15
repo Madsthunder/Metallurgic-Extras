@@ -1,9 +1,9 @@
 {
 	"name": "tile.metalextras:ender_ore",
 	"model": { "texture": "metalextras:items/ender_ore" },
-	"ore_dictionary": [ "ender_ore" ],
+	"ore_dictionary": [ "oreEnder" ],
 	"block": { "harvest_level": 3, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ender_gem" } ], "xp": { "min": 3, "max": 7 } },
 	"item": { "creative_tabs": [ "misc" ] },
 	"smelting": { "item": "metalextras:ender_gem", "xp": 1 },
-	"generation": { "tries": 20, "height": 64, "size": 9, "event": "ENDER", "filters": [ { "type": "oresapi:include", "params": [ "THE_END" ] } ] }
+	"generation": { "event": "ENDER", "filters": [ { "type": "oresapi:include", "params": [ "THE_END" ] } ], "properties": { "tries": 20, "height": 64, "size": 9 } }
 }

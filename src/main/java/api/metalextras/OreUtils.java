@@ -16,9 +16,9 @@ import com.google.common.collect.Maps;
 
 import joptsimple.internal.Strings;
 import metalextras.newores.NewOreType;
-import metalextras.ores.materials.OreMaterial;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.ObjectIntIdentityMap;
@@ -29,6 +29,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
 
@@ -120,11 +121,11 @@ public class OreUtils
 	@Nullable
 	public static ItemStack getItemStackForMaterial(NewOreType material)
 	{
-		if(OreMaterial.ORE != null)
+		if(OreUtils.ORE != null)
 		{
 			int index = TYPES.getIdFor(material);
 			if(index >= 0)
-				return new ItemStack(OreMaterial.ORE, 1, index);
+				return new ItemStack(OreUtils.ORE, 1, index);
 		}
 		return ItemStack.EMPTY;
 	}
@@ -167,8 +168,10 @@ public class OreUtils
 	    }
 	}
 	
-	public static boolean generateOres(World world, BlockPos pos, Random random, int blocks, NewOreType properties)
+	public static boolean generateOres(World world, BlockPos pos, Random random, int blocks, NewOreType.Generation.Properties properties)
 	{
+		NewOreType.Generation generation = properties.getParent();
+		NewOreType type1 = generation.getParent();
 		float f = random.nextFloat() * (float)Math.PI;
 		double d0 = pos.getX() + 8 + MathHelper.sin(f) * blocks / 8.0F;
 		double d1 = pos.getX() + 8 - MathHelper.sin(f) * blocks / 8.0F;
@@ -213,15 +216,15 @@ public class OreUtils
 								{
 									BlockPos blockpos = new BlockPos(l1, i2, j2);
 									float temperature = world.getBiome(blockpos).getTemperature();
-									if(properties.generation.getMinTemperature() > temperature || properties.generation.getMaxTemperature() < temperature)
+									if(properties.getMinTemperature() > temperature || properties.getMaxTemperature() < temperature)
 									    continue;
 									IBlockState state = world.getBlockState(blockpos);
 									//TODO filters?
-									if(state.getBlock().isReplaceableOreGen(state, world, blockpos, properties.generation))
+									if(state.getBlock().isReplaceableOreGen(state, world, blockpos, generation))
 									{
 									    OreType type = getOreType(state);
 									    if(type != null)
-									        world.setBlockState(blockpos, properties.applyBlockState(type), 2);
+									        world.setBlockState(blockpos, type1.applyBlockState(type), 2);
 									}
 								}
 							}
@@ -232,4 +235,7 @@ public class OreUtils
 		}
 		return true;
 	}
+
+	@GameRegistry.ObjectHolder("metalextras:ore")
+	public static final Item ORE = null;
 }

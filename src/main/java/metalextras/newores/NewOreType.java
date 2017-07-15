@@ -3,10 +3,12 @@ package metalextras.newores;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 
@@ -45,6 +47,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class NewOreType
@@ -118,9 +122,13 @@ public class NewOreType
         return Sets.newHashSet(this.createBlock(types));
     }
     
-    public BlockOre createBlock(OreTypes types)
+    public BlockOre createBlock(OreTypes materials)
     {
-        return new BlockOre(this, types);
+        ModContainer previous_mod = Loader.instance().activeModContainer();
+    	Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(this.registry_name.getResourceDomain()));
+    	BlockOre ore = new BlockOre(this, materials, (pair) -> this.block.hasNameOverride(pair.getRight()) ? this.block.getNameOverride(pair.getRight()) : BlockOre.getDefaultRegistryName(pair));
+        Loader.instance().setActiveModContainer(previous_mod);
+        return ore;
     }
     
     public Collection<BlockOre> getBlocks()
@@ -163,9 +171,25 @@ public class NewOreType
         public static Block parseBlock(ResourceLocation registry_name, JsonElement element) throws JsonParseException, NBTException
         {
             if(!element.isJsonObject())
-                throw new JsonParseException("Element is expected to be a JsonObject");
+                throw new JsonParseException(String.format("The element at %s is expected to be a JsonObject", registry_name));
             JsonObject block_object = JsonUtils.getJsonObject(element.getAsJsonObject(), "block", new JsonObject());
             Block block = new Block();
+            JsonObject overrides_object = JsonUtils.getJsonObject(block_object, "name_overrides", new JsonObject());
+            for(Entry<String, JsonElement> entry : overrides_object.entrySet())
+            {
+            	ResourceLocation override_key = new ResourceLocation(entry.getKey());
+            	JsonElement override_element = entry.getValue();
+            	if(override_element.isJsonPrimitive() && override_element.getAsJsonPrimitive().isString())
+            	{
+            		OreTypes materials = OreUtils.getTypeCollectionsRegistry().getValue(override_key);
+            		if(materials == null)
+                        MetalExtras.LOGGER.warn(String.format("The element at %s/block/name_overrides/%s references a non-existent OreMaterials entry. (%s)", registry_name, override_key, override_key));
+            		else
+            			block.name_overrides.put(materials, new ResourceLocation(override_element.getAsString()));
+            	}
+            	else
+                    MetalExtras.LOGGER.warn(String.format("The element at %s/block/name_overrides/%s must be a JsonPrimitive String.", registry_name, override_key));
+            }
             block.harvest_level = JsonUtils.getInt(block_object, "harvest_level", 0);
             JsonArray drops_array = JsonUtils.getJsonArray(block_object, "drops", new JsonArray());
             List<Drop> drops = Lists.newArrayList();
@@ -174,7 +198,7 @@ public class NewOreType
                 JsonObject drop_object = drops_array.get(i).getAsJsonObject();
                 if(!drop_object.has("item"))
                 {
-                    MetalExtras.LOGGER.warn("The object at %s/block/drops[%s] is missing an \"item\" JsonPrimitive.", registry_name, i);
+                    MetalExtras.LOGGER.warn(String.format("The object at %s/block/drops[%s] is missing an \"item\" JsonPrimitive.", registry_name, i));
                     continue;
                 }
                 Drop drop = new Drop();
@@ -189,10 +213,10 @@ public class NewOreType
                 }
                 if(drop.item == Items.AIR)
                 {
-                    MetalExtras.LOGGER.warn("The object at %s/block/drops[%s] doesn't have an item or has an item that is invalid.", registry_name, i);
+                    MetalExtras.LOGGER.warn(String.format("The object at %s/block/drops[%s] doesn't have an item or has an item that is invalid.", registry_name, i));
                     continue;
                 }
-                JsonElement metadata_element = Optional.ofNullable(drop_object.get("data")).orElseGet(() -> new JsonPrimitive(1));
+                JsonElement metadata_element = Optional.ofNullable(drop_object.get("data")).orElseGet(() -> new JsonPrimitive(0));
                 JsonPrimitive metadata_primitive;
                 if(metadata_element.isJsonPrimitive() && ((metadata_primitive = metadata_element.getAsJsonPrimitive()).isString() || metadata_primitive.isNumber()))
                 {
@@ -210,7 +234,7 @@ public class NewOreType
                     }
                 }
                 else
-                    MetalExtras.LOGGER.warn("The element at %s/block/drops[%s]/data must be a number or a string.", registry_name, i);
+                    MetalExtras.LOGGER.warn(String.format("The element at %s/block/drops[%s]/data must be a JsonPrimitive Number or String.", registry_name, i));
                 NBTTagCompound nbt = JsonToNBT.getTagFromJson(TypeAdapters.JSON_ELEMENT.toJson(JsonUtils.getJsonObject(drop_object, "nbt", new JsonObject())));
                 if(nbt.hasKey("ForgeCaps"))
                 {
@@ -271,7 +295,7 @@ public class NewOreType
                 block.max_xp = xp_element.getAsInt();
             }
             else
-                MetalExtras.LOGGER.warn("The object at %s/block/xp is expected to be a JsonPrimitive or a JsonObject.", registry_name);
+                MetalExtras.LOGGER.warn(String.format("The object at %s/block/xp is expected to be a JsonPrimitive or a JsonObject.", registry_name));
             JsonArray block_creative_tab_array = JsonUtils.getJsonArray(block_object, "creative_tabs", new JsonArray());
             List<CreativeTabs> block_creative_tab_list = Lists.newArrayList();
             for(int i = 0; i < block_creative_tab_array.size(); i++)
@@ -292,32 +316,18 @@ public class NewOreType
                 event = OreUtils.getEventType(JsonUtils.getString(event_object, "name", ""));
                 post_event = JsonUtils.getBoolean(event_object, "post", true);
             }
-            else if(event_element.isJsonPrimitive())
+            else if(event_element.isJsonPrimitive() && event_element.getAsJsonPrimitive().isString())
             {
                 event = OreUtils.getEventType(event_element.getAsString());
                 post_event = true;
             }
             else
             {
-                //TODO warning
+                MetalExtras.LOGGER.warn(String.format("The element at %s/generation/event is expected to be a JsonPrimitive String or a JsonObject.", registry_name));
                 event = null;
                 post_event = false;
             }
             Generation generation = new Generation(event, post_event);
-            generation.tries = JsonUtils.getInt(generation_object, "tries");
-            JsonElement height = generation_object.get("height");
-            if(height.isJsonObject())
-            {
-                JsonObject height_object = height.getAsJsonObject();
-                generation.min_height = JsonUtils.getInt(height_object, "min", 0);
-                generation.max_height = JsonUtils.getInt(height_object, "max", 0);
-            }
-            else
-                generation.max_height = height.getAsInt();
-            generation.size = JsonUtils.getInt(generation_object, "size", 1);
-            JsonObject temperature_object = JsonUtils.getJsonObject(generation_object, "temperature", new JsonObject());
-            generation.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
-            generation.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
             Set<OreType> materials = Sets.newHashSet(OreUtils.getAllOreTypes());
             JsonElement filters_element = Optional.ofNullable(generation_object.get("filters")).orElseGet(() -> new JsonArray());
             if(filters_element.isJsonArray())
@@ -333,7 +343,7 @@ public class NewOreType
                         BiConsumer<Set<OreType>, Set<String>> filter = FilterManager.getFilter(new ResourceLocation(type_string));
                         if(filter == null)
                         {
-                            MetalExtras.LOGGER.warn("The element at %s/generation/filters[%s]/type references a non-existent filter (%s)", registry_name, i, type_string);
+                            MetalExtras.LOGGER.warn(String.format("The element at %s/generation/filters[%s]/type references a non-existent filter (%s)", registry_name, i, type_string));
                             continue;
                         }
                         Set<String> param_set = Sets.newHashSet();
@@ -344,41 +354,33 @@ public class NewOreType
                             if(param_element.isJsonPrimitive() && param_element.getAsJsonPrimitive().isString())
                                 param_set.add(param_element.getAsString());
                             else
-                                MetalExtras.LOGGER.warn("The element at %s/generation/filters[%s]/params[%s] must be a string", registry_name, i, j);
+                                MetalExtras.LOGGER.warn(String.format("The element at %s/generation/filters[%s]/params[%s] must be a string", registry_name, i, j));
                         }
                         filter.accept(materials, param_set);
                     }
                     else
-                        MetalExtras.LOGGER.warn("The element at %s/generation/filters[%s] must be a JsonObject", registry_name, i);
+                        MetalExtras.LOGGER.warn(String.format("The element at %s/generation/filters[%s] must be a JsonObject", registry_name, i));
                 }
             }
             for(OreType material : materials)
                 generation.allowed_states.put(material.getState(), material);
-            List<String> reasons = Lists.newArrayList();
-            if(generation.tries <= 0)
-                reasons.add(String.format("spawn %s times per chunk", generation.tries));
-            if(generation.max_height <= 0)
-                reasons.add("generate at a maximum height of 0 or below");
-            if(generation.max_height <= generation.min_height)
-                reasons.add("generate at a maximum height that is lower than its minimum height");
-            if(generation.size <= 0)
-                reasons.add(String.format("generate with a maximum vein size of %s", generation.size));
-            if(generation.min_temperature > generation.max_temperature)
-                reasons.add(String.format("generate at a place in which its temperature is greater than %s but less than %s", generation.min_temperature, generation.max_temperature));
-            if(!reasons.isEmpty())
+            JsonElement properties_element = generation_object.get("properties");
+            String properties_string;
+            if(properties_element == null)
+            	generation.properties_getter = Generation.Properties.Iron.createDefaultGetter(generation);
+            else if(properties_element.isJsonPrimitive() && properties_element.getAsJsonPrimitive().isString() && (properties_string = properties_element.getAsString()).startsWith("#"))
+            	generation.properties_getter = VariableManager.warnIfAbsent(VariableManager.getConstantGenerationProperties(new ResourceLocation(properties_string.substring(1)), generation), Generation.Properties.Iron.createDefaultGetter(generation), String.format("The string at %s/generation/properties references a non-existent generation properties getter (%s)", registry_name, properties_string));
+            else if(properties_element.isJsonObject())
             {
-                String reasons_string;
-                if(reasons.size() > 1)
-                    if(reasons.size() == 2)
-                        reasons_string = String.format("%s and %s", reasons.get(0), reasons.get(1));
-                    else
-                    {
-                        String last = reasons.remove(reasons.size() - 1);
-                        reasons_string = String.format("%s, and %s", Joiner.on(", ").join(reasons), last);
-                    }
-                else
-                    reasons_string = reasons.get(0);
-                MetalExtras.LOGGER.warn("The ore %s will not be able to generate because the ore is set to %s.", registry_name, reasons_string);
+            	JsonObject properties_object = properties_element.getAsJsonObject();
+            	String type_string = JsonUtils.getString(properties_object, "type", "minecraft:iron");
+            	Generation.Properties properties = VariableManager.warnIfAbsent(VariableManager.getGenerationPropertiesParser(new ResourceLocation(type_string)), Generation.Properties.Iron.createParser(), String.format("The string at %s/generation/properties/type references a non-existent generation properties parser (%s)", registry_name, type_string)).parse(registry_name, generation, properties_object);
+            	generation.properties_getter = (world, pos) -> properties;
+            }
+            else
+            {
+                MetalExtras.LOGGER.warn(String.format("The element at %s/generation/properties must be a #constant or JsonObject"), registry_name);
+            	generation.properties_getter = Generation.Properties.Iron.createDefaultGetter(generation);
             }
             return generation;
         }
@@ -406,7 +408,7 @@ public class NewOreType
                     else if(count_primitive.isNumber())
                         smelting.xp = count_primitive.getAsFloat();
                     else
-                        MetalExtras.LOGGER.warn("The element at %s/smelting/xp is expected to be a #constant, JsonPrimitive Number, or a JsonObject. Defaulting to 0.", registry_name);
+                        MetalExtras.LOGGER.warn(String.format("The element at %s/smelting/xp is expected to be a #constant, JsonPrimitive Number, or a JsonObject. Defaulting to 0.", registry_name));
                 }
                 else
                 {
@@ -439,7 +441,7 @@ public class NewOreType
                     else if(count_primitive.isNumber())
                         smelting.count = count_primitive.getAsInt();
                     else
-                        MetalExtras.LOGGER.warn("The element at %s/smelting/count is expected to be a #constant, JsonPrimitive Number, or a JsonObject. Defaulting to 1.", registry_name);
+                        MetalExtras.LOGGER.warn(String.format("The element at %s/smelting/count is expected to be a #constant, JsonPrimitive Number, or a JsonObject. Defaulting to 1.", registry_name));
                 }
                 else
                 {
@@ -461,7 +463,7 @@ public class NewOreType
                         }
                         catch(NBTException exception)
                         {
-                            MetalExtras.LOGGER.warn("There was an exception while trying to convert the string at %s/smelting/nbt into an NBTTagCompound. Defaulting to an empty NBTTagCompound.", registry_name);
+                            MetalExtras.LOGGER.warn(String.format("There was an exception while trying to convert the string at %s/smelting/nbt into an NBTTagCompound. Defaulting to an empty NBTTagCompound.", registry_name));
                             smelting.nbt = new NBTTagCompound();
                         }
                     }
@@ -473,11 +475,11 @@ public class NewOreType
                     }
                     catch(NBTException exception)
                     {
-                        MetalExtras.LOGGER.warn("There was an exception while trying to convert the string at %s/smelting/nbt into an NBTTagCompound. Defaulting to an empty NBTTagCompound.", registry_name);
+                        MetalExtras.LOGGER.warn(String.format("There was an exception while trying to convert the string at %s/smelting/nbt into an NBTTagCompound. Defaulting to an empty NBTTagCompound.", registry_name));
                         smelting.nbt = new NBTTagCompound();
                     }
                 else
-                    MetalExtras.LOGGER.warn("The element at %s/smelting/nbt is expected to be a #constant, JsonPrimitive String, or a JsonObject. Defaulting to an empty NBTTagCompound.", registry_name);
+                    MetalExtras.LOGGER.warn(String.format("The element at %s/smelting/nbt is expected to be a #constant, JsonPrimitive String, or a JsonObject. Defaulting to an empty NBTTagCompound.", registry_name));
             }
             else
             {
@@ -499,6 +501,7 @@ public class NewOreType
     
     public static class Block
     {
+        protected final Map<OreTypes, ResourceLocation> name_overrides = Maps.newHashMap();
         protected int harvest_level = 0;
         protected Drop[] drops = new Drop[0];
         protected int min_xp = 0;
@@ -528,6 +531,16 @@ public class NewOreType
         public final CreativeTabs[] getCreativeTabs()
         {
             return this.creative_tabs;
+        }
+        
+        public final boolean hasNameOverride(OreTypes materials)
+        {
+        	return this.name_overrides.containsKey(materials);
+        }
+        
+        public final ResourceLocation getNameOverride(OreTypes materials)
+        {
+        	return this.name_overrides.get(materials);
         }
         
         public static class Drop
@@ -576,14 +589,8 @@ public class NewOreType
         public final GenerateMinable.EventType event;
         public final boolean post_event;
         private NewOreType parent;
-        protected int tries = 0;
-        protected int min_height = 0;
-        protected int max_height = 0;
-        protected int size = 0;
-        protected float min_temperature = -Float.MAX_VALUE;
-        protected float max_temperature = Float.MAX_VALUE;
+        protected BiFunction<World, BlockPos, Properties> properties_getter = Properties.Iron.createDefaultGetter(this);
         protected BiMap<IBlockState, OreType> allowed_states = HashBiMap.create();
-        protected WorldGenerator generator = new DefaultGenerator(this);
         
         public Generation(GenerateMinable.EventType event, boolean post_event)
         {
@@ -591,55 +598,349 @@ public class NewOreType
             this.post_event = event != null && post_event;
         }
         
-        public final int getSpawnTries()
+        public final Generation.Properties getProperties(World world, BlockPos pos)
         {
-            return this.tries;
-        }
-        
-        public final int getMinHeight()
-        {
-            return this.min_height;
-        }
-        
-        public final int getMaxHeight()
-        {
-            return this.max_height;
-        }
-        
-        public final int getVeinSize()
-        {
-            return this.size;
-        }
-        
-        public final boolean canGenerate()
-        {
-            return this.tries > 0 && this.max_height > 0 && this.max_height > this.min_height && this.size > 0;
-        }
-        
-        public final float getMinTemperature()
-        {
-            return this.min_temperature;
-        }
-        
-        public final float getMaxTemperature()
-        {
-            return this.max_temperature;
+        	return this.properties_getter.apply(world, pos);
         }
         
         @Override
-        public boolean apply(IBlockState state)
+        public final boolean apply(IBlockState state)
         {
             return this.allowed_states.containsKey(state);
         }
         
-        public final WorldGenerator getGenerator()
-        {
-            return this.generator;
-        }
-        
-        public NewOreType getParent()
+        public final NewOreType getParent()
         {
             return this.parent;
+        }
+        
+        public abstract static class Properties
+        {
+        	private final Generation parent;
+            protected int size = 0;
+            protected float min_temperature = -Float.MAX_VALUE;
+            protected float max_temperature = Float.MAX_VALUE;
+            protected WorldGenerator generator = new DefaultGenerator(this);
+            
+            public Properties(Generation parent, boolean init)
+            {
+            	this.parent = parent;
+            	if(init)
+            		this.init();
+            }
+            
+            public void init()
+            {
+            	
+            }
+            
+            public abstract int randomSpawnTries(Random random);
+            
+            public abstract int randomHeight(Random random);
+            
+            public final int getVeinSize()
+            {
+                return this.size;
+            }
+            
+            public boolean canGenerate()
+            {
+                return this.size > 0;
+            }
+            
+            public final float getMinTemperature()
+            {
+                return this.min_temperature;
+            }
+            
+            public final float getMaxTemperature()
+            {
+                return this.max_temperature;
+            }
+            
+            public final WorldGenerator getGenerator()
+            {
+                return this.generator;
+            }
+            
+            public final Generation getParent()
+            {
+            	return this.parent;
+            }
+            
+            public static class Iron extends Properties
+            {
+                protected int tries = 0;
+                protected int min_height = 0;
+                protected int max_height = 0;
+                
+            	public Iron(Generation generation, boolean init)
+            	{
+            		super(generation, false);
+            		if(init)
+            			this.init();
+            	}
+            	
+            	@Override
+            	public int randomSpawnTries(Random random)
+            	{
+            		return this.tries;
+            	}
+            	
+            	@Override
+            	public int randomHeight(Random random)
+            	{
+            		return random.nextInt(this.max_height - this.min_height) + this.min_height;
+            	}
+                
+            	@Override
+                public boolean canGenerate()
+                {
+                    return super.canGenerate() && this.tries > 0 && this.max_height > 0 && this.max_height > this.min_height;
+                }
+                
+                public static BiFunction<World, BlockPos, Properties> createDefaultGetter(Generation generation)
+                {
+                	Iron properties = new Iron(generation, true);
+                	return (world, pos) -> properties;
+                }
+                
+                public static GenerationPropertiesParser createParser()
+                {
+                	return new GenerationPropertiesParser()
+                	{
+                		@Override
+                		public Properties parse(ResourceLocation registry_name, Generation generation, JsonObject object)
+                		{
+                            Generation.Properties.Iron properties = new Generation.Properties.Iron(generation, true);
+                            properties.tries = JsonUtils.getInt(object, "tries", 0);
+                            JsonElement height = object.get("height");
+                            if(height.isJsonObject())
+                            {
+                                JsonObject height_object = height.getAsJsonObject();
+                                properties.min_height = JsonUtils.getInt(height_object, "min", 0);
+                                properties.max_height = JsonUtils.getInt(height_object, "max", 0);
+                            }
+                            else
+                                properties.max_height = height.getAsInt();
+                            properties.size = JsonUtils.getInt(object, "size", 1);
+                            JsonObject temperature_object = JsonUtils.getJsonObject(object, "temperature", new JsonObject());
+                            properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
+                            properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
+                            List<String> reasons = Lists.newArrayList();
+                            if(properties.tries <= 0)
+                                reasons.add(String.format("spawn %s times per chunk", properties.tries));
+                            if(properties.max_height <= 0)
+                                reasons.add("generate at a maximum height of 0 or below");
+                            if(properties.max_height <= properties.min_height)
+                                reasons.add("generate at a maximum height that is lower than its minimum height");
+                            if(properties.size <= 0)
+                                reasons.add(String.format("generate with a maximum vein size of %s", properties.size));
+                            if(properties.min_temperature > properties.max_temperature)
+                                reasons.add(String.format("generate at a place in which its temperature is greater than %s but less than %s", properties.min_temperature, properties.max_temperature));
+                            if(!reasons.isEmpty())
+                            {
+                                String reasons_string;
+                                if(reasons.size() > 1)
+                                    if(reasons.size() == 2)
+                                        reasons_string = String.format("%s and %s", reasons.get(0), reasons.get(1));
+                                    else
+                                    {
+                                        String last = reasons.remove(reasons.size() - 1);
+                                        reasons_string = String.format("%s, and %s", Joiner.on(", ").join(reasons), last);
+                                    }
+                                else
+                                    reasons_string = reasons.get(0);
+                                MetalExtras.LOGGER.warn(String.format("The ore %s will not be able to generate because the ore is set to %s.", registry_name, reasons_string));
+                            }
+                        	generation.properties_getter = (world, pos) -> properties;   
+                        	return properties;
+                    	}
+                	};
+                }
+            }
+            
+            public static class Lapis extends Properties
+            {
+                protected int tries = 0;
+            	protected int center_height = 0;
+            	protected int spread = 1;
+                
+            	public Lapis(Generation generation, boolean init)
+            	{
+            		super(generation, false);
+            		if(init)
+            			this.init();
+            	}
+            	
+            	@Override
+            	public int randomSpawnTries(Random random)
+            	{
+            		return this.tries;
+            	}
+            	
+            	@Override
+            	public int randomHeight(Random random)
+            	{
+            		return random.nextInt(this.spread) + random.nextInt(this.spread) + this.center_height - this.spread;
+            	}
+                
+            	@Override
+                public boolean canGenerate()
+                {
+                    return super.canGenerate() && this.tries > 0 && this.spread > 0 && this.center_height + this.spread - 2 >= 0 && this.center_height - this.spread < 256;
+                }
+                
+                public static BiFunction<World, BlockPos, Properties> createDefaultGetter(Generation generation)
+                {
+                	Lapis properties = new Lapis(generation, true);
+                	return (world, pos) -> properties;
+                }
+                
+                public static GenerationPropertiesParser createParser()
+                {
+                	return new GenerationPropertiesParser()
+                	{
+                		@Override
+                		public Properties parse(ResourceLocation registry_name, Generation generation, JsonObject object)
+                		{
+                            Generation.Properties.Lapis properties = new Generation.Properties.Lapis(generation, true);
+                            properties.tries = JsonUtils.getInt(object, "tries", 0);
+                            properties.center_height = JsonUtils.getInt(object, "center_height", 0);
+                            properties.spread = JsonUtils.getInt(object, "spread", 1);
+                            properties.size = JsonUtils.getInt(object, "size", 1);
+                            JsonObject temperature_object = JsonUtils.getJsonObject(object, "temperature", new JsonObject());
+                            properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
+                            properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
+                            List<String> reasons = Lists.newArrayList();
+                            if(properties.tries <= 0)
+                                reasons.add(String.format("spawn %s times per chunk", properties.tries));
+                            if(properties.spread <= 0)
+                                reasons.add("generate with a spread that is less than 1");
+                            if(properties.size <= 0)
+                                reasons.add(String.format("generate with a maximum vein size of %s", properties.size));
+                            if(properties.min_temperature > properties.max_temperature)
+                                reasons.add(String.format("generate at a place in which its temperature is greater than %s but less than %s", properties.min_temperature, properties.max_temperature));
+                            if(!reasons.isEmpty())
+                            {
+                                String reasons_string;
+                                if(reasons.size() > 1)
+                                    if(reasons.size() == 2)
+                                        reasons_string = String.format("%s and %s", reasons.get(0), reasons.get(1));
+                                    else
+                                    {
+                                        String last = reasons.remove(reasons.size() - 1);
+                                        reasons_string = String.format("%s, and %s", Joiner.on(", ").join(reasons), last);
+                                    }
+                                else
+                                    reasons_string = reasons.get(0);
+                                MetalExtras.LOGGER.warn(String.format("The ore %s will not be able to generate because the ore is set to %s.", registry_name, reasons_string));
+                            }
+                        	generation.properties_getter = (world, pos) -> properties;   
+                        	return properties;
+                    	}
+                	};
+                }
+            }
+            
+            public static class Emerald extends Properties
+            {
+                protected int tries_base = 0;
+                protected int tries_randomizer = 1;
+                protected int min_height = 0;
+                protected int max_height = 0;
+                
+            	public Emerald(Generation generation, boolean init)
+            	{
+            		super(generation, false);
+            		if(init)
+            			this.init();
+            	}
+            	
+            	@Override
+            	public int randomSpawnTries(Random random)
+            	{
+            		return this.tries_base + random.nextInt(this.tries_randomizer);
+            	}
+            	
+            	@Override
+            	public int randomHeight(Random random)
+            	{
+            		return random.nextInt(this.max_height - this.min_height) + this.max_height;
+            	}
+                
+            	@Override
+                public boolean canGenerate()
+                {
+                    return super.canGenerate() && this.tries_base + this.tries_randomizer - 1 > 0 && this.max_height > 0 && this.max_height > this.min_height;
+                }
+                
+                public static BiFunction<World, BlockPos, Properties> createDefaultGetter(Generation generation)
+                {
+                	Emerald properties = new Emerald(generation, true);
+                	return (world, pos) -> properties;
+                }
+
+                public static GenerationPropertiesParser createParser()
+                {
+                	return new GenerationPropertiesParser()
+                	{
+                		@Override
+                		public Properties parse(ResourceLocation registry_name, Generation generation, JsonObject object)
+                		{
+                            Generation.Properties.Emerald properties = new Generation.Properties.Emerald(generation, true);
+                            properties.tries_base = JsonUtils.getInt(object, "tries_base", 0);
+                            properties.tries_randomizer = JsonUtils.getInt(object, "tries_randomizer", 1);
+                            JsonElement height = object.get("height");
+                            if(height.isJsonObject())
+                            {
+                                JsonObject height_object = height.getAsJsonObject();
+                                properties.min_height = JsonUtils.getInt(height_object, "min", 0);
+                                properties.max_height = JsonUtils.getInt(height_object, "max", 0);
+                            }
+                            else
+                                properties.max_height = height.getAsInt();
+                            properties.size = JsonUtils.getInt(object, "size", 1);
+                            JsonObject temperature_object = JsonUtils.getJsonObject(object, "temperature", new JsonObject());
+                            properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
+                            properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
+                            List<String> reasons = Lists.newArrayList();
+                            if(properties.tries_base + properties.tries_randomizer - 1  <= 0)
+                                reasons.add(String.format("spawn less than or equal to %s times per chunk", properties.tries_base + properties.tries_randomizer - 1));
+                            if(properties.max_height <= 0)
+                                reasons.add("generate at a maximum height of 0 or below");
+                            if(properties.max_height <= properties.min_height)
+                                reasons.add("generate at a maximum height that is lower than its minimum height");
+                            if(properties.size <= 0)
+                                reasons.add(String.format("generate with a maximum vein size of %s", properties.size));
+                            if(properties.min_temperature > properties.max_temperature)
+                                reasons.add(String.format("generate at a place in which its temperature is greater than %s but less than %s", properties.min_temperature, properties.max_temperature));
+                            if(!reasons.isEmpty())
+                            {
+                                String reasons_string;
+                                if(reasons.size() > 1)
+                                    if(reasons.size() == 2)
+                                        reasons_string = String.format("%s and %s", reasons.get(0), reasons.get(1));
+                                    else
+                                    {
+                                        String last = reasons.remove(reasons.size() - 1);
+                                        reasons_string = String.format("%s, and %s", Joiner.on(", ").join(reasons), last);
+                                    }
+                                else
+                                    reasons_string = reasons.get(0);
+                                MetalExtras.LOGGER.warn(String.format("The ore %s will not be able to generate because the ore is set to %s.", registry_name, reasons_string));
+                            }
+                        	generation.properties_getter = (world, pos) -> properties;   
+                        	return properties;
+                    	}
+                	};
+                }
+            }
+            
+            public abstract static class GenerationPropertiesParser
+            {
+            	public abstract Properties parse(ResourceLocation registry_name, Generation generation, JsonObject properties_object);
+            }
         }
     }
     
@@ -701,17 +1002,17 @@ public class NewOreType
     
     public static class DefaultGenerator extends WorldGenerator
     {
-        private final Generation generation;
+        private final Generation.Properties properties;
         
-        public DefaultGenerator(Generation generation)
+        public DefaultGenerator(Generation.Properties properties)
         {
-            this.generation = generation;
+            this.properties = properties;
         }
         @Override
         
         public boolean generate(World world, Random random, BlockPos pos)
         {
-            return OreUtils.generateOres(world, pos, random, random.nextInt(generation.getVeinSize()) + 1, generation.parent);
+            return OreUtils.generateOres(world, pos, random, random.nextInt(this.properties.getVeinSize()) + 1, this.properties);
         }
         
     }

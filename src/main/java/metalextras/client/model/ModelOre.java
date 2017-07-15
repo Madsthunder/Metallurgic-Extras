@@ -116,21 +116,9 @@ public class ModelOre implements IModel
 					{
                         ResourceLocation type_name = type.getTexture();
 					    ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreType().model.getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
-					    System.out.println(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 					    baked_model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()))).bake(this.modelState, this.vertexFormat, this.textureGetter);
 						BakedModelOre.models.put(state, baked_model);
 						return baked_model.getQuads(state, side, 0L);
-					    /*Set<IBakedModel> models = Sets.newHashSet(type.getModel(ore.getOreMaterial()).bake(this.modelState, this.vertexFormat, this.textureGetter));
-						IModel model = ore.getOreMaterial().getModel(type);
-						models.add(model.bake(ModelRotation.X0_Y0, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X180_Y0, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X90_Y180, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X90_Y0, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X90_Y90, this.vertexFormat, this.textureGetter));
-						models.add(model.bake(ModelRotation.X90_Y270, this.vertexFormat, this.textureGetter));
-						baked_model = joinModels(state, 0L, this, models);
-						BakedModelOre.models.put(state, baked_model);
-						return baked_model.getQuads(state, side, 0L);*/
 					}
 				}
 			}

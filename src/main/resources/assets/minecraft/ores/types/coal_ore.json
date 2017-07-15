@@ -1,0 +1,10 @@
+{
+	"name": "tile.oreCoal",
+	"model": { "texture": "metalextras:items/coal_ore" },
+	"ore_dictionary": [ "oreCoal" ],
+	"block": { "drops": [ { "item": "minecraft:coal" } ], "xp": 2, "name_overrides": { "minecraft:rocks": "minecraft:coal_ore" } },
+	"item": { "creative_tabs": [ "misc" ] },
+	"smelting": { "item": "minecraft:coal", "xp": 0.1 },
+	"generation": { "properties": "#minecraft:coal_ore", "event": { "name": "COAL", "post": false } },
+	"vanilla": true
+}

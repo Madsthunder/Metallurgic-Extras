@@ -3,6 +3,7 @@ package metalextras;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import api.metalextras.BlockOre;
@@ -18,7 +20,6 @@ import api.metalextras.OreType;
 import api.metalextras.OreUtils;
 import api.metalextras.SPacketBlockOreLandingParticles;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
-import continuum.essentials.config.ConfigHandler;
 import metalextras.items.ItemEnderHoe;
 import metalextras.items.ItemEnderTool;
 import metalextras.newores.FilterManager;
@@ -43,11 +44,12 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.biome.BiomeHills;
+import net.minecraft.world.biome.BiomeMesa;
+import net.minecraft.world.gen.ChunkGeneratorSettings;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent.OnConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -69,13 +71,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 
 @EventBusSubscriber
-@Mod(modid = MetalExtras.MODID, name = MetalExtras.NAME, version = MetalExtras.VERSION, guiFactory = "metalextras.client.gui.config.GuiOverview$Factory")
+@Mod(modid = MetalExtras.MODID, name = MetalExtras.NAME, version = MetalExtras.VERSION)
 public class MetalExtras
 {
 	public static final String MODID = "metalextras";
 	public static final String NAME = "Metallurgic Extras";
 	public static final String VERSION = "3.0.0";
-	public static final ConfigHandler CONFIGURATION_HANDLER = new ConfigHandler("config\\Metallurgic Extras");
 	public static final Logger LOGGER = LogManager.getLogger("Metallurgic Extras");
 	
 	public static class Proxy
@@ -85,105 +86,226 @@ public class MetalExtras
 		
 		public void constr()
 		{
-		    
 		}
 		
 		public void pre()
 		{
-		    VariableManager.registerConstant(new ResourceLocation("oresapi:id"), () -> OreUtils.getTypesRegistry().nextId());
-            FilterManager.register(new ResourceLocation("oresapi:include"), (materials, params) -> 
-            {
-                Predicate<Collection<Characteristic>> filter = Characteristic.all(Iterables.toArray(Iterables.transform(params, (param) -> Characteristic.byName(param)), Characteristic.class));
-                Set<OreType> material_set = Sets.newHashSet(Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics())));
-                materials.clear();
-                materials.addAll(material_set);
-            });
-		    FilterManager.register(new ResourceLocation("oresapi:exclude"), (materials, params) -> 
-		    {
-		        Predicate<Collection<Characteristic>> filter = Characteristic.notAny(Iterables.toArray(Iterables.transform(params, (param) -> Characteristic.byName(param)), Characteristic.class));
-		        Set<OreType> material_set = Sets.newHashSet(Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics())));
-		        materials.clear();
-		        materials.addAll(material_set);
-		    });
+			VariableManager.registerConstant(new ResourceLocation("oresapi:id"), () -> OreUtils.getTypesRegistry().nextId());
+			FilterManager.register(new ResourceLocation("oresapi:include"), (materials, params) ->
+			{
+				Predicate<Collection<Characteristic>> filter = Characteristic.all(Iterables.toArray(Iterables.transform(params, (param) -> Characteristic.byName(param)), Characteristic.class));
+				Set<OreType> material_set = Sets.newHashSet(Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics())));
+				materials.clear();
+				materials.addAll(material_set);
+			});
+			FilterManager.register(new ResourceLocation("oresapi:exclude"), (materials, params) ->
+			{
+				Predicate<Collection<Characteristic>> filter = Characteristic.notAny(Iterables.toArray(Iterables.transform(params, (param) -> Characteristic.byName(param)), Characteristic.class));
+				Set<OreType> material_set = Sets.newHashSet(Iterables.filter(materials, (material) -> filter.test(material.getCharacteristics())));
+				materials.clear();
+				materials.addAll(material_set);
+			});
+			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:iron"), NewOreType.Generation.Properties.Iron.createParser());
+			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:lapis"), NewOreType.Generation.Properties.Lapis.createParser());
+			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:emerald"), NewOreType.Generation.Properties.Emerald.createParser());
+			Map<World, Map<String, NewOreType.Generation.Properties>> properties_map = Maps.newHashMap();
+			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:coal_ore"), (generation) -> (world, pos) ->
+			{
+				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				return Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("coal_ore", (name) ->
+				{
+					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
+					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					{
+						@Override
+						public void init()
+						{
+							this.tries = settings.coalCount;
+							this.min_height = settings.coalMinHeight;
+							this.max_height = settings.coalMaxHeight;
+							this.size = settings.coalSize;
+						}
+					};
+				})).orElse(default_properties);
+			});
+			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:iron_ore"), (generation) ->
+			{
+				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("iron_ore", (name) ->
+				{
+					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
+					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					{
+						@Override
+						public void init()
+						{
+							this.tries = settings.ironCount;
+							this.min_height = settings.ironMinHeight;
+							this.max_height = settings.ironMaxHeight;
+							this.size = settings.ironSize;
+						}
+					};
+				})).orElse(default_properties);
+			});
+			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:lapis_ore"), (generation) ->
+			{
+				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Lapis(generation, true);
+				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("lapis_ore", (name) ->
+				{
+					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
+					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Lapis(generation, true)
+					{
+						@Override
+						public void init()
+						{
+							this.tries = settings.lapisCount;
+							this.center_height = settings.lapisCenterHeight;
+							this.spread = settings.lapisSpread;
+							this.size = settings.lapisSize;
+						}
+					};
+				})).orElse(default_properties);
+			});
+			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:gold_ore"), (generation) ->
+			{
+				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("gold_ore", (name) ->
+				{
+					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
+					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					{
+						@Override
+						public void init()
+						{
+							this.tries = settings.goldCount;
+							this.min_height = settings.goldMinHeight;
+							this.max_height = settings.goldMaxHeight;
+							this.size = settings.goldSize;
+						}
+					};
+				})).orElse(default_properties);
+			});
+			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:redstone_ore"), (generation) ->
+			{
+				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("redstone_ore", (name) ->
+				{
+					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
+					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					{
+						@Override
+						public void init()
+						{
+							this.tries = settings.redstoneCount;
+							this.min_height = settings.redstoneMinHeight;
+							this.max_height = settings.redstoneMaxHeight;
+							this.size = settings.redstoneSize;
+						}
+					};
+				})).orElse(default_properties);
+			});
+			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:emerald_ore"), (generation) ->
+			{
+				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Emerald(generation, true);
+				return (world, pos) -> world.getBiome(pos.add(16, 0, 16)) instanceof BiomeHills ? Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("emerald_ore", (name) ->
+				{
+					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
+					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Emerald(generation, true)
+					{
+						@Override
+						public void init()
+						{
+							this.tries_base = 3;
+							this.tries_randomizer = 6;
+							this.min_height = settings.coalMinHeight;
+							this.max_height = settings.coalMaxHeight;
+							this.size = settings.coalSize;
+						}
+					};
+				})).orElse(default_properties) : default_properties;
+			});
+			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:diamond_ore"), (generation) ->
+			{
+				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("diamond_ore", (name) ->
+				{
+					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
+					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					{
+						@Override
+						public void init()
+						{
+							this.tries = settings.diamondCount;
+							this.min_height = settings.diamondMinHeight;
+							this.max_height = settings.diamondMaxHeight;
+							this.size = settings.diamondSize;
+						}
+					};
+				})).orElse(default_properties);
+			});
+			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:mesa_gold_ore"), (generation) ->
+			{
+				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				return (world, pos) -> world.getBiome(pos.add(16, 0, 16)) instanceof BiomeMesa ? Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("mesa_gold_ore", (name) ->
+				{
+					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
+					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					{
+						@Override
+						public void init()
+						{
+							this.tries = 20;
+							this.min_height = 32;
+							this.max_height = 80;
+							this.size = settings.goldSize;
+						}
+					};
+				})).orElse(default_properties) : default_properties;
+			});
 			LANDING_PARTICLE_WRAPPER.registerMessage(OreLandingParticleMessageHandler.class, SPacketBlockOreLandingParticles.class, 0, Side.CLIENT);
-			CONFIGURATION_HANDLER.refreshAll();
 		}
 		
 		public void init()
 		{
-		    for(NewOreType type : OreUtils.getTypesRegistry())
-		    {
-		        for(String name : type.getOreDictionary())
-		            OreUtils.addMaterialToOreDictionary(type, name, true);
-		        NBTTagCompound nbt = type.smelting.getNbt();
-		        System.out.println(type.smelting.getItem().getRegistryName().toString());
-		        nbt.setString("id", type.smelting.getItem().getRegistryName().toString());
-		        nbt.setByte("Count", (byte)type.smelting.getCount());
-                nbt.setInteger("Damage", type.smelting.getMetadata());
-                ItemStack stack = new ItemStack(nbt);
-                System.out.println(stack);
-                if(!stack.isEmpty())
-                    OreUtils.registerMaterialSmeltingRecipe(type, stack, type.smelting.getXp());
-		    }
-            /**OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.COAL_ORE, "oreCoal", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.IRON_ORE, "oreIron", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.LAPIS_ORE, "oreLapis", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.GOLD_ORE, "oreGold", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.REDSTONE_ORE, "oreRedstone", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.EMERALD_ORE, "oreEmerald", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.DIAMOND_ORE, "oreDiamond", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.COPPER_ORE, "oreCopper", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.TIN_ORE, "oreTin", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.ALUMINUM_ORE, "oreAluminum", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.LEAD_ORE, "oreLead", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.SILVER_ORE, "oreSilver", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.ENDER_ORE, "oreEnder", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.SAPPHIRE_ORE, "oreSapphire", true);
-            OreUtils.addMaterialToOreDictionary(MetalExtras_Objects.RUBY_ORE, "oreRuby", true);*/
-            OreDictionary.registerOre("blockCopper", MetalExtras_Objects.COPPER_BLOCK);
-            OreDictionary.registerOre("blockTin", MetalExtras_Objects.TIN_BLOCK);
-            OreDictionary.registerOre("blockAluminum", MetalExtras_Objects.ALUMINUM_BLOCK);
-            OreDictionary.registerOre("blockLead", MetalExtras_Objects.LEAD_BLOCK);
-            OreDictionary.registerOre("blockSilver", MetalExtras_Objects.SILVER_BLOCK);
-            OreDictionary.registerOre("blockEnder", MetalExtras_Objects.ENDER_BLOCK);
-            OreDictionary.registerOre("blockSapphire", MetalExtras_Objects.SAPPHIRE_BLOCK);
-            OreDictionary.registerOre("blockRuby", MetalExtras_Objects.RUBY_BLOCK);
-            OreDictionary.registerOre("ingotCopper", MetalExtras_Objects.COPPER_INGOT);
-            OreDictionary.registerOre("ingotTin", MetalExtras_Objects.TIN_INGOT);
-            OreDictionary.registerOre("ingotAluminum", MetalExtras_Objects.ALUMINUM_INGOT);
-            OreDictionary.registerOre("ingotLead", MetalExtras_Objects.LEAD_INGOT);
-            OreDictionary.registerOre("ingotSilver", MetalExtras_Objects.SILVER_INGOT);
-            OreDictionary.registerOre("gemEnder", MetalExtras_Objects.ENDER_GEM);
-            OreDictionary.registerOre("gemSapphire", MetalExtras_Objects.SAPPHIRE_GEM);
-            OreDictionary.registerOre("gemRuby", MetalExtras_Objects.RUBY_GEM);
-            OreDictionary.registerOre("nuggetCopper", MetalExtras_Objects.COPPER_NUGGET);
-            OreDictionary.registerOre("nuggetTin", MetalExtras_Objects.TIN_NUGGET);
-            OreDictionary.registerOre("nuggetAluminum", MetalExtras_Objects.ALUMINUM_NUGGET);
-            OreDictionary.registerOre("nuggetLead", MetalExtras_Objects.LEAD_NUGGET);
-            OreDictionary.registerOre("nuggetSilver", MetalExtras_Objects.SILVER_NUGGET);
-            //TODO Add smelting recipes
-			/**OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.COAL_ORE, new ItemStack(Items.COAL), .1F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.IRON_ORE, new ItemStack(Items.IRON_INGOT), .7F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.LAPIS_ORE, new ItemStack(Items.DYE, 1, EnumDyeColor.BLUE.getDyeDamage()), .2F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.GOLD_ORE, new ItemStack(Items.GOLD_INGOT), 1F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.REDSTONE_ORE, new ItemStack(Items.REDSTONE), .7F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.EMERALD_ORE, new ItemStack(Items.EMERALD), 1F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.DIAMOND_ORE, new ItemStack(Items.DIAMOND), 1F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.COPPER_ORE, new ItemStack(MetalExtras_Objects.COPPER_INGOT), .7F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.TIN_ORE, new ItemStack(MetalExtras_Objects.TIN_INGOT), .7F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.ALUMINUM_ORE, new ItemStack(MetalExtras_Objects.ALUMINUM_INGOT), .5F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.LEAD_ORE, new ItemStack(MetalExtras_Objects.LEAD_INGOT), .9F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.SILVER_ORE, new ItemStack(MetalExtras_Objects.SILVER_INGOT), 0.9F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.ENDER_ORE, new ItemStack(MetalExtras_Objects.ENDER_GEM), 1F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.SAPPHIRE_ORE, new ItemStack(MetalExtras_Objects.SAPPHIRE_GEM), 1.5F, true);
-			OreUtils.registerMaterialSmeltingRecipe(MetalExtras_Objects.RUBY_ORE, new ItemStack(MetalExtras_Objects.RUBY_GEM), 1.5F, true);*/
+			for(NewOreType type : OreUtils.getTypesRegistry())
+			{
+				for(String name : type.getOreDictionary())
+					OreUtils.addMaterialToOreDictionary(type, name, true);
+				NBTTagCompound nbt = type.smelting.getNbt();
+				nbt.setString("id", type.smelting.getItem().getRegistryName().toString());
+				nbt.setByte("Count", (byte)type.smelting.getCount());
+				nbt.setInteger("Damage", type.smelting.getMetadata());
+				ItemStack stack = new ItemStack(nbt);
+				if(!stack.isEmpty())
+					OreUtils.registerMaterialSmeltingRecipe(type, stack, type.smelting.getXp());
+			}
+			OreDictionary.registerOre("blockCopper", MetalExtras_Objects.COPPER_BLOCK);
+			OreDictionary.registerOre("blockTin", MetalExtras_Objects.TIN_BLOCK);
+			OreDictionary.registerOre("blockAluminum", MetalExtras_Objects.ALUMINUM_BLOCK);
+			OreDictionary.registerOre("blockLead", MetalExtras_Objects.LEAD_BLOCK);
+			OreDictionary.registerOre("blockSilver", MetalExtras_Objects.SILVER_BLOCK);
+			OreDictionary.registerOre("blockEnder", MetalExtras_Objects.ENDER_BLOCK);
+			OreDictionary.registerOre("blockSapphire", MetalExtras_Objects.SAPPHIRE_BLOCK);
+			OreDictionary.registerOre("blockRuby", MetalExtras_Objects.RUBY_BLOCK);
+			OreDictionary.registerOre("ingotCopper", MetalExtras_Objects.COPPER_INGOT);
+			OreDictionary.registerOre("ingotTin", MetalExtras_Objects.TIN_INGOT);
+			OreDictionary.registerOre("ingotAluminum", MetalExtras_Objects.ALUMINUM_INGOT);
+			OreDictionary.registerOre("ingotLead", MetalExtras_Objects.LEAD_INGOT);
+			OreDictionary.registerOre("ingotSilver", MetalExtras_Objects.SILVER_INGOT);
+			OreDictionary.registerOre("gemEnder", MetalExtras_Objects.ENDER_GEM);
+			OreDictionary.registerOre("gemSapphire", MetalExtras_Objects.SAPPHIRE_GEM);
+			OreDictionary.registerOre("gemRuby", MetalExtras_Objects.RUBY_GEM);
+			OreDictionary.registerOre("nuggetCopper", MetalExtras_Objects.COPPER_NUGGET);
+			OreDictionary.registerOre("nuggetTin", MetalExtras_Objects.TIN_NUGGET);
+			OreDictionary.registerOre("nuggetAluminum", MetalExtras_Objects.ALUMINUM_NUGGET);
+			OreDictionary.registerOre("nuggetLead", MetalExtras_Objects.LEAD_NUGGET);
+			OreDictionary.registerOre("nuggetSilver", MetalExtras_Objects.SILVER_NUGGET);
 			GameRegistry.registerWorldGenerator(new OreGeneration(), 100);
-			CONFIGURATION_HANDLER.refreshAll();
 		}
 		
 		public void post()
 		{
-			CONFIGURATION_HANDLER.refreshAll();
+			
 		}
 		
 		@SideOnly(Side.CLIENT)
@@ -213,21 +335,12 @@ public class MetalExtras
 		}
 	};
 	
-	public static final GenerateMinable.EventType COPPER_EVT = OreUtils.getEventType("COPPER");
-	public static final GenerateMinable.EventType TIN_EVT = OreUtils.getEventType("TIN");
-	public static final GenerateMinable.EventType ALUMINUM_EVT = OreUtils.getEventType("ALUMINUM");
-	public static final GenerateMinable.EventType LEAD_EVT = OreUtils.getEventType("LEAD");
-	public static final GenerateMinable.EventType SILVER_EVT = OreUtils.getEventType("SILVER");
-	public static final GenerateMinable.EventType ENDER_EVT = OreUtils.getEventType("ENDER");
-	public static final GenerateMinable.EventType SAPPHIRE_EVT = OreUtils.getEventType("SAPPHIRE");
-	public static final GenerateMinable.EventType RUBY_EVT = OreUtils.getEventType("RUBY");
-	
 	public static final SimpleNetworkWrapper LANDING_PARTICLE_WRAPPER = NetworkRegistry.INSTANCE.newSimpleChannel("metalextras:landing_particles");
-    
-    public MetalExtras()
-    {
-        MinecraftForge.ORE_GEN_BUS.register(OreGeneration.class);
-    }
+	
+	public MetalExtras()
+	{
+		MinecraftForge.ORE_GEN_BUS.register(OreGeneration.class);
+	}
 	
 	@Mod.EventHandler
 	public void constr(FMLConstructionEvent evnet)
@@ -255,39 +368,32 @@ public class MetalExtras
 	
 	private static MinecraftServer server = null;
 	
-    @Mod.EventHandler
-    public void serverStarting(FMLServerStartingEvent event)
-    {
-        server = event.getServer();
-    }
-
-    @Mod.EventHandler
-    public void serverStopping(FMLServerStoppingEvent event)
-    {
-        server = null;
-    }
-	
-    public static boolean isServerActive()
-    {
-        return server != null;
-    }
-    
-    public static MinecraftServer getActiveServer()
-    {
-        return server;
-    }
-    
-    @NetworkCheckHandler
-    public boolean check(Map<String, String> remoteVersions, Side side)
-    {
-        System.out.println("Checking for mods" + ", " + side);
-        return true;
-    }
-	@SubscribeEvent
-	public static void onConfigChanged(OnConfigChangedEvent event)
+	@Mod.EventHandler
+	public void serverStarting(FMLServerStartingEvent event)
 	{
-		if(event.getModID().equals("metalextras"))
-			CONFIGURATION_HANDLER.writeAll();
+		server = event.getServer();
+	}
+	
+	@Mod.EventHandler
+	public void serverStopping(FMLServerStoppingEvent event)
+	{
+		server = null;
+	}
+	
+	public static boolean isServerActive()
+	{
+		return server != null;
+	}
+	
+	public static MinecraftServer getActiveServer()
+	{
+		return server;
+	}
+	
+	@NetworkCheckHandler
+	public boolean check(Map<String, String> remoteVersions, Side side)
+	{
+		return true;
 	}
 	
 	@SubscribeEvent

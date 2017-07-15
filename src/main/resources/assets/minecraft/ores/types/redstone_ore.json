@@ -2,7 +2,7 @@
 	"name": "tile.oreRedstone",
 	"model": { "texture": "metalextras:items/redstone_ore" },
 	"ore_dictionary": [ "oreRedstone" ],
-	"block": { "drops": [ { "item": "minecraft:redstone", "count": { "min": 4, "max": 5 } ], "xp": { "min": 1, "max": 5 }, "name_overrides": { "minecraft:rocks": "minecraft:redstone_ore" } },
+	"block": { "drops": [ { "item": "minecraft:redstone", "count": { "min": 4, "max": 5 } } ], "xp": { "min": 1, "max": 5 }, "name_overrides": { "minecraft:rocks": "minecraft:redstone_ore" } },
 	"item": { "creative_tabs": [ "misc" ] },
 	"smelting": { "item": "minecraft:redstone", "xp": 0.7 },
 	"generation": { "properties": "#minecraft:redstone_ore", "event": { "name": "REDSTONE", "post": false } },

@@ -3,6 +3,7 @@ package metalextras.client.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -29,6 +30,9 @@ import net.minecraft.client.renderer.block.model.SimpleBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.client.resources.FallbackResourceManager;
+import net.minecraft.client.resources.IReloadableResourceManager;
+import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -44,6 +48,11 @@ import net.minecraftforge.registries.GameData;
 
 public class ModelOre implements IModel
 {
+    public static void reload(IResourceManager manager)
+    {
+        BakedModelOre.models.clear();
+    }
+    
 	@Override
 	public Collection<ResourceLocation> getDependencies()
 	{
@@ -186,6 +195,7 @@ public class ModelOre implements IModel
 		public ItemOverridesOre()
 		{
 			super(Lists.newArrayList());
+			Optional.of(Minecraft.getMinecraft().getResourceManager()).filter((manager) -> manager instanceof IReloadableResourceManager).ifPresent((manager) -> ((IReloadableResourceManager)manager).registerReloadListener((manager1) -> this.models.clear()));
 		}
 		
 		@Override

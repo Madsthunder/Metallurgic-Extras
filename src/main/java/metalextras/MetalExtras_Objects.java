@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.commons.compress.utils.IOUtils;
@@ -45,6 +46,7 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
@@ -566,5 +568,6 @@ public class MetalExtras_Objects
             }
             ModelLoader.setCustomModelResourceLocation(OreUtils.ORE, OreUtils.getTypesRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.registry_name.getResourcePath() + "_item"), "inventory"));
         }
+        Optional.of(Minecraft.getMinecraft().getResourceManager()).filter((manager) -> manager instanceof IReloadableResourceManager).ifPresent((manager) -> ((IReloadableResourceManager)manager).registerReloadListener(ModelOre::reload));
     }
 }

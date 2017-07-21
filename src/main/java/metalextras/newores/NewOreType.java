@@ -68,10 +68,6 @@ public class NewOreType
     public NewOreType(ResourceLocation registry_name)
     {
         this.registry_name = registry_name;
-        this.block = block;
-        this.generation = generation;
-        this.smelting = smelting;
-        this.model = model;
         this.block.parent = this;
         this.generation.parent = this;
         this.smelting.parent = this;

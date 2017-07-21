@@ -44,7 +44,7 @@ public class OreLandingParticleMessageHandler implements IMessageHandler<SPacket
 			NewOreType material = message.getOreMaterial();
 			OreType type = message.getOreType();
 	        ResourceLocation type_name = type.getTexture();
-	        ResourceLocation name = new ResourceLocation(String.format("%s.%s", material.model.getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+	        ResourceLocation name = new ResourceLocation(String.format("%s.%s", material.getModel().getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 	        TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 			Vec3d pos = message.getPosition();
 			WorldClient world = Minecraft.getMinecraft().world;

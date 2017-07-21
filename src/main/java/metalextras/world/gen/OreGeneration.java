@@ -47,23 +47,23 @@ public class OreGeneration implements IWorldGenerator
 	public void generate(Random random, int x, int z, World world, IChunkGenerator generator, IChunkProvider provider)
 	{
 		for(NewOreType material : OreUtils.getTypesRegistry())
-			if(material.generation.event == null)
-				spawnOresInChunk(world.getChunkFromChunkCoords(x, z), random, material.generation.getProperties(world, new BlockPos(x * 16, 0, z * 16)));
+			if(!material.getGeneration().hasEvent())
+				spawnOresInChunk(world.getChunkFromChunkCoords(x, z), random, material.getGeneration().getProperties(world, new BlockPos(x * 16, 0, z * 16)));
 	}
 	
 	@SubscribeEvent
 	public static void onOreGenPre(OreGenEvent.Pre event)
 	{
 	    for(NewOreType type : OreUtils.getTypesRegistry())
-	        if(type.generation.post_event)
-	            postGenerateMinableEvent(event, type, type.generation.event);
+	        if(type.getGeneration().shouldPostEvent())
+	            postGenerateMinableEvent(event, type, type.getGeneration().getEvent());
 	}
 	
 	private static void postGenerateMinableEvent(OreGenEvent event, NewOreType material, GenerateMinable.EventType type)
 	{
 		World world = event.getWorld();
 		BlockPos pos = event.getPos();
-		NewOreType.Generation.Properties properties = material.generation.getProperties(world, pos);
+		NewOreType.Generation.Properties properties = material.getGeneration().getProperties(world, pos);
 		WorldGenerator generator = properties.getGenerator();
 		if(MinecraftForge.ORE_GEN_BUS.post(new GenerateMinable(world, event.getRand(), generator, pos, type)))
 			OreGeneration.spawnOresInChunk(world.getChunkFromBlockCoords(pos), event.getRand(), properties);
@@ -77,8 +77,8 @@ public class OreGeneration implements IWorldGenerator
 		{
 			World world = event.getWorld();
 			BlockPos pos = event.getPos();
-		    NewOreType.Generation.Properties properties = material.generation.getProperties(world, pos);
-			if(properties.canGenerate() && material.generation.event == event.getType())
+		    NewOreType.Generation.Properties properties = material.getGeneration().getProperties(world, pos);
+			if(properties.canGenerate() && material.getGeneration().getEvent() == event.getType())
 				OreGeneration.spawnOresInChunk(world.getChunkFromBlockCoords(pos), event.getRand(), properties);
 		}
 		deny = true;

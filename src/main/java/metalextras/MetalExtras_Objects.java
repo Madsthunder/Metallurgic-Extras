@@ -464,7 +464,7 @@ public class MetalExtras_Objects
         for(NewOreType material : OreUtils.getTypesRegistry())
             for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
                 for(OreType type : types)
-                    map.setTextureEntry(new OreTexture(material.model.getTexture(), type.getTexture()));
+                    map.setTextureEntry(new OreTexture(material.getModel().getTexture(), type.getTexture()));
     }
     
     @SideOnly(Side.CLIENT)

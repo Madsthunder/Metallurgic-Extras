@@ -100,7 +100,7 @@ public class CapabilityChunkInformation implements ICapabilityProvider, Iterable
             }
             else
                 for(int i = 0; i < types.size(); i++)
-                    array[i] = types.get(i).generation.getProperties(world, new BlockPos(chunk.x * 16, 0, chunk.z * 16)).canGenerate();
+                    array[i] = types.get(i).getGeneration().getProperties(world, new BlockPos(chunk.x * 16, 0, chunk.z * 16)).canGenerate();
             chunk_info.map.put(chunk, array);
         }
     }
@@ -180,7 +180,7 @@ public class CapabilityChunkInformation implements ICapabilityProvider, Iterable
                 for(int j = 0; j < array.length; j++)
                     if(!array[j])
                     {
-                        OreGeneration.spawnOresInChunk(chunk, random, types.get(j).generation.getProperties(world, new BlockPos(chunk.x * 16, 0, chunk.z * 16)));
+                        OreGeneration.spawnOresInChunk(chunk, random, types.get(j).getGeneration().getProperties(world, new BlockPos(chunk.x * 16, 0, chunk.z * 16)));
                         array[j] = true;
                     }
             }

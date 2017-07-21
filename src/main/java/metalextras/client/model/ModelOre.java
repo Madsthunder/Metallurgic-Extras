@@ -79,7 +79,7 @@ public class ModelOre implements IModel
 				for(OreType type : types)
 					textures.addAll(type.getModel(material).getTextures());
 		for(NewOreType type : OreUtils.getTypesRegistry())
-		    textures.add(type.model.getTexture());
+		    textures.add(type.getModel().getTexture());
 		return textures;
 	}
 	
@@ -124,7 +124,7 @@ public class ModelOre implements IModel
 					if(type != null)
 					{
                         ResourceLocation type_name = type.getTexture();
-					    ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreType().model.getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+					    ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreType().getModel().getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 					    baked_model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()))).bake(this.modelState, this.vertexFormat, this.textureGetter);
 						BakedModelOre.models.put(state, baked_model);
 						return baked_model.getQuads(state, side, 0L);
@@ -219,7 +219,7 @@ public class ModelOre implements IModel
 				Map<EnumFacing, List<BakedQuad>> faceQuads = Maps.newHashMap();
 				for(EnumFacing facing : EnumFacing.values())
 					faceQuads.put(facing, original.getQuads(state, facing, 0L));
-				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreType().model.getModelType());
+				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreType().getModel().getModelType());
 				IBakedModel model = new SimpleBakedModel(generalQuads, faceQuads, original.isAmbientOcclusion(), original.isGui3d(), original.getParticleTexture(), typeModel.bake(typeModel.getDefaultState(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getItemCameraTransforms(), ItemOverrideList.NONE);
 				this.models.get(stack.getItem()).addKey(stack.getMetadata(), model);
 				return model;

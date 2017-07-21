@@ -24,6 +24,7 @@ import metalextras.items.ItemEnderHoe;
 import metalextras.items.ItemEnderTool;
 import metalextras.newores.FilterManager;
 import metalextras.newores.NewOreType;
+import metalextras.newores.NewOreType.Smelting;
 import metalextras.newores.VariableManager;
 import metalextras.packets.OreLandingParticleMessageHandler;
 import metalextras.world.gen.OreGeneration;
@@ -271,13 +272,14 @@ public class MetalExtras
 			{
 				for(String name : type.getOreDictionary())
 					OreUtils.addMaterialToOreDictionary(type, name, true);
-				NBTTagCompound nbt = type.smelting.getNbt();
-				nbt.setString("id", type.smelting.getItem().getRegistryName().toString());
-				nbt.setByte("Count", (byte)type.smelting.getCount());
-				nbt.setInteger("Damage", type.smelting.getMetadata());
+				Smelting smelting = type.getSmelting();
+				NBTTagCompound nbt = smelting.getNbt();
+				nbt.setString("id", smelting.getItem().getRegistryName().toString());
+				nbt.setByte("Count", (byte)smelting.getCount());
+				nbt.setInteger("Damage", smelting.getMetadata());
 				ItemStack stack = new ItemStack(nbt);
 				if(!stack.isEmpty())
-					OreUtils.registerMaterialSmeltingRecipe(type, stack, type.smelting.getXp());
+					OreUtils.registerMaterialSmeltingRecipe(type, stack, smelting.getXp());
 			}
 			OreDictionary.registerOre("blockCopper", MetalExtras_Objects.COPPER_BLOCK);
 			OreDictionary.registerOre("blockTin", MetalExtras_Objects.TIN_BLOCK);

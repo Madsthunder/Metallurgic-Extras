@@ -56,25 +56,48 @@ public class NewOreType
     public static final String DEFAULT_NAME = "tile.metalextras:unnamed";
     
     public final ResourceLocation registry_name;
-    public final NewOreType.Block block;
-    public final NewOreType.Generation generation;
-    public final NewOreType.Smelting smelting;
-    public final NewOreType.Model model;
+    protected NewOreType.Block block = new NewOreType.Block();
+    protected NewOreType.Generation generation = new NewOreType.Generation();
+    protected NewOreType.Smelting smelting = new NewOreType.Smelting();
+    protected NewOreType.Model model = new NewOreType.Model();
     protected final Map<OreTypes, BlockOre> blocks = Maps.newHashMap();
     protected String name = DEFAULT_NAME;
     protected CreativeTabs[] item_creative_tabs = new CreativeTabs[0];
     protected String[] ore_dictionary = new String[0];
     
-    public NewOreType(ResourceLocation registry_name, NewOreType.Block block, NewOreType.Generation generation, NewOreType.Smelting smelting, NewOreType.Model model)
+    public NewOreType(ResourceLocation registry_name)
     {
         this.registry_name = registry_name;
         this.block = block;
         this.generation = generation;
-        this.generation.parent = this;
         this.smelting = smelting;
         this.model = model;
+        this.block.parent = this;
+        this.generation.parent = this;
+        this.smelting.parent = this;
+        this.model.parent = this;
     }
     
+    public NewOreType.Block getBlock()
+    {
+        return this. block;
+    }
+
+    public NewOreType.Generation getGeneration()
+    {
+        return this.generation;
+    }
+
+    public NewOreType.Smelting getSmelting()
+    {
+        return this.smelting;
+    }
+
+    public NewOreType.Model getModel()
+    {
+        return this.model;
+    }
+
     public final String getName()
     {
         return this.name;
@@ -152,8 +175,12 @@ public class NewOreType
     {
         public JsonOreType(ResourceLocation registry_name, JsonElement element) throws JsonParseException, NBTException
         {
-            super(registry_name, parseBlock(registry_name, element), parseGeneration(registry_name, element.getAsJsonObject()), parseSmelting(registry_name, element.getAsJsonObject()), parseModel(registry_name, element.getAsJsonObject()));
+            super(performPreChecks(registry_name, element));
             JsonObject object = element.getAsJsonObject();
+            this.block = parseBlock(registry_name, object);
+            this.generation = parseGeneration(registry_name, object);
+            this.smelting = parseSmelting(registry_name, object);
+            this.model = parseModel(registry_name, object);
             this.name = JsonUtils.getString(object, "name", DEFAULT_NAME);
             JsonArray oredict_array = JsonUtils.getJsonArray(object, "ore_dictionary", new JsonArray());
             List<String> oredict_list = Lists.newArrayList();
@@ -168,11 +195,16 @@ public class NewOreType
             this.item_creative_tabs = Iterables.toArray(item_creative_tab_list, CreativeTabs.class);
         }
         
-        public static Block parseBlock(ResourceLocation registry_name, JsonElement element) throws JsonParseException, NBTException
+        public static ResourceLocation performPreChecks(ResourceLocation registry_name, JsonElement element)
         {
             if(!element.isJsonObject())
                 throw new JsonParseException(String.format("The element at %s is expected to be a JsonObject", registry_name));
-            JsonObject block_object = JsonUtils.getJsonObject(element.getAsJsonObject(), "block", new JsonObject());
+            return registry_name;
+        }
+        
+        public static Block parseBlock(ResourceLocation registry_name, JsonObject object) throws JsonParseException, NBTException
+        {
+            JsonObject block_object = JsonUtils.getJsonObject(object, "block", new JsonObject());
             Block block = new Block();
             JsonObject overrides_object = JsonUtils.getJsonObject(block_object, "name_overrides", new JsonObject());
             for(Entry<String, JsonElement> entry : overrides_object.entrySet())
@@ -307,27 +339,25 @@ public class NewOreType
         public static Generation parseGeneration(ResourceLocation registry_name, JsonObject object) throws JsonParseException
         {
             JsonObject generation_object = JsonUtils.getJsonObject(object, "generation", new JsonObject());
+            Generation generation = new Generation();
             JsonElement event_element = generation_object.has("event") ? generation_object.get("event") : new JsonObject();
-            GenerateMinable.EventType event;
-            boolean post_event;
             if(event_element.isJsonObject())
             {
                 JsonObject event_object = JsonUtils.getJsonObject(generation_object, "event", new JsonObject());
-                event = OreUtils.getEventType(JsonUtils.getString(event_object, "name", ""));
-                post_event = JsonUtils.getBoolean(event_object, "post", true);
+                generation.event = OreUtils.getEventType(JsonUtils.getString(event_object, "name", ""));
+                generation.post_event = JsonUtils.getBoolean(event_object, "post", true);
             }
             else if(event_element.isJsonPrimitive() && event_element.getAsJsonPrimitive().isString())
             {
-                event = OreUtils.getEventType(event_element.getAsString());
-                post_event = true;
+                generation.event = OreUtils.getEventType(event_element.getAsString());
+                generation.post_event = true;
             }
             else
             {
                 MetalExtras.LOGGER.warn(String.format("The element at %s/generation/event is expected to be a JsonPrimitive String or a JsonObject.", registry_name));
-                event = null;
-                post_event = false;
+                generation.event = null;
+                generation.post_event = false;
             }
-            Generation generation = new Generation(event, post_event);
             Set<OreType> materials = Sets.newHashSet(OreUtils.getAllOreTypes());
             JsonElement filters_element = Optional.ofNullable(generation_object.get("filters")).orElseGet(() -> new JsonArray());
             if(filters_element.isJsonArray())
@@ -501,12 +531,18 @@ public class NewOreType
     
     public static class Block
     {
+        private NewOreType parent;
         protected final Map<OreTypes, ResourceLocation> name_overrides = Maps.newHashMap();
         protected int harvest_level = 0;
         protected Drop[] drops = new Drop[0];
         protected int min_xp = 0;
         protected int max_xp = 0;
         protected CreativeTabs[] creative_tabs = new CreativeTabs[0];
+        
+        public final NewOreType getParent()
+        {
+            return this.parent;
+        }
         
         public final int getHarvestLevel()
         {
@@ -545,12 +581,18 @@ public class NewOreType
         
         public static class Drop
         {
+            private NewOreType parent;
             protected Item item = Items.AIR;
             protected int metadata = 0;
             protected NBTTagCompound nbt = new NBTTagCompound();
             protected float[] chances = new float[] { 1F } ;
             protected int[] min_counts = new int[] { 1 };
             protected int[] max_counts = { 1 };
+            
+            public final NewOreType getParent()
+            {
+                return this.parent;
+            }
             
             public final Item getItem()
             {
@@ -586,18 +628,26 @@ public class NewOreType
     
     public static class Generation implements Predicate<IBlockState>
     {
-        public final GenerateMinable.EventType event;
-        public final boolean post_event;
         private NewOreType parent;
+        protected boolean post_event;
+        protected GenerateMinable.EventType event;
         protected BiFunction<World, BlockPos, Properties> properties_getter = Properties.Iron.createDefaultGetter(this);
         protected BiMap<IBlockState, OreType> allowed_states = HashBiMap.create();
         
-        public Generation(GenerateMinable.EventType event, boolean post_event)
+        public final boolean shouldPostEvent()
         {
-            this.event = event;
-            this.post_event = event != null && post_event;
+            return this.event != null && this.post_event;
         }
         
+        public final boolean hasEvent()
+        {
+            return this.event != null;
+        }
+        
+        public final GenerateMinable.EventType getEvent()
+        {
+            return this.event;
+        }
         public final Generation.Properties getProperties(World world, BlockPos pos)
         {
         	return this.properties_getter.apply(world, pos);
@@ -946,11 +996,17 @@ public class NewOreType
     
     public static class Smelting
     {
+        private NewOreType parent;
         protected float xp;
         protected Item item = Items.AIR;
         protected int metadata = 0;
         protected int count = 1;
         protected NBTTagCompound nbt;
+        
+        public final NewOreType getParent()
+        {
+            return this.parent;
+        }
         
         public float getXp()
         {
@@ -980,9 +1036,15 @@ public class NewOreType
     
     public static class Model
     {
+        private NewOreType parent;
         protected boolean three_dimensional = false;
         protected ResourceLocation texture = new ResourceLocation("missingno");
         protected ModelType model_type = ModelType.IRON;
+        
+        public final NewOreType getParent()
+        {
+            return this.parent;
+        }
         
         public final boolean get3d()
         {

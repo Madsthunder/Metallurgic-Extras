@@ -29,6 +29,6 @@ public class ItemBlockOre extends ItemBlock
 	@Override
 	public CreativeTabs[] getCreativeTabs()
 	{
-	    return this.type.block.getCreativeTabs();
+	    return this.type.getBlock().getCreativeTabs();
 	}
 }

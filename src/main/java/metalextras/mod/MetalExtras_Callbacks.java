@@ -27,10 +27,6 @@ public class MetalExtras_Callbacks
 			BiMap<OreType, IBlockState> typeToState = registry.getSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, BiMap.class);
             for(OreType type : types)
                 typeToState.put(type, type.getState());
-            ObjectIntIdentityMap<OreType> typeToId = registry.getSlaveMap(OreUtils.ORETYPE_TO_ID, ObjectIntIdentityMap.class);
-				for(int i = 0; i < types.getOreTypes().size(); i++)
-				    typeToId.put(types.getOreTypes().get(i), (id * 16) + i);
-			types.update();
 		}
 		
 		@Override

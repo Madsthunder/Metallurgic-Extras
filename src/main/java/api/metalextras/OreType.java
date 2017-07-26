@@ -2,11 +2,9 @@ package api.metalextras;
 
 import java.util.Collection;
 import java.util.List;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.SoundType;
@@ -29,7 +27,6 @@ public abstract class OreType implements Comparable<OreType>
 	private final OreTypes types;
 	private final IBlockState state;
 	private final List<Characteristic> characteristics;
-	private int id = -1;
 
 	public OreType(OreTypes types, IBlockState state, Characteristic... characteristics)
 	{
@@ -48,7 +45,7 @@ public abstract class OreType implements Comparable<OreType>
 	public abstract float getResistance();
 
 	public abstract String getLanguageKey();
-	
+
 	public abstract ResourceLocation getTexture();
 
 	public OreTypes getTypes()
@@ -90,7 +87,6 @@ public abstract class OreType implements Comparable<OreType>
 
 	public void handleEntityCollision(World world, BlockPos pos, IBlockState state, Entity entity)
 	{
-
 	}
 
 	public AxisAlignedBB getSelectionBox(World world, BlockPos pos)
@@ -113,9 +109,8 @@ public abstract class OreType implements Comparable<OreType>
 
 	public final OreType setRegistryName(ResourceLocation name)
 	{
-		if (this.getRegistryName() != null)
-			throw new IllegalStateException("Attempted to set registry name with existing registry name! New: " + name
-					+ " Old: " + this.getRegistryName());
+		if(this.getRegistryName() != null)
+			throw new IllegalStateException("Attempted to set registry name with existing registry name! New: " + name + " Old: " + this.getRegistryName());
 		this.name = name;
 		return this;
 	}
@@ -133,11 +128,6 @@ public abstract class OreType implements Comparable<OreType>
 	public Collection<Characteristic> getCharacteristics()
 	{
 		return Sets.newHashSet(this.characteristics);
-	}
-
-	public final void update()
-	{
-		this.id = OreUtils.getID(this);
 	}
 
 	public static class Impl extends OreType
@@ -192,7 +182,7 @@ public abstract class OreType implements Comparable<OreType>
 
 		public OreType.Impl setModelTexture(ResourceLocation texture)
 		{
-			if (FMLLaunchHandler.side() == Side.CLIENT)
+			if(FMLLaunchHandler.side() == Side.CLIENT)
 				this.texture = texture;
 			return this;
 		}
@@ -206,23 +196,13 @@ public abstract class OreType implements Comparable<OreType>
 
 		public static IModel getModelFromTexture(ResourceLocation texture)
 		{
-			IModel missing = ModelLoaderRegistry.getMissingModel();
-			IModel model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(new ImmutableMap.Builder().put("all", texture.toString()).build());
-			return model;
-			/*if (model != missing && model instanceof IRetexturableModel)
-			{
-				if (model instanceof IModelUVLock)
-					model = ((IModelUVLock) model).uvlock(true);
-				return ((IRetexturableModel) model)
-						.retexture(new ImmutableMap.Builder().put("all", texture.toString()).build());
-			}
-			return missing;*/
+			return ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", texture.toString()));
 		}
 
-        @Override
-        public ResourceLocation getTexture()
-        {
-            return this.texture;
-        }
+		@Override
+		public ResourceLocation getTexture()
+		{
+			return this.texture;
+		}
 	}
 }

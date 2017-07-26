@@ -2,9 +2,7 @@ package api.metalextras;
 
 import java.util.Iterator;
 import java.util.List;
-
 import com.google.common.collect.Lists;
-
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -13,7 +11,7 @@ public class OreTypes implements IForgeRegistryEntry<OreTypes>, Iterable<OreType
 	private final List<OreType> types = Lists.newArrayList();
 	private boolean locked = false;
 	private ResourceLocation registryName;
-	
+
 	public boolean addOreType(OreType type)
 	{
 		if(this.locked)
@@ -26,38 +24,32 @@ public class OreTypes implements IForgeRegistryEntry<OreTypes>, Iterable<OreType
 			return false;
 		return true;
 	}
-	
+
 	public boolean hasOreType(OreType type)
 	{
 		return this.types.contains(type);
 	}
-	
+
 	public List<OreType> getOreTypes()
 	{
 		return Lists.newArrayList(this.types);
 	}
-	
+
 	public final void lock()
 	{
 		this.locked = true;
 	}
-	
-	public final void update()
-	{
-		for(OreType type : this)
-			type.update();
-	}
-	
+
 	public final OreTypes setRegistryName(String modid, String name)
 	{
 		return this.setRegistryName(new ResourceLocation(modid, name));
 	}
-	
+
 	public final OreTypes setRegistryName(String name)
 	{
 		return this.setRegistryName(new ResourceLocation(name));
 	}
-	
+
 	@Override
 	public final OreTypes setRegistryName(ResourceLocation name)
 	{
@@ -66,19 +58,19 @@ public class OreTypes implements IForgeRegistryEntry<OreTypes>, Iterable<OreType
 		this.registryName = name;
 		return this;
 	}
-	
+
 	@Override
 	public final ResourceLocation getRegistryName()
 	{
 		return this.registryName;
 	}
-	
+
 	@Override
 	public final Class<OreTypes> getRegistryType()
 	{
 		return OreTypes.class;
 	}
-	
+
 	@Override
 	public final Iterator<OreType> iterator()
 	{

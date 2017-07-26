@@ -428,8 +428,8 @@ public class MetalExtras
 	public static void onHarvestBlock(HarvestDropsEvent event)
 	{
 		EntityPlayer player = event.getHarvester();
-		ItemStack stack = player == null ? ItemStack.EMPTY : player.getHeldItemMainhand();
-		if(!stack.isEmpty())
+		ItemStack stack;
+		if(player != null && !(stack = player.getHeldItemMainhand()).isEmpty())
 		{
 			List<ItemStack> drops = event.getDrops();
 			if(EnchantmentHelper.getEnchantmentLevel(MetalExtras_Objects.HOT_TO_THE_TOUCH, stack) > 0)

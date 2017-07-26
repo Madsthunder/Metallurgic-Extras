@@ -1,11 +1,9 @@
 package metalextras.items;
 
 import com.google.common.collect.Multimap;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
@@ -43,7 +41,8 @@ public class ItemHoe extends Item
         this.setMaxStackSize(1);
     }
 
-    public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    @Override
+	public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
         ItemStack stack = player.getHeldItem(hand);
         if(!player.canPlayerEdit(pos.offset(facing), facing, stack))
@@ -73,6 +72,8 @@ public class ItemHoe extends Item
                         case COARSE_DIRT:
                             this.setBlock(stack, player, worldIn, pos, Blocks.DIRT.getDefaultState().withProperty(BlockDirt.VARIANT, BlockDirt.DirtType.DIRT));
                             return EnumActionResult.SUCCESS;
+                        default: 
+                        	return EnumActionResult.PASS;
                     }
                 }
             }
@@ -81,7 +82,8 @@ public class ItemHoe extends Item
         }
     }
 
-    public boolean hitEntity(ItemStack stack, EntityLivingBase target, EntityLivingBase attacker)
+    @Override
+	public boolean hitEntity(ItemStack stack, EntityLivingBase target, EntityLivingBase attacker)
     {
         stack.damageItem(1, attacker);
         return true;
@@ -97,13 +99,15 @@ public class ItemHoe extends Item
         }
     }
 
-    @SideOnly(Side.CLIENT)
+	@SideOnly(Side.CLIENT)
+    @Override
     public boolean isFull3D()
     {
         return true;
     }
 
-    public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot equipmentSlot)
+    @Override
+	public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot equipmentSlot)
     {
         Multimap<String, AttributeModifier> multimap = super.getItemAttributeModifiers(equipmentSlot);
         if(equipmentSlot == EntityEquipmentSlot.MAINHAND)
@@ -122,7 +126,6 @@ public class ItemHoe extends Item
         if(this.ore_dictionary_repair)
             for(int i : OreDictionary.getOreIDs(stack))
             {
-                System.out.println(OreDictionary.getOreName(i) + ", " + this.repair_material);
                 if(this.repair_material.equals(OreDictionary.getOreName(i)))
                     return true;
             }

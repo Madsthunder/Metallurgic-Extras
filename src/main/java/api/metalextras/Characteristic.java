@@ -2,11 +2,9 @@ package api.metalextras;
 
 import java.util.Collection;
 import java.util.Locale;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-
 import net.minecraft.world.DimensionType;
 
 public class Characteristic
@@ -46,31 +44,23 @@ public class Characteristic
 
 	public static Predicate<Collection<Characteristic>> notAny(final Characteristic... characteristics)
 	{
-		return new Predicate<Collection<Characteristic>>()
+		return characteristics1 ->
 		{
-			@Override
-			public boolean apply(Collection<Characteristic> characteristics1)
-			{
-				for (Characteristic characteristic : characteristics)
-					if (characteristics1.contains(characteristic))
-						return false;
-				return true;
-			}
+			for(Characteristic characteristic : characteristics)
+				if(characteristics1.contains(characteristic))
+					return false;
+			return true;
 		};
 	}
 
 	public static Predicate<Collection<Characteristic>> all(final Characteristic... characteristics)
 	{
-		return new Predicate<Collection<Characteristic>>()
+		return characteristics1 ->
 		{
-			@Override
-			public boolean apply(Collection<Characteristic> characteristics1)
-			{
-				for (Characteristic characteristic : characteristics)
-					if (!characteristics1.contains(characteristic))
-						return false;
-				return true;
-			}
+			for(Characteristic characteristic : characteristics)
+				if(!characteristics1.contains(characteristic))
+					return false;
+			return true;
 		};
 	}
 

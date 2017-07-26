@@ -89,8 +89,8 @@ public class ItemTool extends Item
 				effective_materials.add((Material)o);
 			else if(o instanceof Block)
 				effective_blocks.put((Block)o, (int)Short.MIN_VALUE);
-			else if(o instanceof Pair && ((Pair)o).getLeft() instanceof Block && ((Pair)o).getRight() instanceof Integer)
-				effective_blocks.put((Block)((Pair)o).getLeft(), (Integer)((Pair)o).getRight());
+			else if(o instanceof Pair && ((Pair<?, ?>)o).getLeft() instanceof Block && ((Pair<?, ?>)o).getRight() instanceof Integer)
+				effective_blocks.put((Block)((Pair<?, ?>)o).getLeft(), (Integer)((Pair<?, ?>)o).getRight());
 		this.effective_materials = Lists.newArrayList(effective_materials);
 		this.effective_blocks = Maps.newHashMap(effective_blocks);
 		this.setMaxDamage(max_uses);

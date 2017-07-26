@@ -114,7 +114,8 @@ public class NewOreType
         return this instanceof JsonOreType;
     }
     
-    public final String toString()
+    @Override
+	public final String toString()
     {
         return String.format("OreType{%s}", this.registry_name);
     }
@@ -145,7 +146,7 @@ public class NewOreType
     {
         ModContainer previous_mod = Loader.instance().activeModContainer();
     	Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(this.registry_name.getResourceDomain()));
-    	BlockOre ore = new BlockOre(this, materials, (pair) -> this.block.hasNameOverride(pair.getRight()) ? this.block.getNameOverride(pair.getRight()) : BlockOre.getDefaultRegistryName(pair));
+    	BlockOre ore = new BlockOre(this, materials, (type, types) -> this.block.hasNameOverride(types) ? this.block.getNameOverride(types) : BlockOre.getDefaultRegistryName(type, types));
         Loader.instance().setActiveModContainer(previous_mod);
         return ore;
     }

@@ -151,7 +151,7 @@ public class CapabilityChunkInformation implements ICapabilityProvider, Iterable
         }
     }
     
-    public static final int CHUNKS_PER_TICK = -1;
+    public static int CHUNKS_PER_TICK = -1;
     
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event)

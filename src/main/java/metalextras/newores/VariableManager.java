@@ -40,15 +40,15 @@ public class VariableManager
     
     public static void registerBooleanConstant(ResourceLocation name, boolean constant) { BOOLEAN_CONSTANTS.put(name, () -> constant); }
     public static void registerBooleanConstant(ResourceLocation name, Supplier<Boolean> constant) { BOOLEAN_CONSTANTS.put(name, constant); }
-    public static Optional<Boolean> getBooleanConstant(ResourceLocation name) { return Optional.ofNullable((Boolean)Optional.ofNullable(Optional.<Supplier>of(BOOLEAN_CONSTANTS.get(name)).orElseGet(() -> Optional.ofNullable(OBJECT_CONSTANTS.get(name)).orElse(EMPTY)).get()).filter((object) -> object instanceof Boolean).get()); }
+    public static Optional<Boolean> getBooleanConstant(ResourceLocation name) { return Optional.ofNullable((Boolean)Optional.ofNullable(Optional.<Supplier<?>>of(BOOLEAN_CONSTANTS.get(name)).orElseGet(() -> Optional.ofNullable(OBJECT_CONSTANTS.get(name)).orElse(EMPTY)).get()).filter((object) -> object instanceof Boolean).get()); }
 
     public static void registerNumberConstant(ResourceLocation name, Number constant) { NUMBER_CONSTANTS.put(name, () -> constant); }
     public static void registerNumberConstant(ResourceLocation name, Supplier<Number> constant) { NUMBER_CONSTANTS.put(name, constant); }
-    public static Optional<Number> getNumberConstant(ResourceLocation name) { return Optional.ofNullable((Number)Optional.ofNullable(Optional.<Supplier>ofNullable(NUMBER_CONSTANTS.get(name)).orElseGet(() -> Optional.ofNullable(OBJECT_CONSTANTS.get(name)).orElse(EMPTY)).get()).filter((object) -> object instanceof Number).get()); }
+    public static Optional<Number> getNumberConstant(ResourceLocation name) { return Optional.ofNullable((Number)Optional.ofNullable(Optional.<Supplier<?>>ofNullable(NUMBER_CONSTANTS.get(name)).orElseGet(() -> Optional.ofNullable(OBJECT_CONSTANTS.get(name)).orElse(EMPTY)).get()).filter((object) -> object instanceof Number).get()); }
 
     public static void registerStringConstant(ResourceLocation name, String constant) { STRING_CONSTANTS.put(name, () -> constant); }
     public static void registerStringConstant(ResourceLocation name, Supplier<String> constant) { STRING_CONSTANTS.put(name, constant); }
-    public static Optional<String> getStringConstant(ResourceLocation name) { return Optional.ofNullable((String)Optional.ofNullable(Optional.<Supplier>of(STRING_CONSTANTS.get(name)).orElseGet(() -> Optional.ofNullable(OBJECT_CONSTANTS.get(name)).orElse(EMPTY)).get()).filter((object) -> object instanceof String).get()); }
+    public static Optional<String> getStringConstant(ResourceLocation name) { return Optional.ofNullable((String)Optional.ofNullable(Optional.<Supplier<?>>of(STRING_CONSTANTS.get(name)).orElseGet(() -> Optional.ofNullable(OBJECT_CONSTANTS.get(name)).orElse(EMPTY)).get()).filter((object) -> object instanceof String).get()); }
 
     public static void registerConstant(ResourceLocation name, Object constant) { OBJECT_CONSTANTS.put(name, () -> constant); }
     public static void registerConstant(ResourceLocation name, Supplier<Object> constant) { OBJECT_CONSTANTS.put(name, constant); }

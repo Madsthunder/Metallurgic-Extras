@@ -14,12 +14,11 @@ public class SPacketBlockOreLandingParticles implements IMessage
 	private OreType type;
 	private Vec3d pos;
 	private int particles;
-	
+
 	public SPacketBlockOreLandingParticles()
 	{
-		
 	}
-	
+
 	public SPacketBlockOreLandingParticles(NewOreType newtype, OreType type, Vec3d pos, int particles)
 	{
 		this.newtype = newtype;
@@ -27,7 +26,7 @@ public class SPacketBlockOreLandingParticles implements IMessage
 		this.pos = pos;
 		this.particles = particles;
 	}
-	
+
 	@Override
 	public void fromBytes(ByteBuf buffer)
 	{
@@ -36,7 +35,7 @@ public class SPacketBlockOreLandingParticles implements IMessage
 		this.pos = new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
 		this.particles = buffer.readInt();
 	}
-	
+
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
@@ -47,43 +46,43 @@ public class SPacketBlockOreLandingParticles implements IMessage
 		buffer.writeDouble(this.pos.z);
 		buffer.writeInt(this.particles);
 	}
-	
+
 	public NewOreType getOreMaterial()
 	{
 		return this.newtype;
 	}
-	
+
 	public OreType getOreType()
 	{
 		return this.type;
 	}
-	
+
 	public Vec3d getPosition()
 	{
 		return this.pos;
 	}
-	
+
 	public int getParticles()
 	{
 		return this.particles;
 	}
-	
+
 	public static class SendLandingParticlesEvent extends Event
 	{
 		private final int dimension;
 		private final SPacketBlockOreLandingParticles message;
-		
+
 		public SendLandingParticlesEvent(int dimension, SPacketBlockOreLandingParticles message)
 		{
 			this.dimension = dimension;
 			this.message = message;
 		}
-		
+
 		public int getDimension()
 		{
 			return this.dimension;
 		}
-		
+
 		public SPacketBlockOreLandingParticles getMessage()
 		{
 			return this.message;

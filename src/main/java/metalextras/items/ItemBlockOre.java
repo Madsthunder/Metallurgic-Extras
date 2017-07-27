@@ -10,14 +10,14 @@ public class ItemBlockOre extends ItemBlock
 {
 	private final OreTypeProperty property;
 	public final NewOreType type;
-	
+
 	public ItemBlockOre(BlockOre block, OreTypeProperty property)
 	{
 		super(block);
 		this.property = property;
 		this.type = block.getOreType();
 	}
-	
+
 	@Override
 	public int getMetadata(int meta)
 	{
@@ -25,10 +25,10 @@ public class ItemBlockOre extends ItemBlock
 			return 0;
 		return meta;
 	}
-	
+
 	@Override
 	public CreativeTabs[] getCreativeTabs()
 	{
-	    return this.type.getBlockModule().getCreativeTabs();
+		return this.type.getBlockModule().getCreativeTabs();
 	}
 }

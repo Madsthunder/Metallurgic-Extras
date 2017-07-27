@@ -78,16 +78,16 @@ public class MetalExtras
 	public static final String NAME = "Metallurgic Extras";
 	public static final String VERSION = "3.0.0";
 	public static final Logger LOGGER = LogManager.getLogger("Metallurgic Extras");
-	
+
 	public static class Proxy
 	{
 		@SidedProxy(modId = MODID)
 		public static Proxy I = null;
-		
+
 		public void constr()
 		{
 		}
-		
+
 		public void pre()
 		{
 			MinecraftForge.EVENT_BUS.post(new RegisterModuleFactoriesEvent());
@@ -265,7 +265,7 @@ public class MetalExtras
 			});
 			LANDING_PARTICLE_WRAPPER.registerMessage(OreLandingParticleMessageHandler.class, SPacketBlockOreLandingParticles.class, 0, Side.CLIENT);
 		}
-		
+
 		public void init()
 		{
 			for(NewOreType type : OreUtils.getTypesRegistry())
@@ -304,30 +304,26 @@ public class MetalExtras
 			OreDictionary.registerOre("nuggetSilver", MetalExtras_Objects.SILVER_NUGGET);
 			GameRegistry.registerWorldGenerator(new OreGeneration(), 100);
 		}
-		
+
 		public void post()
 		{
-			
 		}
-		
+
 		@SideOnly(Side.CLIENT)
 		public static class ClientProxy extends Proxy
 		{
 		}
-		
+
 		@SideOnly(Side.SERVER)
 		public static class ServerProxy extends Proxy
 		{
-			
 		}
 	}
-	
+
 	public static final Characteristic OTD_NETHER = Characteristic.byDimension(DimensionType.NETHER);
 	public static final Characteristic OTD_END = Characteristic.byDimension(DimensionType.THE_END);
-	
 	@GameRegistry.ItemStackHolder("metalextras:ender_gem")
 	public static final ItemStack METALLURGIC_EXTRAS_ITEM = ItemStack.EMPTY;
-	
 	public static final CreativeTabs METALLURGIC_EXTRAS = new CreativeTabs("metalextras:ores")
 	{
 		@Override
@@ -336,68 +332,67 @@ public class MetalExtras
 			return METALLURGIC_EXTRAS_ITEM;
 		}
 	};
-	
 	public static final SimpleNetworkWrapper LANDING_PARTICLE_WRAPPER = NetworkRegistry.INSTANCE.newSimpleChannel("metalextras:landing_particles");
-	
+
 	public MetalExtras()
 	{
 		MinecraftForge.ORE_GEN_BUS.register(OreGeneration.class);
 	}
-	
+
 	@Mod.EventHandler
 	public void constr(FMLConstructionEvent evnet)
 	{
 		Proxy.I.constr();
 	}
-	
+
 	@Mod.EventHandler
 	public void pre(FMLPreInitializationEvent event)
 	{
 		Proxy.I.pre();
 	}
-	
+
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event)
 	{
 		Proxy.I.init();
 	}
-	
+
 	@Mod.EventHandler
 	public void post(FMLPostInitializationEvent event)
 	{
 		Proxy.I.post();
 	}
-	
+
 	private static MinecraftServer server = null;
-	
+
 	@Mod.EventHandler
 	public void serverStarting(FMLServerStartingEvent event)
 	{
 		server = event.getServer();
 	}
-	
+
 	@Mod.EventHandler
 	public void serverStopping(FMLServerStoppingEvent event)
 	{
 		server = null;
 	}
-	
+
 	public static boolean isServerActive()
 	{
 		return server != null;
 	}
-	
+
 	public static MinecraftServer getActiveServer()
 	{
 		return server;
 	}
-	
+
 	@NetworkCheckHandler
 	public boolean check(Map<String, String> remoteVersions, Side side)
 	{
 		return true;
 	}
-	
+
 	@SubscribeEvent
 	public static void onBlockBroken(BlockEvent.BreakEvent event)
 	{
@@ -415,7 +410,7 @@ public class MetalExtras
 			event.setExpToDrop(0);
 		}
 	}
-	
+
 	@SubscribeEvent
 	public static void onLandingParticlesSpawn(SendLandingParticlesEvent event)
 	{
@@ -423,7 +418,7 @@ public class MetalExtras
 		Vec3d pos = message.getPosition();
 		LANDING_PARTICLE_WRAPPER.sendToAllAround(message, new TargetPoint(event.getDimension(), pos.x, pos.y, pos.z, 1024));
 	}
-	
+
 	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public static void onHarvestBlock(HarvestDropsEvent event)
 	{

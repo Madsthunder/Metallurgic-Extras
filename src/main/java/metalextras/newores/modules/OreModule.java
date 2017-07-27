@@ -62,15 +62,15 @@ public abstract class OreModule<P extends OreModule<?, P>, S extends OreModule<P
 		{
 			this.children.put(child_type, VariableManager.newModule(this.path, child_type, this.json));
 		}
-		
+
 		private static <S extends OreModule<?, S>> void gatherChildren(String path, OreModule<?, S> module, JsonObject json)
 		{
 			module.children.clear();
-			GatherChildrenEvent<S> event = new GatherChildrenEvent<S>(path, module.module_type, json);
+			GatherChildrenEvent<S> event = new GatherChildrenEvent<>(path, module.module_type, json);
 			event.children.putAll(module.gatherDefaultChildren(path, json));
 			MinecraftForge.EVENT_BUS.post(event);
 			module.children.putAll(event.children);
-			module.children.values().forEach((child) -> 
+			module.children.values().forEach((child) ->
 			{
 				child.setParent((S)module);
 				gatherChildren(String.format("%s/%s", path, VariableManager.getModuleName(child.module_type)), child, json);

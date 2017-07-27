@@ -2,7 +2,6 @@ package metalextras.mod;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
@@ -17,7 +16,7 @@ import net.minecraftforge.registries.RegistryManager;
 public class MetalExtras_Callbacks
 {
 	public static final Object ORE_TYPES = new OreTypeCollections();
-	
+
 	private static class OreTypeCollections implements ClearCallback<OreTypes>, CreateCallback<OreTypes>, AddCallback<OreTypes>
 	{
 		@Override
@@ -25,21 +24,21 @@ public class MetalExtras_Callbacks
 		{
 			types.lock();
 			BiMap<OreType, IBlockState> typeToState = registry.getSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, BiMap.class);
-            for(OreType type : types)
-                typeToState.put(type, type.getState());
+			for(OreType type : types)
+				typeToState.put(type, type.getState());
 		}
-		
+
 		@Override
 		public void onCreate(IForgeRegistryInternal<OreTypes> registry, RegistryManager manager)
 		{
-		    registry.setSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, HashBiMap.<OreType, IBlockState> create());
-            registry.setSlaveMap(OreUtils.ORETYPE_TO_ID, new ObjectIntIdentityMap<OreType>());
+			registry.setSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, HashBiMap.<OreType, IBlockState> create());
+			registry.setSlaveMap(OreUtils.ORETYPE_TO_ID, new ObjectIntIdentityMap<OreType>());
 		}
 
-        @Override
-        public void onClear(IForgeRegistryInternal<OreTypes> registry, RegistryManager manager)
-        {
-            registry.getSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, BiMap.class).clear();
-        }
+		@Override
+		public void onClear(IForgeRegistryInternal<OreTypes> registry, RegistryManager manager)
+		{
+			registry.getSlaveMap(OreUtils.ORETYPE_TO_IBLOCKSTATE, BiMap.class).clear();
+		}
 	}
 }

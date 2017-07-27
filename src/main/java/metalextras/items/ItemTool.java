@@ -3,13 +3,10 @@ package metalextras.items;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.apache.commons.lang3.tuple.Pair;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -41,37 +38,37 @@ public class ItemTool extends Item
 	private final float attack_speed;
 	private final Map<Block, Integer> effective_blocks;
 	private final List<Material> effective_materials;
-	
+
 	public ItemTool(String tool_class, int harvest_level, float proper_block_effeciency, int enchantability, String repair_material, float entity_damage, float attack_speed, int max_uses, Object... effective_objects)
 	{
 		this(Lists.newArrayList(tool_class), harvest_level, proper_block_effeciency, enchantability, repair_material, entity_damage, attack_speed, max_uses, effective_objects);
 	}
-	
+
 	public ItemTool(String tool_class, int harvest_level, float proper_block_effeciency, int enchantability, ResourceLocation repair_material, float entity_damage, float attack_speed, int max_uses, Object... effective_objects)
 	{
 		this(Lists.newArrayList(tool_class), harvest_level, proper_block_effeciency, enchantability, repair_material, entity_damage, attack_speed, max_uses, effective_objects);
 	}
-	
+
 	public ItemTool(List<String> tool_classes, int harvest_level, float proper_block_effeciency, int enchantability, String repair_material, float entity_damage, float attack_speed, int max_uses, Object... effective_objects)
 	{
 		this(tool_classes, NonNullList.withSize(tool_classes.size(), harvest_level), proper_block_effeciency, enchantability, repair_material, entity_damage, attack_speed, max_uses, effective_objects);
 	}
-	
+
 	public ItemTool(List<String> tool_classes, int harvest_level, float proper_block_effeciency, int enchantability, ResourceLocation repair_material, float entity_damage, float attack_speed, int max_uses, Object... effective_objects)
 	{
 		this(tool_classes, NonNullList.withSize(tool_classes.size(), harvest_level), proper_block_effeciency, enchantability, repair_material, entity_damage, attack_speed, max_uses, effective_objects);
 	}
-	
+
 	public ItemTool(List<String> tool_classes, List<Integer> harvest_levels, float proper_block_effeciency, int enchantability, String repair_material, float entity_damage, float attack_speed, int max_uses, Object... effective_objects)
 	{
 		this(toMap(tool_classes, harvest_levels), proper_block_effeciency, enchantability, repair_material.toString(), true, entity_damage, attack_speed, max_uses, effective_objects);
 	}
-	
+
 	public ItemTool(List<String> tool_classes, List<Integer> harvest_levels, float proper_block_effeciency, int enchantability, ResourceLocation repair_material, float entity_damage, float attack_speed, int max_uses, Object... effective_objects)
 	{
 		this(toMap(tool_classes, harvest_levels), proper_block_effeciency, enchantability, repair_material.toString(), false, entity_damage, attack_speed, max_uses, effective_objects);
 	}
-	
+
 	public ItemTool(Map<String, Integer> tool_class_to_harvest_level, float proper_block_effeciency, int enchantability, String repair_material, boolean ore_dictionary_repair, float entity_damage, float attack_speed, int max_uses, Object... effective_objects)
 	{
 		for(Entry<String, Integer> entry : tool_class_to_harvest_level.entrySet())
@@ -96,7 +93,7 @@ public class ItemTool extends Item
 		this.setMaxDamage(max_uses);
 		this.setMaxStackSize(1);
 	}
-	
+
 	@Override
 	public float getStrVsBlock(ItemStack stack, IBlockState state)
 	{
@@ -107,20 +104,20 @@ public class ItemTool extends Item
 				return this.proper_block_effeciency;
 		return 1F;
 	}
-	
+
 	@Override
 	public boolean canHarvestBlock(IBlockState state)
 	{
 		return this.effective_materials.contains(state.getMaterial());
 	}
-	
+
 	@Override
 	public boolean hitEntity(ItemStack stack, EntityLivingBase entity, EntityLivingBase attacker)
 	{
 		stack.damageItem(2, attacker);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onBlockDestroyed(ItemStack stack, World world, IBlockState state, BlockPos pos, EntityLivingBase entity)
 	{
@@ -128,20 +125,20 @@ public class ItemTool extends Item
 			stack.damageItem(1, entity);
 		return true;
 	}
-	
+
 	@Override
 	@SideOnly(Side.CLIENT)
 	public boolean isFull3D()
 	{
 		return true;
 	}
-	
+
 	@Override
 	public int getItemEnchantability()
 	{
 		return this.enchantability;
 	}
-	
+
 	@Override
 	public boolean getIsRepairable(ItemStack tool, ItemStack stack)
 	{
@@ -156,7 +153,7 @@ public class ItemTool extends Item
 			}
 		return stack.getItem() == ForgeRegistries.ITEMS.getValue(new ResourceLocation(this.repair_material));
 	}
-	
+
 	@Override
 	public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot slot)
 	{
@@ -168,7 +165,7 @@ public class ItemTool extends Item
 		}
 		return modifiers;
 	}
-	
+
 	private static Map<String, Integer> toMap(List<String> tool_classes, List<Integer> harvest_levels)
 	{
 		if(tool_classes.size() != harvest_levels.size())
@@ -178,7 +175,7 @@ public class ItemTool extends Item
 			tool_class_to_harvest_level.put(tool_classes.get(i), harvest_levels.get(i));
 		return tool_class_to_harvest_level;
 	}
-	
+
 	@Override
 	public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment)
 	{

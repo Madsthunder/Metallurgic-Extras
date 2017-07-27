@@ -46,28 +46,28 @@ import net.minecraftforge.registries.GameData;
 
 public class ModelOre implements IModel
 {
-    public static void reload(IResourceManager manager)
-    {
-        BakedModelOre.models.clear();
-    }
-    
+	public static void reload(IResourceManager manager)
+	{
+		BakedModelOre.models.clear();
+	}
+
 	@Override
 	public Collection<ResourceLocation> getDependencies()
 	{
 		Set<ResourceLocation> dependencies = Sets.newHashSet();
 		for(ModelType material : ModelType.values())
 		{
-		    dependencies.add(material.model_location);
-            IModel model = ModelLoaderRegistry.getModelOrMissing(material.model_location);
-            if(model != ModelLoaderRegistry.getMissingModel())
-                dependencies.addAll(model.getDependencies());
+			dependencies.add(material.model_location);
+			IModel model = ModelLoaderRegistry.getModelOrMissing(material.model_location);
+			if(model != ModelLoaderRegistry.getMissingModel())
+				dependencies.addAll(model.getDependencies());
 			for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
 				for(OreType type : types)
 					dependencies.addAll(type.getModel(material).getDependencies());
 		}
 		return dependencies;
 	}
-	
+
 	@Override
 	public Collection<ResourceLocation> getTextures()
 	{
@@ -77,36 +77,36 @@ public class ModelOre implements IModel
 				for(OreType type : types)
 					textures.addAll(type.getModel(material).getTextures());
 		for(NewOreType type : OreUtils.getTypesRegistry())
-		    textures.add(type.getChildModule(ModelModule.class).getTexture());
+			textures.add(type.getChildModule(ModelModule.class).getTexture());
 		return textures;
 	}
-	
+
 	@Override
 	public IBakedModel bake(IModelState modelState, VertexFormat vertexFormat, Function<ResourceLocation, TextureAtlasSprite> textureGetter)
 	{
 		return new BakedModelOre(modelState, vertexFormat, textureGetter);
 	}
-	
+
 	@Override
 	public IModelState getDefaultState()
 	{
 		return ModelRotation.X0_Y0;
 	}
-	
+
 	private static class BakedModelOre implements IBakedModel
 	{
 		private static final Map<IBlockState, IBakedModel> models = Maps.newHashMap();
 		private final IModelState modelState;
 		private final VertexFormat vertexFormat;
 		private final Function<ResourceLocation, TextureAtlasSprite> textureGetter;
-		
+
 		private BakedModelOre(IModelState modelState, VertexFormat vertexFormat, Function<ResourceLocation, TextureAtlasSprite> textureGetter)
 		{
 			this.modelState = modelState;
 			this.vertexFormat = vertexFormat;
 			this.textureGetter = textureGetter;
 		}
-		
+
 		@Override
 		public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand)
 		{
@@ -121,9 +121,9 @@ public class ModelOre implements IModel
 					OreType type = ore.getOreType(state);
 					if(type != null)
 					{
-                        ResourceLocation type_name = type.getTexture();
-					    ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreType().getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
-					    baked_model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()))).bake(this.modelState, this.vertexFormat, this.textureGetter);
+						ResourceLocation type_name = type.getTexture();
+						ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreType().getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+						baked_model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()))).bake(this.modelState, this.vertexFormat, this.textureGetter);
 						BakedModelOre.models.put(state, baked_model);
 						return baked_model.getQuads(state, side, 0L);
 					}
@@ -131,71 +131,70 @@ public class ModelOre implements IModel
 			}
 			return Lists.newArrayList();
 		}
-		
+
 		@Override
 		public boolean isAmbientOcclusion()
 		{
 			return true;
 		}
-		
+
 		@Override
 		public boolean isGui3d()
 		{
 			return true;
 		}
-		
+
 		@Override
 		public boolean isBuiltInRenderer()
 		{
 			return false;
 		}
-		
+
 		@Override
 		public TextureAtlasSprite getParticleTexture()
 		{
 			return Minecraft.getMinecraft().getTextureMapBlocks().getMissingSprite();
 		}
-		
+
 		@Override
 		public ItemCameraTransforms getItemCameraTransforms()
 		{
 			return ItemCameraTransforms.DEFAULT;
 		}
-		
+
 		@Override
 		public ItemOverrideList getOverrides()
 		{
 			return ItemOverridesOre.I;
 		}
-		
+
 		private static IBakedModel joinModels(IBlockState state, long seed, IBakedModel model, Iterable<IBakedModel> models)
 		{
-	        List<BakedQuad> generalQuads = Lists.newArrayList();
-	        Map<EnumFacing, List<BakedQuad>> faceQuads = Maps.newHashMap();
-	        for(EnumFacing facing : EnumFacing.values())
-	            faceQuads.put(facing, Lists.newArrayList());
-	        for(IBakedModel model1 : models)
-	        {
-	            generalQuads.addAll(model1.getQuads(state, null, seed));
-	            for(EnumFacing facing : EnumFacing.values())
-	                faceQuads.get(facing).addAll(model1.getQuads(state, facing, seed));
-	        }
-	        return new SimpleBakedModel(generalQuads, faceQuads, model.isAmbientOcclusion(), model.isGui3d(), model.getParticleTexture(), model.getItemCameraTransforms(), model.getOverrides());
+			List<BakedQuad> generalQuads = Lists.newArrayList();
+			Map<EnumFacing, List<BakedQuad>> faceQuads = Maps.newHashMap();
+			for(EnumFacing facing : EnumFacing.values())
+				faceQuads.put(facing, Lists.newArrayList());
+			for(IBakedModel model1 : models)
+			{
+				generalQuads.addAll(model1.getQuads(state, null, seed));
+				for(EnumFacing facing : EnumFacing.values())
+					faceQuads.get(facing).addAll(model1.getQuads(state, facing, seed));
+			}
+			return new SimpleBakedModel(generalQuads, faceQuads, model.isAmbientOcclusion(), model.isGui3d(), model.getParticleTexture(), model.getItemCameraTransforms(), model.getOverrides());
 		}
 	}
-	
+
 	private static class ItemOverridesOre extends ItemOverrideList
 	{
 		private static final ItemOverrideList I = new ItemOverridesOre();
-		
 		private final Map<Item, IntHashMap<IBakedModel>> models = Maps.newHashMap();
-		
+
 		public ItemOverridesOre()
 		{
 			super(Lists.newArrayList());
 			Optional.of(Minecraft.getMinecraft().getResourceManager()).filter((manager) -> manager instanceof IReloadableResourceManager).ifPresent((manager) -> ((IReloadableResourceManager)manager).registerReloadListener((manager1) -> this.models.clear()));
 		}
-		
+
 		@Override
 		public IBakedModel handleItemState(IBakedModel original, ItemStack stack, World world, EntityLivingBase entity)
 		{

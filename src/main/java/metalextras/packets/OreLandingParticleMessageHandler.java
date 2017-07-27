@@ -26,7 +26,7 @@ public class OreLandingParticleMessageHandler implements IMessageHandler<SPacket
 {
 	private static final Random R = new Random();
 	private static final double SPEED = 0.15000000596046448D;
-	
+
 	@SideOnly(Side.CLIENT)
 	@Override
 	public SPacketBlockOreLandingParticles onMessage(SPacketBlockOreLandingParticles message, MessageContext context)
@@ -35,9 +35,9 @@ public class OreLandingParticleMessageHandler implements IMessageHandler<SPacket
 		{
 			NewOreType material = message.getOreMaterial();
 			OreType type = message.getOreType();
-	        ResourceLocation type_name = type.getTexture();
-	        ResourceLocation name = new ResourceLocation(String.format("%s.%s", material.getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
-	        TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
+			ResourceLocation type_name = type.getTexture();
+			ResourceLocation name = new ResourceLocation(String.format("%s.%s", material.getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+			TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 			Vec3d pos = message.getPosition();
 			WorldClient world = Minecraft.getMinecraft().world;
 			ParticleManager manager = Minecraft.getMinecraft().effectRenderer;
@@ -47,7 +47,6 @@ public class OreLandingParticleMessageHandler implements IMessageHandler<SPacket
 				double d6 = R.nextGaussian() * SPEED;
 				double d7 = R.nextGaussian() * SPEED;
 				double d8 = R.nextGaussian() * SPEED;
-				
 				try
 				{
 					if(entity != null && manager != null)
@@ -71,7 +70,6 @@ public class OreLandingParticleMessageHandler implements IMessageHandler<SPacket
 				}
 			}
 		});
-		
 		return message;
 	}
 }

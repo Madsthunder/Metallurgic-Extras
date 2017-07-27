@@ -24,7 +24,7 @@ public class SmeltingModule extends OreModule<NewOreType, SmeltingModule>
 	protected int count = 1;
 	protected NBTTagCompound nbt;
 
-	public SmeltingModule(String path, JsonObject json, boolean parse)
+	public SmeltingModule(String path, JsonElement json, boolean parse)
 	{
 		super(path, NewOreType.class, SmeltingModule.class, json);
 		if(parse)

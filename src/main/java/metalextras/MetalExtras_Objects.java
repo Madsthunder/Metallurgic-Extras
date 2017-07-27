@@ -560,7 +560,7 @@ public class MetalExtras_Objects
 		VariableManager.registerMasterModuleFactory(NewOreType.class, "types", (name, json) ->
 		{
 			ModContainer container = Loader.instance().activeModContainer();
-			NewOreType type = new NewOreType(String.format("types/%s", name), json, true);
+			NewOreType type = new NewOreType(String.format("types/%s", name), json.getAsJsonObject(), true);
 			type.setRegistryName(name);
 			OreUtils.getTypesRegistry().register(type);
 			for(OreTypes types : OreUtils.getTypeCollectionsRegistry())

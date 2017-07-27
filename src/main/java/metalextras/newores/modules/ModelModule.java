@@ -1,5 +1,6 @@
 package metalextras.newores.modules;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import api.metalextras.ModelType;
 import metalextras.newores.NewOreType;
@@ -12,14 +13,15 @@ public class ModelModule extends OreModule<NewOreType, ModelModule>
 	protected ResourceLocation texture = new ResourceLocation("missingno");
 	protected ModelType model_type = ModelType.IRON;
 
-	public ModelModule(String path, JsonObject json, boolean parse)
+	public ModelModule(String path, JsonElement json, boolean parse)
 	{
 		super(path, NewOreType.class, ModelModule.class, json);
 		if(parse)
 		{
-			this.three_dimensional = JsonUtils.getBoolean(json, "3d", false);
-			this.texture = new ResourceLocation(JsonUtils.getString(json, "texture", "missingno"));
-			this.model_type = ModelType.byName(JsonUtils.getString(json, "model_type", "IRON"));
+			JsonObject model_object = new JsonObject();
+			this.three_dimensional = JsonUtils.getBoolean(model_object, "3d", false);
+			this.texture = new ResourceLocation(JsonUtils.getString(model_object, "texture", "missingno"));
+			this.model_type = ModelType.byName(JsonUtils.getString(model_object, "model_type", "IRON"));
 		}
 	}
 

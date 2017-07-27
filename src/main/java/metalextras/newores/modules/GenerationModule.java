@@ -38,15 +38,16 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 	protected BiFunction<World, BlockPos, GenerationModule.Properties> properties_getter = Properties.Iron.createDefaultGetter(this);
 	protected BiMap<IBlockState, OreType> allowed_states = HashBiMap.create();
 
-	public GenerationModule(String path, JsonObject json, boolean parse)
+	public GenerationModule(String path, JsonElement json, boolean parse)
 	{
 		super(path, NewOreType.class, GenerationModule.class, json);
 		if(parse)
 		{
-			JsonElement event_element = json.has("event") ? json.get("event") : new JsonObject();
+			JsonObject generation_object = json.getAsJsonObject();
+			JsonElement event_element = generation_object.has("event") ? generation_object.get("event") : new JsonObject();
 			if(event_element.isJsonObject())
 			{
-				JsonObject event_object = JsonUtils.getJsonObject(json, "event", new JsonObject());
+				JsonObject event_object = JsonUtils.getJsonObject(generation_object, "event", new JsonObject());
 				this.event = OreUtils.getEventType(JsonUtils.getString(event_object, "name", ""));
 				this.post_event = JsonUtils.getBoolean(event_object, "post", true);
 			}
@@ -62,7 +63,7 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 				this.post_event = false;
 			}
 			Set<OreType> materials = Sets.newHashSet(OreUtils.getAllOreTypes());
-			JsonElement filters_element = Optional.ofNullable(json.get("filters")).orElseGet(() -> new JsonArray());
+			JsonElement filters_element = Optional.ofNullable(generation_object.get("filters")).orElseGet(() -> new JsonArray());
 			if(filters_element.isJsonArray())
 			{
 				JsonArray filters_array = filters_element.getAsJsonArray();
@@ -97,7 +98,7 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 			}
 			for(OreType material : materials)
 				this.allowed_states.put(material.getState(), material);
-			JsonElement properties_element = json.get("properties");
+			JsonElement properties_element = generation_object.get("properties");
 			String properties_string;
 			if(properties_element == null)
 				this.properties_getter = GenerationModule.Properties.Iron.createDefaultGetter(this);

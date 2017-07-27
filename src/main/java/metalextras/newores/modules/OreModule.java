@@ -2,6 +2,7 @@ package metalextras.newores.modules;
 
 import java.util.Map;
 import com.google.common.collect.Maps;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import metalextras.newores.VariableManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -14,14 +15,15 @@ public abstract class OreModule<P extends OreModule<?, P>, S extends OreModule<P
 	public final Class<S> module_type;
 	private P parent;
 
-	public OreModule(String path, Class<P> parent_type, Class<S> module_type, JsonObject json)
+	public OreModule(String path, Class<P> parent_type, Class<S> module_type, JsonElement json)
 	{
 		this.parent_type = parent_type;
 		this.module_type = module_type;
 		if(this.parent_type == this.module_type)
 		{
 			this.setParent((P)this);
-			GatherChildrenEvent.gatherChildren(path, this, json);
+			if(json.isJsonObject())
+				GatherChildrenEvent.gatherChildren(path, this, json.getAsJsonObject());
 		}
 	}
 

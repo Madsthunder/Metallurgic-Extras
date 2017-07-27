@@ -35,11 +35,12 @@ public class BlockModule extends OreModule<NewOreType, BlockModule>
 	protected int max_xp = 0;
 	protected CreativeTabs[] creative_tabs = new CreativeTabs[0];
 
-	public BlockModule(String path, JsonObject block_object, boolean parse)
+	public BlockModule(String path, JsonElement json, boolean parse)
 	{
-		super(path, NewOreType.class, BlockModule.class, block_object);
+		super(path, NewOreType.class, BlockModule.class, json);
 		if(parse)
 		{
+			JsonObject block_object = json.getAsJsonObject();
 			JsonObject overrides_object = JsonUtils.getJsonObject(block_object, "name_overrides", new JsonObject());
 			for(Entry<String, JsonElement> entry : overrides_object.entrySet())
 			{

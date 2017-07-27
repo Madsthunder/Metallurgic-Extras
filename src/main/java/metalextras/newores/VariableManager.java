@@ -29,9 +29,9 @@ public class VariableManager
 	private static final Map<ResourceLocation, Function<GenerationModule, BiFunction<World, BlockPos, GenerationModule.Properties>>> GENERATION_PROPERTIES = Maps.newHashMap();
 	private static final Map<ResourceLocation, GenerationPropertiesParser> PROPERTIES_PARSERS = Maps.newHashMap();
 	private static final Map<Class<?>, String> MASTER_MODULES = Maps.newHashMap();
-	private static final Map<Class<?>, BiFunction<ResourceLocation, JsonObject, ? extends OreModule<?, ?>>> MASTER_MODULE_FACTORIES = Maps.newHashMap();
+	private static final Map<Class<?>, BiFunction<ResourceLocation, JsonElement, ? extends OreModule<?, ?>>> MASTER_MODULE_FACTORIES = Maps.newHashMap();
 	private static final Map<Class<?>, String> MODULES = Maps.newHashMap();
-	private static final Map<Class<?>, BiFunction<String, JsonObject, ? extends OreModule<?, ?>>> MODULE_FACTORIES = Maps.newHashMap();
+	private static final Map<Class<?>, BiFunction<String, JsonElement, ? extends OreModule<?, ?>>> MODULE_FACTORIES = Maps.newHashMap();
 
 	public static void register(ResourceLocation name, BiFunction<World, BlockPos, Object> getter)
 	{
@@ -131,13 +131,13 @@ public class VariableManager
 		return defaultt;
 	}
 
-	public static <S extends OreModule<S, S>> void registerMasterModuleFactory(Class<S> module_type, String module_name, BiFunction<ResourceLocation, JsonObject, S> module_factory)
+	public static <S extends OreModule<S, S>> void registerMasterModuleFactory(Class<S> module_type, String module_name, BiFunction<ResourceLocation, JsonElement, S> module_factory)
 	{
 		MASTER_MODULES.put(module_type, module_name);
 		MASTER_MODULE_FACTORIES.put(module_type, module_factory);
 	}
 
-	public static <S extends OreModule<?, S>> void registerModuleFactory(Class<S> module_type, String module_name, BiFunction<String, JsonObject, S> module_factory)
+	public static <S extends OreModule<?, S>> void registerModuleFactory(Class<S> module_type, String module_name, BiFunction<String, JsonElement, S> module_factory)
 	{
 		MODULES.put(module_type, module_name);
 		MODULE_FACTORIES.put(module_type, module_factory);
@@ -150,7 +150,7 @@ public class VariableManager
 
 	public static <S extends OreModule<?, S>> S newModule(String path, Class<S> module_type, JsonObject json)
 	{
-		return (S)MODULE_FACTORIES.get(module_type).apply(String.format("%s/%s", path, MODULES.get(module_type)), Optional.ofNullable(json.get(MODULES.get(module_type))).orElseGet(VariableManager::newJsonObject).getAsJsonObject());
+		return (S)MODULE_FACTORIES.get(module_type).apply(String.format("%s/%s", path, MODULES.get(module_type)), Optional.ofNullable(json.get(MODULES.get(module_type))).orElseGet(VariableManager::newJsonObject));
 	}
 
 	public static <S extends OreModule<?, S>> String getModuleName(Class<S> module_type)

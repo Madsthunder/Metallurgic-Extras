@@ -1,16 +1,19 @@
 package metalextras.newores;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
+import java.util.stream.Stream;
 import com.google.common.collect.Maps;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import metalextras.MetalExtras;
-import metalextras.newores.NewOreType.Generation;
-import metalextras.newores.NewOreType.Generation.Properties.GenerationPropertiesParser;
+import metalextras.newores.modules.GenerationModule;
+import metalextras.newores.modules.GenerationModule.Properties.GenerationPropertiesParser;
+import metalextras.newores.modules.OreModule;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -25,8 +28,13 @@ public class VariableManager
     
     private static final Map<ResourceLocation, BiFunction<World, BlockPos, Object>> VARIABLES = Maps.newHashMap();
     
-    private static final Map<ResourceLocation, Function<Generation, BiFunction<World, BlockPos, Generation.Properties>>> GENERATION_PROPERTIES = Maps.newHashMap();
+    private static final Map<ResourceLocation, Function<GenerationModule, BiFunction<World, BlockPos, GenerationModule.Properties>>> GENERATION_PROPERTIES = Maps.newHashMap();
     private static final Map<ResourceLocation, GenerationPropertiesParser> PROPERTIES_PARSERS = Maps.newHashMap();
+
+    private static final Map<Class<?>, String> MASTER_MODULES = Maps.newHashMap();
+    private static final Map<Class<?>, BiFunction<ResourceLocation, JsonObject, ? extends OreModule<?, ?>>> MASTER_MODULE_FACTORIES = Maps.newHashMap();
+    private static final Map<Class<?>, String> MODULES = Maps.newHashMap();
+    private static final Map<Class<?>, BiFunction<String, JsonObject, ? extends OreModule<?, ?>>> MODULE_FACTORIES = Maps.newHashMap();
     
     public static void register(ResourceLocation name, BiFunction<World, BlockPos, Object> getter)
     {
@@ -54,12 +62,12 @@ public class VariableManager
     public static void registerConstant(ResourceLocation name, Supplier<Object> constant) { OBJECT_CONSTANTS.put(name, constant); }
     public static <V> Optional<V> getConstant(ResourceLocation name, Class<V> clasz) { return Optional.ofNullable(Optional.ofNullable(Optional.ofNullable(OBJECT_CONSTANTS.get(name)).orElse(EMPTY).get()).filter((object) -> clasz.isInstance(object))); }
     
-    public static void registerConstantGenerationProperties(ResourceLocation name, Function<Generation, BiFunction<World, BlockPos, Generation.Properties>> getter)
+    public static void registerConstantGenerationProperties(ResourceLocation name, Function<GenerationModule, BiFunction<World, BlockPos, GenerationModule.Properties>> getter)
     {
     	GENERATION_PROPERTIES.put(name, getter);
     }
     
-    public static Optional<BiFunction<World, BlockPos, Generation.Properties>> getConstantGenerationProperties(ResourceLocation name, Generation generation)
+    public static Optional<BiFunction<World, BlockPos, GenerationModule.Properties>> getConstantGenerationProperties(ResourceLocation name, GenerationModule generation)
     {
     	return Optional.ofNullable(GENERATION_PROPERTIES.getOrDefault(name, (generation1) -> null).apply(generation));
     }
@@ -81,4 +89,41 @@ public class VariableManager
         MetalExtras.LOGGER.warn(String.format(format, params));
         return defaultt;
     }
+
+    public static <S extends OreModule<S, S>> void registerMasterModuleFactory(Class<S> module_type, String module_name, BiFunction<ResourceLocation, JsonObject, S> module_factory)
+    {
+    	MASTER_MODULES.put(module_type, module_name);
+    	MASTER_MODULE_FACTORIES.put(module_type, module_factory);
+    }
+    
+    public static <S extends OreModule<?, S> >void registerModuleFactory(Class<S> module_type, String module_name, BiFunction<String, JsonObject, S> module_factory)
+    {
+    	MODULES.put(module_type, module_name);
+    	MODULE_FACTORIES.put(module_type, module_factory);
+    }
+    
+	public static OreModule<?, ?> newMasterModule(ResourceLocation name, Class<?> module_type, JsonElement json)
+	{
+		return MASTER_MODULE_FACTORIES.get(module_type).apply(name, json.getAsJsonObject());
+	}
+    
+	public static <S extends OreModule<?, S>> S newModule(String path, Class<S> module_type, JsonObject json)
+	{
+		return (S)MODULE_FACTORIES.get(module_type).apply(String.format("%s/%s", path, MODULES.get(module_type)), Optional.ofNullable(json.get(MODULES.get(module_type))).orElseGet(VariableManager::newJsonObject).getAsJsonObject());
+	}
+    
+    public static <S extends OreModule<?, S>> String getModuleName(Class<S> module_type)
+    {
+    	return MODULES.get(module_type);
+    }
+	
+	public static Stream<Entry<Class<?>, String>> masterModuleStream()
+	{
+		return MASTER_MODULES.entrySet().stream();
+	}
+	
+	public static JsonObject newJsonObject()
+	{
+		return new JsonObject();
+	}
 }

@@ -33,8 +33,15 @@ import metalextras.items.ItemOre;
 import metalextras.items.ItemTool;
 import metalextras.mod.MetalExtras_Callbacks;
 import metalextras.newores.NewOreType;
+import metalextras.newores.VariableManager;
+import metalextras.newores.modules.BlockModule;
+import metalextras.newores.modules.GenerationModule;
+import metalextras.newores.modules.ModelModule;
+import metalextras.newores.modules.RegisterModuleFactoriesEvent;
+import metalextras.newores.modules.SmeltingModule;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
+import net.minecraft.block.BlockRedSandstone;
 import net.minecraft.block.BlockSand;
 import net.minecraft.block.BlockSandStone;
 import net.minecraft.block.BlockStone;
@@ -285,7 +292,7 @@ public class MetalExtras_Objects
         rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE), Characteristic.ROCKY, Characteristic.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_diorite")).setRegistryName("minecraft:diorite"));
         rocks.addOreType(new OreType.Impl(rocks, Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.ANDESITE), Characteristic.ROCKY, Characteristic.DENSE).setHardness(1.5F).setResistance(10F).setModelTexture(new ResourceLocation("minecraft:blocks/stone_andesite")).setRegistryName("minecraft:andesite"));
         rocks.addOreType(new OreType.Impl(rocks, Blocks.SANDSTONE.getDefaultState().withProperty(BlockSandStone.TYPE, BlockSandStone.EnumType.DEFAULT), Characteristic.ROCKY, Characteristic.SANDY, Characteristic.COMPACT, Characteristic.DRY).setHardness(.8F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/sandstone_normal")).setRegistryName("minecraft:sandstone"));
-        rocks.addOreType(new OreType.Impl(rocks, Blocks.RED_SANDSTONE.getDefaultState().withProperty(BlockSandStone.TYPE, BlockSandStone.EnumType.DEFAULT), Characteristic.ROCKY, Characteristic.SANDY, Characteristic.COMPACT, Characteristic.DRY).setHardness(.8F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/red_sandstone_normal")).setRegistryName("minecraft:red_sandstone"));
+        rocks.addOreType(new OreType.Impl(rocks, Blocks.RED_SANDSTONE.getDefaultState().withProperty(BlockRedSandstone.TYPE, BlockRedSandstone.EnumType.DEFAULT), Characteristic.ROCKY, Characteristic.SANDY, Characteristic.COMPACT, Characteristic.DRY).setHardness(.8F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/red_sandstone_normal")).setRegistryName("minecraft:red_sandstone"));
         rocks.addOreType(new OreType.Impl(rocks, Blocks.NETHERRACK.getDefaultState(), Characteristic.ROCKY, MetalExtras.OTD_NETHER, Characteristic.HOT, Characteristic.COMPACT).setHardness(.4F).setResistance(0F).setModelTexture(new ResourceLocation("minecraft:blocks/netherrack")).setRegistryName("minecraft:netherrack"));
         rocks.addOreType(new OreType.Impl(rocks, Blocks.END_STONE.getDefaultState(), Characteristic.ROCKY, MetalExtras.OTD_END, Characteristic.DENSE).setHardness(3F).setResistance(15F).setModelTexture(new ResourceLocation("minecraft:blocks/end_stone")).setRegistryName("minecraft:end_stone"));
         rocks.addOreType(new OreType.Impl(rocks, Blocks.BEDROCK.getDefaultState(), Characteristic.ROCKY, Characteristic.DENSE).setHardness(-1F).setResistance(6000000F).setModelTexture(new ResourceLocation("minecraft:blocks/bedrock")).setRegistryName("minecraft:bedrock"));
@@ -317,60 +324,57 @@ public class MetalExtras_Objects
         ModContainer previous_active_mod = Loader.instance().activeModContainer();
         Loader.instance().setActiveModContainer(null);
         for(ModContainer container : Loader.instance().getActiveModList())
-    		addTypesFromMod(container);
+    		addModulesFromMod(container);
         Loader.instance().setActiveModContainer(previous_active_mod);
     }
     
-    public static void addTypesFromMod(ModContainer container)
+    public static void addModulesFromMod(ModContainer container)
     {
-		FileSystem file_system = null;
-        try
+        File source = ("minecraft".equals(container.getModId()) ? Loader.instance().getIndexedModList().get("metalextras") : container).getSource();
+        try(FileSystem file_system = source.isFile() ? FileSystems.newFileSystem(source.toPath(), null) : null)
         {
-            File source = ("minecraft".equals(container.getModId()) ? Loader.instance().getIndexedModList().get("metalextras") : container).getSource();
-            Path root = source.isFile() ? (file_system = FileSystems.newFileSystem(source.toPath(), null)).getPath(String.format("/assets/%s/ores/types"), container.getModId()) : source.toPath().resolve(String.format("assets/%s/ores/types",container.getModId()) );
-            if(Files.exists(root))
+            VariableManager.masterModuleStream().forEach((entry) ->
             {
-                Files.walk(root).forEach((path) ->
-                {
-                    String relative_name = root.relativize(path).toString();
-                    if("json".equals(FilenameUtils.getExtension(relative_name)))
+            	try
+            	{
+                	String format = String.format("assets/%s/ores/%s", container.getModId(), entry.getValue());
+                    Path root = file_system == null ? source.toPath().resolve(format) : file_system.getPath(format);
+                    if(Files.exists(root))
                     {
-                        BufferedReader reader = null;
-                        try
+                        Files.walk(root).forEach((path) ->
                         {
-                            NewOreType type = new NewOreType.JsonOreType(new ResourceLocation(container.getModId(), FilenameUtils.removeExtension(relative_name).replaceAll("\\\\", "/")), TypeAdapters.JSON_ELEMENT.fromJson(reader = Files.newBufferedReader(path)));
-                            OreUtils.getTypesRegistry().register(type);
-                            for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
-                                for(BlockOre block : type.getBlocksToRegister(types))
+                        	Loader.instance().setActiveModContainer(container);
+                            String relative_name = root.relativize(path).toString();
+                            if("json".equals(FilenameUtils.getExtension(relative_name)))
+                            {
+                            	BufferedReader reader = null;
+                                try
                                 {
-                                    ModContainer previous_mod = Loader.instance().activeModContainer();
-                                	Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(type.registry_name.getResourceDomain()));
-                                	Item item = new ItemBlockOre(block, block.getOreTypeProperty()).setRegistryName(block.getRegistryName());
-                                    Loader.instance().setActiveModContainer("minecraft".equals(container.getModId()) ? Loader.instance().getIndexedModList().get("metalextras") : container);
-                                    ForgeRegistries.BLOCKS.register(block);
-                                    ForgeRegistries.ITEMS.register(item);
-                                    Loader.instance().setActiveModContainer(previous_mod);
+                                	reader = Files.newBufferedReader(path);
+                                	VariableManager.newMasterModule(new ResourceLocation(container.getModId(), FilenameUtils.removeExtension(relative_name).replaceAll("\\\\", "/")), entry.getKey(), TypeAdapters.JSON_ELEMENT.fromJson(reader));
+                                    
                                 }
-                        }
-                        catch (Exception e)
-                        {
-                            e.printStackTrace();
-                        }
-                        finally
-                        {
-                            IOUtils.closeQuietly(reader);
-                        }
-                    }
-                });
-            }
+                                catch (Exception e)
+                                {
+                                    e.printStackTrace();
+                                }
+                                finally
+                                {
+                                	IOUtils.closeQuietly(reader);
+                                }
+                            }
+                        });
+                    }	
+            	}
+            	catch(Exception e)
+            	{
+            		e.printStackTrace();
+            	}
+        	});
         }
         catch(Exception e)
         {
-            e.printStackTrace();
-        }
-        finally
-        {
-            IOUtils.closeQuietly(file_system);
+        	e.printStackTrace();
         }
 	}
     
@@ -458,7 +462,7 @@ public class MetalExtras_Objects
         for(NewOreType material : OreUtils.getTypesRegistry())
             for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
                 for(OreType type : types)
-                    map.setTextureEntry(new OreTexture(material.getModel().getTexture(), type.getTexture()));
+                    map.setTextureEntry(new OreTexture(material.getChildModule(ModelModule.class).getTexture(), type.getTexture()));
     }
     
     @SideOnly(Side.CLIENT)
@@ -557,5 +561,32 @@ public class MetalExtras_Objects
             ModelLoader.setCustomModelResourceLocation(OreUtils.ORE, OreUtils.getTypesRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.registry_name.getResourcePath() + "_item"), "inventory"));
         }
         Optional.of(Minecraft.getMinecraft().getResourceManager()).filter((manager) -> manager instanceof IReloadableResourceManager).ifPresent((manager) -> ((IReloadableResourceManager)manager).registerReloadListener(ModelOre::reload));
+    }
+    
+    @SubscribeEvent
+    public static void registerModuleFactories(RegisterModuleFactoriesEvent event)
+    {
+    	VariableManager.registerMasterModuleFactory(NewOreType.class, "types", (name, json) ->
+    	{
+    		ModContainer container = Loader.instance().activeModContainer();
+    		NewOreType type = new NewOreType(name, json, true);
+            OreUtils.getTypesRegistry().register(type);
+            for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
+                for(BlockOre block : type.getBlocksToRegister(types))
+                {
+                    ModContainer previous_mod = Loader.instance().activeModContainer();
+                	Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(type.registry_name.getResourceDomain()));
+                	Item item = new ItemBlockOre(block, block.getOreTypeProperty()).setRegistryName(block.getRegistryName());
+                    Loader.instance().setActiveModContainer("minecraft".equals(container.getModId()) ? Loader.instance().getIndexedModList().get("metalextras") : container);
+                    ForgeRegistries.BLOCKS.register(block);
+                    ForgeRegistries.ITEMS.register(item);
+                    Loader.instance().setActiveModContainer(previous_mod);
+                }
+            return type;
+    	});
+    	VariableManager.registerModuleFactory(BlockModule.class, "block", (path, json) -> new BlockModule(path, json, true));
+    	VariableManager.registerModuleFactory(GenerationModule.class, "generation", (path, json) -> new GenerationModule(path, json, true));
+    	VariableManager.registerModuleFactory(SmeltingModule.class, "smelting", (path, json) -> new SmeltingModule(path, json, true));
+    	VariableManager.registerModuleFactory(ModelModule.class, "model", (path, json) -> new ModelModule(path, json, true));
     }
 }

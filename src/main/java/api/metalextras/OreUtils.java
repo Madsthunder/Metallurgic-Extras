@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import joptsimple.internal.Strings;
 import metalextras.newores.NewOreType;
+import metalextras.newores.modules.GenerationModule;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -149,10 +150,10 @@ public class OreUtils
 		}
 	}
 
-	public static boolean generateOres(World world, BlockPos pos, Random random, int blocks, NewOreType.Generation.Properties properties)
+	public static boolean generateOres(World world, BlockPos pos, Random random, int blocks, GenerationModule.Properties properties)
 	{
-		NewOreType.Generation generation = properties.getParent();
-		NewOreType type1 = generation.getParent();
+		GenerationModule generation = properties.getParent();
+		NewOreType type1 = generation.getParentModule();
 		float f = random.nextFloat() * (float)Math.PI;
 		double d0 = pos.getX() + 8 + MathHelper.sin(f) * blocks / 8.0F;
 		double d1 = pos.getX() + 8 - MathHelper.sin(f) * blocks / 8.0F;

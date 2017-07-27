@@ -6,7 +6,8 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import metalextras.newores.NewOreType;
-import metalextras.newores.NewOreType.Block.Drop;
+import metalextras.newores.modules.ModelModule;
+import metalextras.newores.modules.BlockModule.Drop;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.SoundType;
@@ -116,7 +117,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 					stacks.add(new ItemStack(item, 1, type_state.getBlock().damageDropped(type_state)));
 			}
 		}
-		for(Drop drop : this.type.getBlock().getDrops())
+		for(Drop drop : this.type.getBlockModule().getDrops())
 			if(random.nextFloat() >= 1F - drop.getChance(fortune))
 			{
 				int min_count = drop.getMinCount(fortune);
@@ -136,8 +137,8 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	@Override
 	public int getExpDrop(IBlockState state, IBlockAccess access, BlockPos pos, int fortune)
 	{
-		int min_xp = this.type.getBlock().getMinXp();
-		int max_xp = this.type.getBlock().getMaxXp();
+		int min_xp = this.type.getBlockModule().getMinXp();
+		int max_xp = this.type.getBlockModule().getMaxXp();
 		return Math.max(0, min_xp >= max_xp ? max_xp : (access instanceof World ? ((World)access).rand : Block.RANDOM).nextInt(max_xp - min_xp + 1) + min_xp);
 	}
 
@@ -150,7 +151,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	@Override
 	public int getHarvestLevel(IBlockState state)
 	{
-		int materialHarvest = this.getOreType().getBlock().getHarvestLevel();
+		int materialHarvest = this.getOreType().getBlockModule().getHarvestLevel();
 		int typeHarvest = this.getOreType(state).getHarvestLevel();
 		return materialHarvest == -1 || typeHarvest == -1 ? -1 : Math.max(materialHarvest, typeHarvest);
 	}
@@ -247,7 +248,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	{
 		IBlockState state = world.getBlockState(pos).getActualState(world, pos);
 		ResourceLocation type_name = this.getOreType(state).getTexture();
-		ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.getModel().getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+		ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 		TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 		for(int j = 0; j < 4; j++)
 			for(int k = 0; k < 4; k++)
@@ -269,7 +270,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	public boolean addHitEffects(IBlockState state, World world, RayTraceResult result, ParticleManager manager)
 	{
 		ResourceLocation type_name = this.getOreType(state).getTexture();
-		ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.getModel().getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+		ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 		TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 		BlockPos pos = result.getBlockPos();
 		EnumFacing side = result.sideHit;

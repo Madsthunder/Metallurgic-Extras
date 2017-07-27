@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 
 import api.metalextras.OreUtils;
 import metalextras.newores.NewOreType;
+import metalextras.newores.modules.GenerationModule;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
@@ -31,7 +32,7 @@ public class OreGeneration implements IWorldGenerator
 	public static final ChunkGeneratorSettings defaultSettings = new ChunkGeneratorSettings.Factory().build();
 	private static final Map<World, ChunkGeneratorSettings> settingsMap = Maps.newHashMap();
 	
-	public static void spawnOresInChunk(Chunk chunk, Random random, NewOreType.Generation.Properties properties)
+	public static void spawnOresInChunk(Chunk chunk, Random random, GenerationModule.Properties properties)
 	{
 	    if(properties.canGenerate())
 	    {
@@ -47,23 +48,23 @@ public class OreGeneration implements IWorldGenerator
 	public void generate(Random random, int x, int z, World world, IChunkGenerator generator, IChunkProvider provider)
 	{
 		for(NewOreType material : OreUtils.getTypesRegistry())
-			if(!material.getGeneration().hasEvent())
-				spawnOresInChunk(world.getChunkFromChunkCoords(x, z), random, material.getGeneration().getProperties(world, new BlockPos(x * 16, 0, z * 16)));
+			if(!material.getGenerationModule().hasEvent())
+				spawnOresInChunk(world.getChunkFromChunkCoords(x, z), random, material.getGenerationModule().getProperties(world, new BlockPos(x * 16, 0, z * 16)));
 	}
 	
 	@SubscribeEvent
 	public static void onOreGenPre(OreGenEvent.Pre event)
 	{
 	    for(NewOreType type : OreUtils.getTypesRegistry())
-	        if(type.getGeneration().shouldPostEvent())
-	            postGenerateMinableEvent(event, type, type.getGeneration().getEvent());
+	        if(type.getGenerationModule().shouldPostEvent())
+	            postGenerateMinableEvent(event, type, type.getGenerationModule().getEvent());
 	}
 	
 	private static void postGenerateMinableEvent(OreGenEvent event, NewOreType material, GenerateMinable.EventType type)
 	{
 		World world = event.getWorld();
 		BlockPos pos = event.getPos();
-		NewOreType.Generation.Properties properties = material.getGeneration().getProperties(world, pos);
+		GenerationModule.Properties properties = material.getGenerationModule().getProperties(world, pos);
 		WorldGenerator generator = properties.getGenerator();
 		if(MinecraftForge.ORE_GEN_BUS.post(new GenerateMinable(world, event.getRand(), generator, pos, type)))
 			OreGeneration.spawnOresInChunk(world.getChunkFromBlockCoords(pos), event.getRand(), properties);
@@ -77,8 +78,8 @@ public class OreGeneration implements IWorldGenerator
 		{
 			World world = event.getWorld();
 			BlockPos pos = event.getPos();
-		    NewOreType.Generation.Properties properties = material.getGeneration().getProperties(world, pos);
-			if(properties.canGenerate() && material.getGeneration().getEvent() == event.getType())
+		    GenerationModule.Properties properties = material.getGenerationModule().getProperties(world, pos);
+			if(properties.canGenerate() && material.getGenerationModule().getEvent() == event.getType())
 				OreGeneration.spawnOresInChunk(world.getChunkFromBlockCoords(pos), event.getRand(), properties);
 		}
 		deny = true;

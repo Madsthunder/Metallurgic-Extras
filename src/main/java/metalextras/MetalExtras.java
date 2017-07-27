@@ -5,15 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import api.metalextras.BlockOre;
 import api.metalextras.Characteristic;
 import api.metalextras.OreType;
@@ -24,8 +21,10 @@ import metalextras.items.ItemEnderHoe;
 import metalextras.items.ItemEnderTool;
 import metalextras.newores.FilterManager;
 import metalextras.newores.NewOreType;
-import metalextras.newores.NewOreType.Smelting;
 import metalextras.newores.VariableManager;
+import metalextras.newores.modules.GenerationModule;
+import metalextras.newores.modules.RegisterModuleFactoriesEvent;
+import metalextras.newores.modules.SmeltingModule;
 import metalextras.packets.OreLandingParticleMessageHandler;
 import metalextras.world.gen.OreGeneration;
 import net.minecraft.block.state.IBlockState;
@@ -91,6 +90,7 @@ public class MetalExtras
 		
 		public void pre()
 		{
+			MinecraftForge.EVENT_BUS.post(new RegisterModuleFactoriesEvent());
 			VariableManager.registerConstant(new ResourceLocation("oresapi:id"), () -> OreUtils.getTypesRegistry().nextId());
 			FilterManager.register(new ResourceLocation("oresapi:include"), (materials, params) ->
 			{
@@ -106,17 +106,17 @@ public class MetalExtras
 				materials.clear();
 				materials.addAll(material_set);
 			});
-			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:iron"), NewOreType.Generation.Properties.Iron.createParser());
-			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:lapis"), NewOreType.Generation.Properties.Lapis.createParser());
-			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:emerald"), NewOreType.Generation.Properties.Emerald.createParser());
-			Map<World, Map<String, NewOreType.Generation.Properties>> properties_map = Maps.newHashMap();
+			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:iron"), GenerationModule.Properties.Iron.createParser());
+			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:lapis"), GenerationModule.Properties.Lapis.createParser());
+			VariableManager.registerGenerationPropertiesParser(new ResourceLocation("minecraft:emerald"), GenerationModule.Properties.Emerald.createParser());
+			Map<World, Map<String, GenerationModule.Properties>> properties_map = Maps.newHashMap();
 			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:coal_ore"), (generation) -> (world, pos) ->
 			{
-				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				GenerationModule.Properties default_properties = new GenerationModule.Properties.Iron(generation, true);
 				return Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("coal_ore", (name) ->
 				{
 					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					return settings == OreGeneration.defaultSettings ? null : new GenerationModule.Properties.Iron(generation, true)
 					{
 						@Override
 						public void init()
@@ -131,11 +131,11 @@ public class MetalExtras
 			});
 			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:iron_ore"), (generation) ->
 			{
-				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				GenerationModule.Properties default_properties = new GenerationModule.Properties.Iron(generation, true);
 				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("iron_ore", (name) ->
 				{
 					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					return settings == OreGeneration.defaultSettings ? null : new GenerationModule.Properties.Iron(generation, true)
 					{
 						@Override
 						public void init()
@@ -150,11 +150,11 @@ public class MetalExtras
 			});
 			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:lapis_ore"), (generation) ->
 			{
-				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Lapis(generation, true);
+				GenerationModule.Properties default_properties = new GenerationModule.Properties.Lapis(generation, true);
 				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("lapis_ore", (name) ->
 				{
 					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Lapis(generation, true)
+					return settings == OreGeneration.defaultSettings ? null : new GenerationModule.Properties.Lapis(generation, true)
 					{
 						@Override
 						public void init()
@@ -169,11 +169,11 @@ public class MetalExtras
 			});
 			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:gold_ore"), (generation) ->
 			{
-				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				GenerationModule.Properties default_properties = new GenerationModule.Properties.Iron(generation, true);
 				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("gold_ore", (name) ->
 				{
 					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					return settings == OreGeneration.defaultSettings ? null : new GenerationModule.Properties.Iron(generation, true)
 					{
 						@Override
 						public void init()
@@ -188,11 +188,11 @@ public class MetalExtras
 			});
 			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:redstone_ore"), (generation) ->
 			{
-				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				GenerationModule.Properties default_properties = new GenerationModule.Properties.Iron(generation, true);
 				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("redstone_ore", (name) ->
 				{
 					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					return settings == OreGeneration.defaultSettings ? null : new GenerationModule.Properties.Iron(generation, true)
 					{
 						@Override
 						public void init()
@@ -207,11 +207,11 @@ public class MetalExtras
 			});
 			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:emerald_ore"), (generation) ->
 			{
-				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Emerald(generation, true);
+				GenerationModule.Properties default_properties = new GenerationModule.Properties.Emerald(generation, true);
 				return (world, pos) -> world.getBiome(pos.add(16, 0, 16)) instanceof BiomeHills ? Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("emerald_ore", (name) ->
 				{
 					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Emerald(generation, true)
+					return settings == OreGeneration.defaultSettings ? null : new GenerationModule.Properties.Emerald(generation, true)
 					{
 						@Override
 						public void init()
@@ -227,11 +227,11 @@ public class MetalExtras
 			});
 			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:diamond_ore"), (generation) ->
 			{
-				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				GenerationModule.Properties default_properties = new GenerationModule.Properties.Iron(generation, true);
 				return (world, pos) -> Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("diamond_ore", (name) ->
 				{
 					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					return settings == OreGeneration.defaultSettings ? null : new GenerationModule.Properties.Iron(generation, true)
 					{
 						@Override
 						public void init()
@@ -246,11 +246,11 @@ public class MetalExtras
 			});
 			VariableManager.registerConstantGenerationProperties(new ResourceLocation("minecraft:mesa_gold_ore"), (generation) ->
 			{
-				NewOreType.Generation.Properties default_properties = new NewOreType.Generation.Properties.Iron(generation, true);
+				GenerationModule.Properties default_properties = new GenerationModule.Properties.Iron(generation, true);
 				return (world, pos) -> world.getBiome(pos.add(16, 0, 16)) instanceof BiomeMesa ? Optional.ofNullable(properties_map.computeIfAbsent(world, (world1) -> Maps.newHashMap()).computeIfAbsent("mesa_gold_ore", (name) ->
 				{
 					ChunkGeneratorSettings settings = OreGeneration.getChunkProviderSettings(world);
-					return settings == OreGeneration.defaultSettings ? null : new NewOreType.Generation.Properties.Iron(generation, true)
+					return settings == OreGeneration.defaultSettings ? null : new GenerationModule.Properties.Iron(generation, true)
 					{
 						@Override
 						public void init()
@@ -272,7 +272,7 @@ public class MetalExtras
 			{
 				for(String name : type.getOreDictionary())
 					OreUtils.addMaterialToOreDictionary(type, name, true);
-				Smelting smelting = type.getSmelting();
+				SmeltingModule smelting = type.getChildModule(SmeltingModule.class);
 				NBTTagCompound nbt = smelting.getNbt();
 				nbt.setString("id", smelting.getItem().getRegistryName().toString());
 				nbt.setByte("Count", (byte)smelting.getCount());

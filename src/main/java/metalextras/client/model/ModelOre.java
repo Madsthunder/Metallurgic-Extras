@@ -16,7 +16,7 @@ import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
 import metalextras.newores.NewOreType;
-import metalextras.newores.modules.ModelModule;
+import metalextras.newores.modules.TypeModelModule;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -77,7 +77,7 @@ public class ModelOre implements IModel
 				for(OreType type : types)
 					textures.addAll(type.getModel(material).getTextures());
 		for(NewOreType type : OreUtils.getTypesRegistry())
-			textures.add(type.getChildModule(ModelModule.class).getTexture());
+			textures.add(type.getChildModule(TypeModelModule.class).getTexture());
 		return textures;
 	}
 
@@ -122,7 +122,7 @@ public class ModelOre implements IModel
 					if(type != null)
 					{
 						ResourceLocation type_name = type.getTexture();
-						ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreType().getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+						ResourceLocation name = new ResourceLocation(String.format("%s.%s", ore.getOreType().getChildModule(TypeModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 						baked_model = ModelLoaderRegistry.getModelOrMissing(new ResourceLocation("minecraft:block/cube_all")).uvlock(true).retexture(ImmutableMap.of("all", String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()))).bake(this.modelState, this.vertexFormat, this.textureGetter);
 						BakedModelOre.models.put(state, baked_model);
 						return baked_model.getQuads(state, side, 0L);
@@ -216,7 +216,7 @@ public class ModelOre implements IModel
 				Map<EnumFacing, List<BakedQuad>> faceQuads = Maps.newHashMap();
 				for(EnumFacing facing : EnumFacing.values())
 					faceQuads.put(facing, original.getQuads(state, facing, 0L));
-				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreType().getChildModule(ModelModule.class).getModelType());
+				IModel typeModel = ((BlockOre)block).getOreType(state).getModel(((BlockOre)block).getOreType().getChildModule(TypeModelModule.class).getModelType());
 				IBakedModel model = new SimpleBakedModel(generalQuads, faceQuads, original.isAmbientOcclusion(), original.isGui3d(), original.getParticleTexture(), typeModel.bake(typeModel.getDefaultState(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter()).getItemCameraTransforms(), ItemOverrideList.NONE);
 				this.models.get(stack.getItem()).addKey(stack.getMetadata(), model);
 				return model;

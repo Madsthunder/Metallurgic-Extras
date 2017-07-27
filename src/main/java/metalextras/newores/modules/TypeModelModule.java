@@ -7,15 +7,15 @@ import metalextras.newores.NewOreType;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 
-public class ModelModule extends OreModule<NewOreType, ModelModule>
+public class TypeModelModule extends OreModule<NewOreType, TypeModelModule>
 {
 	protected boolean three_dimensional = false;
 	protected ResourceLocation texture = new ResourceLocation("missingno");
 	protected ModelType model_type = ModelType.IRON;
 
-	public ModelModule(String path, JsonElement json, boolean parse)
+	public TypeModelModule(String path, JsonElement json, boolean parse)
 	{
-		super(path, NewOreType.class, ModelModule.class, json);
+		super(path, NewOreType.class, TypeModelModule.class, json);
 		if(parse)
 		{
 			JsonObject model_object = new JsonObject();

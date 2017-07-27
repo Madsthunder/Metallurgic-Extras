@@ -18,7 +18,7 @@ import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
 import metalextras.newores.modules.BlockModule;
 import metalextras.newores.modules.GenerationModule;
-import metalextras.newores.modules.ModelModule;
+import metalextras.newores.modules.TypeModelModule;
 import metalextras.newores.modules.OreModule;
 import metalextras.newores.modules.SmeltingModule;
 import net.minecraft.block.state.IBlockState;
@@ -153,7 +153,7 @@ public class NewOreType extends OreModule<NewOreType, NewOreType> implements IFo
 		children.put(BlockModule.class, this.block = VariableManager.newModule(path, BlockModule.class, json));
 		children.put(GenerationModule.class, this.generation = VariableManager.newModule(path, GenerationModule.class, json));
 		children.put(SmeltingModule.class, VariableManager.newModule(path, SmeltingModule.class, json));
-		children.put(ModelModule.class, VariableManager.newModule(path, ModelModule.class, json));
+		children.put(TypeModelModule.class, VariableManager.newModule(path, TypeModelModule.class, json));
 		return children;
 	}
 

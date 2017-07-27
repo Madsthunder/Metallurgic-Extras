@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import api.metalextras.OreType;
 import api.metalextras.SPacketBlockOreLandingParticles;
 import metalextras.newores.NewOreType;
-import metalextras.newores.modules.ModelModule;
+import metalextras.newores.modules.TypeModelModule;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -36,7 +36,7 @@ public class OreLandingParticleMessageHandler implements IMessageHandler<SPacket
 			NewOreType material = message.getOreMaterial();
 			OreType type = message.getOreType();
 			ResourceLocation type_name = type.getTexture();
-			ResourceLocation name = new ResourceLocation(String.format("%s.%s", material.getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+			ResourceLocation name = new ResourceLocation(String.format("%s.%s", material.getChildModule(TypeModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 			TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 			Vec3d pos = message.getPosition();
 			WorldClient world = Minecraft.getMinecraft().world;

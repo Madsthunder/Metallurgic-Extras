@@ -36,7 +36,7 @@ import metalextras.newores.NewOreType;
 import metalextras.newores.VariableManager;
 import metalextras.newores.modules.BlockModule;
 import metalextras.newores.modules.GenerationModule;
-import metalextras.newores.modules.ModelModule;
+import metalextras.newores.modules.TypeModelModule;
 import metalextras.newores.modules.RegisterModuleFactoriesEvent;
 import metalextras.newores.modules.SmeltingModule;
 import net.minecraft.block.Block;
@@ -455,7 +455,7 @@ public class MetalExtras_Objects
 		for(NewOreType material : OreUtils.getTypesRegistry())
 			for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
 				for(OreType type : types)
-					map.setTextureEntry(new OreTexture(material.getChildModule(ModelModule.class).getTexture(), type.getTexture()));
+					map.setTextureEntry(new OreTexture(material.getChildModule(TypeModelModule.class).getTexture(), type.getTexture()));
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -579,6 +579,6 @@ public class MetalExtras_Objects
 		VariableManager.registerModuleFactory(BlockModule.class, "block", (path, json) -> new BlockModule(path, json, true));
 		VariableManager.registerModuleFactory(GenerationModule.class, "generation", (path, json) -> new GenerationModule(path, json, true));
 		VariableManager.registerModuleFactory(SmeltingModule.class, "smelting", (path, json) -> new SmeltingModule(path, json, true));
-		VariableManager.registerModuleFactory(ModelModule.class, "model", (path, json) -> new ModelModule(path, json, true));
+		VariableManager.registerModuleFactory(TypeModelModule.class, "model", (path, json) -> new TypeModelModule(path, json, true));
 	}
 }

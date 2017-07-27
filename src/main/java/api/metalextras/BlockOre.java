@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import metalextras.newores.NewOreType;
 import metalextras.newores.modules.BlockModule.Drop;
-import metalextras.newores.modules.ModelModule;
+import metalextras.newores.modules.TypeModelModule;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.SoundType;
@@ -248,7 +248,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	{
 		IBlockState state = world.getBlockState(pos).getActualState(world, pos);
 		ResourceLocation type_name = this.getOreType(state).getTexture();
-		ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+		ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.getChildModule(TypeModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 		TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 		for(int j = 0; j < 4; j++)
 			for(int k = 0; k < 4; k++)
@@ -270,7 +270,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	public boolean addHitEffects(IBlockState state, World world, RayTraceResult result, ParticleManager manager)
 	{
 		ResourceLocation type_name = this.getOreType(state).getTexture();
-		ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.getChildModule(ModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
+		ResourceLocation name = new ResourceLocation(String.format("%s.%s", this.type.getChildModule(TypeModelModule.class).getTexture(), String.format("%s_%s", type_name.getResourceDomain(), type_name.getResourcePath())));
 		TextureAtlasSprite texture = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(String.format("%s:ores/%s", name.getResourceDomain(), name.getResourcePath()));
 		BlockPos pos = result.getBlockPos();
 		EnumFacing side = result.sideHit;

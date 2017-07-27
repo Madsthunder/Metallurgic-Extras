@@ -3,6 +3,7 @@ package metalextras.newores;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import javax.annotation.Nullable;
 import com.google.common.collect.Iterables;
@@ -27,25 +28,28 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import net.minecraftforge.fml.common.FMLContainer;
+import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.InjectedModContainer;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
-public class NewOreType extends OreModule<NewOreType, NewOreType>
+public class NewOreType extends OreModule<NewOreType, NewOreType> implements IForgeRegistryEntry<NewOreType>
 {
 	public static final String DEFAULT_NAME = "tile.metalextras:unnamed";
-	public final ResourceLocation registry_name;
+	protected final Map<OreTypes, BlockOre> blocks = Maps.newHashMap();
+	private ResourceLocation registry_name;
 	protected BlockModule block;
 	protected GenerationModule generation;
-	protected final Map<OreTypes, BlockOre> blocks = Maps.newHashMap();
 	protected String name = DEFAULT_NAME;
 	protected CreativeTabs[] item_creative_tabs = new CreativeTabs[0];
 	protected String[] ore_dictionary = new String[0];
 
-	public NewOreType(ResourceLocation registry_name, JsonObject json, boolean parse)
+	public NewOreType(String path, JsonObject json, boolean parse)
 	{
-		super(registry_name.toString(), NewOreType.class, NewOreType.class, json);
-		this.registry_name = registry_name;
+		super(path, NewOreType.class, NewOreType.class, json);
 		if(parse)
 		{
 			this.name = JsonUtils.getString(json, "name", DEFAULT_NAME);
@@ -151,6 +155,41 @@ public class NewOreType extends OreModule<NewOreType, NewOreType>
 		children.put(SmeltingModule.class, VariableManager.newModule(path, SmeltingModule.class, json));
 		children.put(ModelModule.class, VariableManager.newModule(path, ModelModule.class, json));
 		return children;
+	}
+
+	@Override
+	public final Class<NewOreType> getRegistryType()
+	{
+		return NewOreType.class;
+	}
+
+	public final NewOreType setRegistryName(String modid, String name)
+	{
+		return this.setRegistryName(new ResourceLocation(modid, name));
+	}
+
+	public final NewOreType setRegistryName(String name)
+	{
+		return this.setRegistryName(new ResourceLocation(String.format("%s%s", name.lastIndexOf(":") == -1 ? String.format("%s:", Loader.instance().activeModContainer().getModId()) : "", name)));
+	}
+
+	@Override
+	public final NewOreType setRegistryName(ResourceLocation name)
+	{
+		if(this.registry_name != null)
+			throw new IllegalStateException(String.format("Attempted to set registry name with existing registry name! New: %s Old: %s", name, this.registry_name));
+		Optional<ModContainer> optional = Optional.ofNullable(Loader.instance().activeModContainer()).filter((mod) -> !(mod instanceof InjectedModContainer && ((InjectedModContainer)mod).wrappedContainer instanceof FMLContainer));
+		String modid = optional.isPresent() ? optional.get().getModId() : "minecraft";
+		if(!modid.equals(name.getResourceDomain()))
+			FMLLog.bigWarning("Dangerous alternative prefix `%s` for name `%s`, expected `%s` invalid registry invocation/invalid name?", name.getResourceDomain(), name, modid);
+		this.registry_name = name;
+		return this;
+	}
+
+	@Override
+	public final ResourceLocation getRegistryName()
+	{
+		return this.registry_name;
 	}
 
 	public static class DefaultGenerator extends WorldGenerator

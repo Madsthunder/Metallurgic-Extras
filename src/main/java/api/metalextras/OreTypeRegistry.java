@@ -18,7 +18,7 @@ public final class OreTypeRegistry implements Iterable<NewOreType>
 	{
 		for(NewOreType type : types)
 		{
-			this.name_to_ore_type.put(type.registry_name, type);
+			this.name_to_ore_type.put(type.getRegistryName(), type);
 			this.ids.add(type);
 		}
 	}

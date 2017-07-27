@@ -92,7 +92,7 @@ public class CapabilityChunkInformation implements ICapabilityProvider, Iterable
 				{
 					NewOreType type = types.get(i);
 					array[i] = false/** TODO fix this type.isVanillaOre() */
-							|| compound.getBoolean(type.registry_name.toString());
+							|| compound.getBoolean(type.getRegistryName().toString());
 				}
 			}
 			else
@@ -116,7 +116,7 @@ public class CapabilityChunkInformation implements ICapabilityProvider, Iterable
 				NBTTagCompound compound = new NBTTagCompound();
 				compound.setInteger("version", 0);
 				for(int i = 0; i < array.length; i++)
-					compound.setBoolean(types.get(i).registry_name.toString(), array[i]);
+					compound.setBoolean(types.get(i).getRegistryName().toString(), array[i]);
 				NBTTagCompound metalextras = Optional.of(event.getData().getCompoundTag("oresapi")).orElseGet(() -> new NBTTagCompound());
 				metalextras.setTag("ores", compound);
 				event.getData().setTag("oresapi", metalextras);

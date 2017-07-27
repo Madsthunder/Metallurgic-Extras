@@ -39,7 +39,7 @@ public class SPacketBlockOreLandingParticles implements IMessage
 	@Override
 	public void toBytes(ByteBuf buffer)
 	{
-		ByteBufUtils.writeUTF8String(buffer, this.newtype.registry_name.toString());
+		ByteBufUtils.writeUTF8String(buffer, this.newtype.getRegistryName().toString());
 		ByteBufUtils.writeUTF8String(buffer, this.type.getRegistryName().toString());
 		buffer.writeDouble(this.pos.x);
 		buffer.writeDouble(this.pos.y);

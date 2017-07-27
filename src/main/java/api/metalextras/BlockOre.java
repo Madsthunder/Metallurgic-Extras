@@ -357,7 +357,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	public String getUnlocalizedName()
 	{
 		String langKey = this.getOreType().getName();
-		return langKey == null ? this.getOreType().registry_name.getResourcePath() : this.getOreType().getName();
+		return langKey == null ? this.getOreType().getRegistryName().getResourcePath() : this.getOreType().getName();
 	}
 
 	@Override
@@ -400,7 +400,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 
 	public static ResourceLocation getDefaultRegistryName(NewOreType type, OreTypes types)
 	{
-		return new ResourceLocation(String.format("%s/%s", type.registry_name, types.getRegistryName().toString().replaceFirst(":", "/")));
+		return new ResourceLocation(String.format("%s/%s", type.getRegistryName(), types.getRegistryName().toString().replaceFirst(":", "/")));
 	}
 
 	public static void checkFallable(BlockOre block, World world, BlockPos pos)

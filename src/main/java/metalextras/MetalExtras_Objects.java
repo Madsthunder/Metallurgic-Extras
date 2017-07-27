@@ -549,7 +549,7 @@ public class MetalExtras_Objects
 								ModelLoader.setCustomModelResourceLocation(item, i, mapper.getModelLocation(new ItemStack(item, 1, i)));
 					}
 			}
-			ModelLoader.setCustomModelResourceLocation(OreUtils.ORE, OreUtils.getTypesRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.registry_name.getResourcePath() + "_item"), "inventory"));
+			ModelLoader.setCustomModelResourceLocation(OreUtils.ORE, OreUtils.getTypesRegistry().getValues().indexOf(material), new ModelResourceLocation(new ResourceLocation("metalextras", material.getRegistryName().getResourcePath() + "_item"), "inventory"));
 		}
 		Optional.of(Minecraft.getMinecraft().getResourceManager()).filter((manager) -> manager instanceof IReloadableResourceManager).ifPresent((manager) -> ((IReloadableResourceManager)manager).registerReloadListener(ModelOre::reload));
 	}
@@ -560,13 +560,14 @@ public class MetalExtras_Objects
 		VariableManager.registerMasterModuleFactory(NewOreType.class, "types", (name, json) ->
 		{
 			ModContainer container = Loader.instance().activeModContainer();
-			NewOreType type = new NewOreType(name, json, true);
+			NewOreType type = new NewOreType(String.format("types/%s", name), json, true);
+			type.setRegistryName(name);
 			OreUtils.getTypesRegistry().register(type);
 			for(OreTypes types : OreUtils.getTypeCollectionsRegistry())
 				for(BlockOre block : type.getBlocksToRegister(types))
 				{
 					ModContainer previous_mod = Loader.instance().activeModContainer();
-					Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(type.registry_name.getResourceDomain()));
+					Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(type.getRegistryName().getResourceDomain()));
 					Item item = new ItemBlockOre(block, block.getOreTypeProperty()).setRegistryName(block.getRegistryName());
 					Loader.instance().setActiveModContainer("minecraft".equals(container.getModId()) ? Loader.instance().getIndexedModList().get("metalextras") : container);
 					ForgeRegistries.BLOCKS.register(block);

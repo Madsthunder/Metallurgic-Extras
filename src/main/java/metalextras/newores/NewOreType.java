@@ -16,7 +16,7 @@ import api.metalextras.BlockOre;
 import api.metalextras.OreType;
 import api.metalextras.OreTypes;
 import api.metalextras.OreUtils;
-import metalextras.newores.modules.BlockModule;
+import metalextras.newores.modules.TypeBlockModule;
 import metalextras.newores.modules.GenerationModule;
 import metalextras.newores.modules.TypeModelModule;
 import metalextras.newores.modules.OreModule;
@@ -41,7 +41,7 @@ public class NewOreType extends OreModule<NewOreType, NewOreType> implements IFo
 	public static final String DEFAULT_NAME = "tile.metalextras:unnamed";
 	protected final Map<OreTypes, BlockOre> blocks = Maps.newHashMap();
 	private ResourceLocation registry_name;
-	protected BlockModule block;
+	protected TypeBlockModule block;
 	protected GenerationModule generation;
 	protected String name = DEFAULT_NAME;
 	protected CreativeTabs[] item_creative_tabs = new CreativeTabs[0];
@@ -67,7 +67,7 @@ public class NewOreType extends OreModule<NewOreType, NewOreType> implements IFo
 		}
 	}
 
-	public BlockModule getBlockModule()
+	public TypeBlockModule getBlockModule()
 	{
 		return this.block;
 	}
@@ -150,7 +150,7 @@ public class NewOreType extends OreModule<NewOreType, NewOreType> implements IFo
 	public Map<Class<?>, OreModule<NewOreType, ?>> gatherDefaultChildren(String path, JsonObject json)
 	{
 		Map<Class<?>, OreModule<NewOreType, ?>> children = Maps.newHashMap();
-		children.put(BlockModule.class, this.block = VariableManager.newModule(path, BlockModule.class, json));
+		children.put(TypeBlockModule.class, this.block = VariableManager.newModule(path, TypeBlockModule.class, json));
 		children.put(GenerationModule.class, this.generation = VariableManager.newModule(path, GenerationModule.class, json));
 		children.put(SmeltingModule.class, VariableManager.newModule(path, SmeltingModule.class, json));
 		children.put(TypeModelModule.class, VariableManager.newModule(path, TypeModelModule.class, json));

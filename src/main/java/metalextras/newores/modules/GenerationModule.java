@@ -1,16 +1,14 @@
 package metalextras.newores.modules;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import com.google.common.base.Joiner;
+import java.util.function.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -35,7 +33,7 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 	private NewOreType parent;
 	protected boolean post_event;
 	protected GenerateMinable.EventType event;
-	protected BiFunction<World, BlockPos, GenerationModule.Properties> properties_getter = Properties.Iron.createDefaultGetter(this);
+	protected Function<WorldContext<GenerationModule, Void>, Properties> properties_getter = ConstantFunction.of(new Properties.Iron(this, true));
 	protected BiMap<IBlockState, OreType> allowed_states = HashBiMap.create();
 
 	public GenerationModule(String path, JsonElement json, boolean parse)
@@ -98,24 +96,8 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 			}
 			for(OreType material : materials)
 				this.allowed_states.put(material.getState(), material);
-			JsonElement properties_element = generation_object.get("properties");
-			String properties_string;
-			if(properties_element == null)
-				this.properties_getter = GenerationModule.Properties.Iron.createDefaultGetter(this);
-			else if(properties_element.isJsonPrimitive() && properties_element.getAsJsonPrimitive().isString() && (properties_string = properties_element.getAsString()).startsWith("#"))
-				this.properties_getter = VariableManager.warnIfAbsent(VariableManager.getConstantGenerationProperties(new ResourceLocation(properties_string.substring(1)), this), GenerationModule.Properties.Iron.createDefaultGetter(this), String.format("The string at %s/properties references a non-existent generation properties getter (%s)", path, properties_string));
-			else if(properties_element.isJsonObject())
-			{
-				JsonObject properties_object = properties_element.getAsJsonObject();
-				String type_string = JsonUtils.getString(properties_object, "type", "minecraft:iron");
-				GenerationModule.Properties properties = VariableManager.warnIfAbsent(VariableManager.getGenerationPropertiesParser(new ResourceLocation(type_string)), GenerationModule.Properties.Iron.createParser(), String.format("The string at %s/properties/type references a non-existent generation properties parser (%s)", path, type_string)).parse(String.format("%s/properties", path), this, properties_object);
-				this.properties_getter = (world, pos) -> properties;
-			}
-			else
-			{
-				MetalExtras.LOGGER.warn(String.format("The element at %s/properties must be a #constant or JsonObject"), path);
-				this.properties_getter = GenerationModule.Properties.Iron.createDefaultGetter(this);
-			}
+			Function<Object, Object> f = (o) -> null;
+			this.properties_getter = VariableManager.variableOrParse(GenerationModule.class, GenerationModule.class, Void.class, Properties.class, path, generation_object.get("properties"), (properties_object) -> JsonUtils.getString(properties_object, "type", "minecraft:iron"), this, this.properties_getter);
 		}
 	}
 
@@ -136,7 +118,7 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 
 	public final GenerationModule.Properties getProperties(World world, BlockPos pos)
 	{
-		return this.properties_getter.apply(world, pos);
+		return this.properties_getter.apply(WorldContext.of(this, null, world, pos, null, null));
 	}
 
 	@Override
@@ -235,58 +217,26 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 				return (world, pos) -> properties;
 			}
 
-			public static Properties.GenerationPropertiesParser createParser()
+			public static BiFunction<JsonObject, GenerationModule, Properties> createParser()
 			{
-				return new GenerationPropertiesParser()
+				return (json, generation) ->
 				{
-					@Override
-					public GenerationModule.Properties parse(String path, GenerationModule generation, JsonObject object)
+					GenerationModule.Properties.Iron properties = new GenerationModule.Properties.Iron(generation, true);
+					properties.tries = JsonUtils.getInt(json, "tries", 0);
+					JsonElement height = json.get("height");
+					if(height.isJsonObject())
 					{
-						String registry_name = path.split("/")[0];
-						GenerationModule.Properties.Iron properties = new GenerationModule.Properties.Iron(generation, true);
-						properties.tries = JsonUtils.getInt(object, "tries", 0);
-						JsonElement height = object.get("height");
-						if(height.isJsonObject())
-						{
-							JsonObject height_object = height.getAsJsonObject();
-							properties.min_height = JsonUtils.getInt(height_object, "min", 0);
-							properties.max_height = JsonUtils.getInt(height_object, "max", 0);
-						}
-						else
-							properties.max_height = height.getAsInt();
-						properties.size = JsonUtils.getInt(object, "size", 1);
-						JsonObject temperature_object = JsonUtils.getJsonObject(object, "temperature", new JsonObject());
-						properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
-						properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
-						List<String> reasons = Lists.newArrayList();
-						if(properties.tries <= 0)
-							reasons.add(String.format("spawn %s times per chunk", properties.tries));
-						if(properties.max_height <= 0)
-							reasons.add("generate at a maximum height of 0 or below");
-						if(properties.max_height <= properties.min_height)
-							reasons.add("generate at a maximum height that is lower than its minimum height");
-						if(properties.size <= 0)
-							reasons.add(String.format("generate with a maximum vein size of %s", properties.size));
-						if(properties.min_temperature > properties.max_temperature)
-							reasons.add(String.format("generate at a place in which its temperature is greater than %s but less than %s", properties.min_temperature, properties.max_temperature));
-						if(!reasons.isEmpty())
-						{
-							String reasons_string;
-							if(reasons.size() > 1)
-								if(reasons.size() == 2)
-									reasons_string = String.format("%s and %s", reasons.get(0), reasons.get(1));
-								else
-								{
-									String last = reasons.remove(reasons.size() - 1);
-									reasons_string = String.format("%s, and %s", Joiner.on(", ").join(reasons), last);
-								}
-							else
-								reasons_string = reasons.get(0);
-							MetalExtras.LOGGER.warn(String.format("The ore %s will not be able to generate because the ore is set to %s.", registry_name, reasons_string));
-						}
-						generation.properties_getter = (world, pos) -> properties;
-						return properties;
+						JsonObject height_object = height.getAsJsonObject();
+						properties.min_height = JsonUtils.getInt(height_object, "min", 0);
+						properties.max_height = JsonUtils.getInt(height_object, "max", 0);
 					}
+					else
+						properties.max_height = height.getAsInt();
+					properties.size = JsonUtils.getInt(json, "size", 1);
+					JsonObject temperature_object = JsonUtils.getJsonObject(json, "temperature", new JsonObject());
+					properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
+					properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
+					return properties;
 				};
 			}
 		}
@@ -328,49 +278,19 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 				return (world, pos) -> properties;
 			}
 
-			public static Properties.GenerationPropertiesParser createParser()
+			public static BiFunction<JsonObject, GenerationModule, Properties> createParser()
 			{
-				return new GenerationPropertiesParser()
+				return (json, generation) ->
 				{
-					@Override
-					public GenerationModule.Properties parse(String path, GenerationModule generation, JsonObject object)
-					{
-						String registry_name = path.split("/")[0];
-						GenerationModule.Properties.Lapis properties = new GenerationModule.Properties.Lapis(generation, true);
-						properties.tries = JsonUtils.getInt(object, "tries", 0);
-						properties.center_height = JsonUtils.getInt(object, "center_height", 0);
-						properties.spread = JsonUtils.getInt(object, "spread", 1);
-						properties.size = JsonUtils.getInt(object, "size", 1);
-						JsonObject temperature_object = JsonUtils.getJsonObject(object, "temperature", new JsonObject());
-						properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
-						properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
-						List<String> reasons = Lists.newArrayList();
-						if(properties.tries <= 0)
-							reasons.add(String.format("spawn %s times per chunk", properties.tries));
-						if(properties.spread <= 0)
-							reasons.add("generate with a spread that is less than 1");
-						if(properties.size <= 0)
-							reasons.add(String.format("generate with a maximum vein size of %s", properties.size));
-						if(properties.min_temperature > properties.max_temperature)
-							reasons.add(String.format("generate at a place in which its temperature is greater than %s but less than %s", properties.min_temperature, properties.max_temperature));
-						if(!reasons.isEmpty())
-						{
-							String reasons_string;
-							if(reasons.size() > 1)
-								if(reasons.size() == 2)
-									reasons_string = String.format("%s and %s", reasons.get(0), reasons.get(1));
-								else
-								{
-									String last = reasons.remove(reasons.size() - 1);
-									reasons_string = String.format("%s, and %s", Joiner.on(", ").join(reasons), last);
-								}
-							else
-								reasons_string = reasons.get(0);
-							MetalExtras.LOGGER.warn(String.format("The ore %s will not be able to generate because the ore is set to %s.", registry_name, reasons_string));
-						}
-						generation.properties_getter = (world, pos) -> properties;
-						return properties;
-					}
+					GenerationModule.Properties.Lapis properties = new GenerationModule.Properties.Lapis(generation, true);
+					properties.tries = JsonUtils.getInt(json, "tries", 0);
+					properties.center_height = JsonUtils.getInt(json, "center_height", 0);
+					properties.spread = JsonUtils.getInt(json, "spread", 1);
+					properties.size = JsonUtils.getInt(json, "size", 1);
+					JsonObject temperature_object = JsonUtils.getJsonObject(json, "temperature", new JsonObject());
+					properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
+					properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
+					return properties;
 				};
 			}
 		}
@@ -413,66 +333,39 @@ public class GenerationModule extends OreModule<NewOreType, GenerationModule> im
 				return (world, pos) -> properties;
 			}
 
-			public static Properties.GenerationPropertiesParser createParser()
+			public static BiFunction<JsonObject, GenerationModule, Properties> createParser()
 			{
-				return new GenerationPropertiesParser()
+				return (json, generation) ->
 				{
-					@Override
-					public GenerationModule.Properties parse(String path, GenerationModule generation, JsonObject object)
+					GenerationModule.Properties.Emerald properties = new GenerationModule.Properties.Emerald(generation, true);
+					properties.tries_base = JsonUtils.getInt(json, "tries_base", 0);
+					properties.tries_randomizer = JsonUtils.getInt(json, "tries_randomizer", 1);
+					JsonElement height = json.get("height");
+					if(height.isJsonObject())
 					{
-						String registry_name = path.split("/")[0];
-						GenerationModule.Properties.Emerald properties = new GenerationModule.Properties.Emerald(generation, true);
-						properties.tries_base = JsonUtils.getInt(object, "tries_base", 0);
-						properties.tries_randomizer = JsonUtils.getInt(object, "tries_randomizer", 1);
-						JsonElement height = object.get("height");
-						if(height.isJsonObject())
-						{
-							JsonObject height_object = height.getAsJsonObject();
-							properties.min_height = JsonUtils.getInt(height_object, "min", 0);
-							properties.max_height = JsonUtils.getInt(height_object, "max", 0);
-						}
-						else
-							properties.max_height = height.getAsInt();
-						properties.size = JsonUtils.getInt(object, "size", 1);
-						JsonObject temperature_object = JsonUtils.getJsonObject(object, "temperature", new JsonObject());
-						properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
-						properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
-						List<String> reasons = Lists.newArrayList();
-						if(properties.tries_base + properties.tries_randomizer - 1 <= 0)
-							reasons.add(String.format("spawn less than or equal to %s times per chunk", properties.tries_base + properties.tries_randomizer - 1));
-						if(properties.max_height <= 0)
-							reasons.add("generate at a maximum height of 0 or below");
-						if(properties.max_height <= properties.min_height)
-							reasons.add("generate at a maximum height that is lower than its minimum height");
-						if(properties.size <= 0)
-							reasons.add(String.format("generate with a maximum vein size of %s", properties.size));
-						if(properties.min_temperature > properties.max_temperature)
-							reasons.add(String.format("generate at a place in which its temperature is greater than %s but less than %s", properties.min_temperature, properties.max_temperature));
-						if(!reasons.isEmpty())
-						{
-							String reasons_string;
-							if(reasons.size() > 1)
-								if(reasons.size() == 2)
-									reasons_string = String.format("%s and %s", reasons.get(0), reasons.get(1));
-								else
-								{
-									String last = reasons.remove(reasons.size() - 1);
-									reasons_string = String.format("%s, and %s", Joiner.on(", ").join(reasons), last);
-								}
-							else
-								reasons_string = reasons.get(0);
-							MetalExtras.LOGGER.warn(String.format("The ore %s will not be able to generate because the ore is set to %s.", registry_name, reasons_string));
-						}
-						generation.properties_getter = (world, pos) -> properties;
-						return properties;
+						JsonObject height_object = height.getAsJsonObject();
+						properties.min_height = JsonUtils.getInt(height_object, "min", 0);
+						properties.max_height = JsonUtils.getInt(height_object, "max", 0);
 					}
-				};
+					else
+						properties.max_height = height.getAsInt();
+					properties.size = JsonUtils.getInt(json, "size", 1);
+					JsonObject temperature_object = JsonUtils.getJsonObject(json, "temperature", new JsonObject());
+					properties.min_temperature = JsonUtils.getFloat(temperature_object, "min", -Float.MAX_VALUE);
+					properties.max_temperature = JsonUtils.getFloat(temperature_object, "max", Float.MAX_VALUE);
+					return properties;
+			};
 			}
 		}
 
 		public abstract static class GenerationPropertiesParser
 		{
 			public abstract GenerationModule.Properties parse(String path, GenerationModule generation, JsonObject properties_object);
+		}
+		
+		public static interface PropertiesGetter
+		{
+			
 		}
 	}
 }

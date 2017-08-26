@@ -1,6 +1,6 @@
 {
 	"name": "tile.metalextras:ruby_ore",
-	"model": { "texture": "metalextras:items/ruby_ore" },
+	"model": { "texture": "metalextras:items/ruby_ore", "model_type": "emerald" },
 	"ore_dictionary": [ "oreRuby" ],
 	"block": { "harvest_level": 3, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ruby_gem" } ], "xp": { "min": 3, "max": 7 } },
 	"item": { "creative_tabs": [ "misc" ] },

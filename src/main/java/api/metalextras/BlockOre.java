@@ -6,7 +6,7 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import api.metalextras.SPacketBlockOreLandingParticles.SendLandingParticlesEvent;
 import metalextras.newores.NewOreType;
-import metalextras.newores.modules.BlockModule.Drop;
+import metalextras.newores.modules.TypeBlockModule.Drop;
 import metalextras.newores.modules.TypeModelModule;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
@@ -118,17 +118,17 @@ public class BlockOre extends net.minecraft.block.BlockOre
 			}
 		}
 		for(Drop drop : this.type.getBlockModule().getDrops())
-			if(random.nextFloat() >= 1F - drop.getChance(fortune))
+			if(random.nextFloat() >= 1F - drop.getChance(state, fortune))
 			{
-				int min_count = drop.getMinCount(fortune);
-				int max_count = drop.getMaxCount(fortune);
+				int min_count = drop.getMinCount(state, fortune);
+				int max_count = drop.getMaxCount(state, fortune);
 				int count = Math.max(0, min_count >= max_count ? max_count : random.nextInt(max_count - min_count + 1) + min_count);
 				for(int i = 0; i < count; i++)
 				{
-					NBTTagCompound compound = drop.getNbt();
-					compound.setString("id", drop.getItem().getRegistryName().toString());
+					NBTTagCompound compound = drop.getNbt(state);
+					compound.setString("id", drop.getItem(state, random).getRegistryName().toString());
 					compound.setByte("Count", (byte)1);
-					compound.setInteger("Damage", drop.getMetadata());
+					compound.setInteger("Damage", drop.getMetadata(state));
 					stacks.add(new ItemStack(compound));
 				}
 			}
@@ -137,9 +137,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	@Override
 	public int getExpDrop(IBlockState state, IBlockAccess access, BlockPos pos, int fortune)
 	{
-		int min_xp = this.type.getBlockModule().getMinXp();
-		int max_xp = this.type.getBlockModule().getMaxXp();
-		return Math.max(0, min_xp >= max_xp ? max_xp : (access instanceof World ? ((World)access).rand : Block.RANDOM).nextInt(max_xp - min_xp + 1) + min_xp);
+		return this.type.getBlockModule().getXp(state, access, pos, fortune);
 	}
 
 	@Override
@@ -151,7 +149,7 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	@Override
 	public int getHarvestLevel(IBlockState state)
 	{
-		int materialHarvest = this.getOreType().getBlockModule().getHarvestLevel();
+		int materialHarvest = this.getOreType().getBlockModule().getHarvestLevel(state);
 		int typeHarvest = this.getOreType(state).getHarvestLevel();
 		return materialHarvest == -1 || typeHarvest == -1 ? -1 : Math.max(materialHarvest, typeHarvest);
 	}
@@ -348,9 +346,9 @@ public class BlockOre extends net.minecraft.block.BlockOre
 	}
 
 	@Override
-	public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World world, BlockPos pos)
+	public AxisAlignedBB getCollisionBoundingBox(IBlockState state, IBlockAccess access, BlockPos pos)
 	{
-		return state.getValue(this.getOreTypeProperty()).getSelectionBox(world, pos);
+		return state.getValue(this.getOreTypeProperty()).getCollisionBox(access, pos);
 	}
 
 	@Override
@@ -427,5 +425,10 @@ public class BlockOre extends net.minecraft.block.BlockOre
 					world.setBlockState(pos1.up(), state);
 			}
 		}
+	}
+	
+	public static Random getBlockRandom()
+	{
+		return Block.RANDOM;
 	}
 }

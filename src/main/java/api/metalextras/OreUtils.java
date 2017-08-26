@@ -34,11 +34,17 @@ public class OreUtils
 	public static final ResourceLocation ORETYPE_TO_ID = new ResourceLocation("metalextras", "oretype_to_id");
 	private static BiMap<OreType, IBlockState> ORETYPE_TO_IBLOCKSTATE_MAP;
 	private static final OreTypeRegistry TYPES = new OreTypeRegistry();
+	private static final OreMaterialsRegistry MATERIALS = new OreMaterialsRegistry();
 	private static IForgeRegistry<OreTypes> typeCollections;
 
 	public static OreTypeRegistry getTypesRegistry()
 	{
 		return TYPES;
+	}
+
+	public static OreMaterialsRegistry getMaterialsRegistry()
+	{
+		return MATERIALS;
 	}
 
 	public static IForgeRegistry<OreTypes> getTypeCollectionsRegistry()

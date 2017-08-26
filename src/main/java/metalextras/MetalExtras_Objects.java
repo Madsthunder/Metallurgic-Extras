@@ -34,11 +34,11 @@ import metalextras.items.ItemTool;
 import metalextras.mod.MetalExtras_Callbacks;
 import metalextras.newores.NewOreType;
 import metalextras.newores.VariableManager;
-import metalextras.newores.modules.BlockModule;
 import metalextras.newores.modules.GenerationModule;
-import metalextras.newores.modules.TypeModelModule;
 import metalextras.newores.modules.RegisterModuleFactoriesEvent;
 import metalextras.newores.modules.SmeltingModule;
+import metalextras.newores.modules.TypeBlockModule;
+import metalextras.newores.modules.TypeModelModule;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockRedSandstone;
@@ -73,6 +73,7 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
@@ -310,7 +311,7 @@ public class MetalExtras_Objects
 			}
 
 			@Override
-			public AxisAlignedBB getSelectionBox(World world, BlockPos pos)
+			public AxisAlignedBB getCollisionBox(IBlockAccess access, BlockPos pos)
 			{
 				return new AxisAlignedBB(0, 0, 0, 1, 0.875, 1);
 			}
@@ -576,7 +577,7 @@ public class MetalExtras_Objects
 				}
 			return type;
 		});
-		VariableManager.registerModuleFactory(BlockModule.class, "block", (path, json) -> new BlockModule(path, json, true));
+		VariableManager.registerModuleFactory(TypeBlockModule.class, "block", (path, json) -> new TypeBlockModule(path, json, true));
 		VariableManager.registerModuleFactory(GenerationModule.class, "generation", (path, json) -> new GenerationModule(path, json, true));
 		VariableManager.registerModuleFactory(SmeltingModule.class, "smelting", (path, json) -> new SmeltingModule(path, json, true));
 		VariableManager.registerModuleFactory(TypeModelModule.class, "model", (path, json) -> new TypeModelModule(path, json, true));

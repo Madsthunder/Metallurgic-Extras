@@ -14,6 +14,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -89,7 +90,7 @@ public abstract class OreType implements Comparable<OreType>
 	{
 	}
 
-	public AxisAlignedBB getSelectionBox(World world, BlockPos pos)
+	public AxisAlignedBB getCollisionBox(IBlockAccess access, BlockPos pos)
 	{
 		return Block.FULL_BLOCK_AABB;
 	}

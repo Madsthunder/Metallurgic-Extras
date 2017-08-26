@@ -1,6 +1,6 @@
 {
 	"name": "tile.metalextras:aluminum_ore",
-	"model": { "texture": "metalextras:items/aluminum_ore" },
+	"model": { "texture": "metalextras:items/aluminum_ore", "model_type": "lapis" },
 	"ore_dictionary": [ "oreAluminum" ],
 	"block": { "harvest_level": 1, "creative_tabs": [ "metalextras:ores" ], "drops": [ { "item": "metalextras:ore", "data": "#oresapi:id" } ] },
 	"item": { "creative_tabs": [ "misc" ] },

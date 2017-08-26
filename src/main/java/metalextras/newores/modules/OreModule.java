@@ -46,6 +46,11 @@ public abstract class OreModule<P extends OreModule<?, P>, S extends OreModule<P
 	{
 		return Maps.newHashMap();
 	}
+	
+	public <M extends OreModule<?, M>> M as()
+	{
+		return (M)this;
+	}
 
 	public static class GatherChildrenEvent<S extends OreModule<?, S>> extends GenericEvent<S>
 	{

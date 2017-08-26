@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.internal.bind.TypeAdapters;
 import api.metalextras.BlockOre;
 import api.metalextras.OreTypes;
@@ -50,27 +51,9 @@ public class TypeBlockModule extends OreModule<NewOreType, TypeBlockModule>
 			{
 				Map<OreTypes, ResourceLocation> name_overrides = Maps.newHashMap();
 				for(Entry<String, JsonElement> entry : e.getAsJsonObject().entrySet())
-				{
-					Optional.ofNullable(OreUtils.getTypeCollectionsRegistry().getValue(new ResourceLocation(VariableManager.getStringConst(this.module_type, path, e, entry.getKey(), entry.getKey())))).ifPresent((materials) -> name_overrides.put(materials, new ResourceLocation(entry.getValue().getAsString())));
-				}
+					Optional.ofNullable(OreUtils.getTypeCollectionsRegistry().getValue(new ResourceLocation(VariableManager.getStringConst(this.module_type, path, new JsonPrimitive(entry.getKey()), null, entry.getKey())))).ifPresent((materials) -> name_overrides.put(materials, new ResourceLocation(entry.getValue().getAsString())));
 				return name_overrides;
 			}, this.name_overrides, VariableManager.JSON_OBJECT_NAME));
-			/**JsonObject overrides_object = JsonUtils.getJsonObject(block_object, "name_overrides", new JsonObject());
-			for(Entry<String, JsonElement> entry : overrides_object.entrySet())
-			{
-				ResourceLocation override_key = new ResourceLocation(entry.getKey());
-				JsonElement override_element = entry.getValue();
-				if(override_element.isJsonPrimitive() && override_element.getAsJsonPrimitive().isString())
-				{
-					OreTypes materials = OreUtils.getTypeCollectionsRegistry().getValue(override_key);
-					if(materials == null)
-						MetalExtras.LOGGER.warn(String.format("The element at %s/name_overrides/%s references a non-existent OreMaterials entry. (%s)", path, override_key, override_key));
-					else
-						this.name_overrides.put(materials, new ResourceLocation(override_element.getAsString()));
-				}
-				else
-					MetalExtras.LOGGER.warn(String.format("The element at %s/name_overrides/%s must be a JsonPrimitive String.", path, override_key));
-			}*/
 			this.harvest_level_getter = VariableManager.getIntegerVar(this.module_type, Void.class, path, json, "harvest_level", this.harvest_level_getter);
 			this.drops = Iterables.toArray(VariableManager.constant(this.module_type, List.class, path, json, "drops", (e) ->
 			{
